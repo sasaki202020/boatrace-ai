@@ -1,0 +1,42 @@
+# 競艇AI予想システム 設定ファイル
+data:
+  dummy:
+    n_races: 2000
+    n_racers: 200
+    seed: 42
+  database_path: data/boat_race.db
+  raw_cache_dir: data/raw
+
+fetcher:
+  base_url: https://www.boatrace.jp
+  min_interval_seconds: 2.0
+  max_retries: 4
+  backoff_base_seconds: 2.0
+  user_agent: "kensho-boat-race-ai/1.0 (research; contact: goooo1002@gmail.com)"
+
+features:
+  rolling_windows: [3, 5, 10]
+
+model:
+  test_ratio: 0.2          # 時系列分割: 末尾20%をテストに使用
+  random_state: 42
+  xgboost:
+    n_estimators: 300
+    max_depth: 5
+    learning_rate: 0.05
+  lightgbm:
+    n_estimators: 300
+    max_depth: 5
+    learning_rate: 0.05
+  random_forest:
+    n_estimators: 200
+    max_depth: 8
+
+backtest:
+  unit_stake: 100          # 1点あたりの賭け金(円)
+  ev_threshold: 1.2        # 期待値戦略: p * odds がこの値を超えたら賭ける
+  confidence_threshold: 0.40  # 確信度戦略: 予測勝率がこの値を超えたら賭ける
+
+output:
+  model_path: data/models/model.pkl
+  predictions_dir: data/predictions
