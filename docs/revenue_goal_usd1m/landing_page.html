@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Public Data Reliability Sprint</title>
+  <style>
+    :root {
+      --ink: #17212b;
+      --muted: #5c6b7a;
+      --line: #d7e0e8;
+      --panel: #f7fafc;
+      --accent: #0b6b5c;
+      --warn: #b55b00;
+    }
+    body { margin: 0; font-family: Georgia, "Times New Roman", serif; color: var(--ink); background: linear-gradient(135deg, #f4f7f8, #e8f1ef); }
+    main { max-width: 1040px; margin: 0 auto; padding: 48px 20px; }
+    .hero { display: grid; gap: 24px; grid-template-columns: 1.15fr .85fr; align-items: center; }
+    h1 { font-size: clamp(38px, 6vw, 70px); line-height: .96; margin: 0; letter-spacing: -.04em; }
+    h2 { font-size: 28px; margin: 0 0 12px; }
+    p, li { font-size: 18px; line-height: 1.6; }
+    .card { background: rgba(255,255,255,.82); border: 1px solid var(--line); border-radius: 24px; padding: 24px; box-shadow: 0 20px 60px rgba(23,33,43,.08); }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 24px; }
+    .kpi { padding: 16px; border-radius: 18px; background: var(--panel); border: 1px solid var(--line); }
+    .kpi strong { display: block; font-size: 28px; color: var(--accent); }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 36px; }
+    .button { display: inline-block; margin-top: 18px; padding: 14px 18px; border-radius: 999px; background: var(--accent); color: white; text-decoration: none; font-weight: 700; }
+    .note { color: var(--muted); font-size: 15px; }
+    .warning { color: var(--warn); font-weight: 700; }
+    @media (max-width: 800px) { .hero, .grid, .kpis { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="hero">
+      <div>
+        <p class="warning">For teams relying on public or partner data feeds</p>
+        <h1>Stop silent data failures before they reach your customers.</h1>
+        <p>Public Data Reliability Sprint hardens brittle feeds with freshness checks, schema drift detection, explicit missing-state handling, replayable reports, and owner-ready monitoring.</p>
+        <a class="button" href="#contact">Request a paid diagnostic</a>
+      </div>
+      <div class="card">
+        <h2>14-day fixed-scope sprint</h2>
+        <ul>
+          <li>Inventory data sources and daily artifacts.</li>
+          <li>Classify missing, pending, stale, unavailable, and parse errors.</li>
+          <li>Build reproducible Markdown, JSON, and dashboard outputs.</li>
+          <li>Hand off run commands, acceptance checks, and KPI scorecard.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi"><strong>$7.5k</strong>diagnostic audit</div>
+      <div class="kpi"><strong>$15k</strong>implementation sprint</div>
+      <div class="kpi"><strong>$2.5k/mo</strong>monitoring retainer</div>
+    </section>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Best fit</h2>
+        <p>Small data, media, research, and SaaS teams whose reports depend on changing public pages, CSVs, APIs, or partner feeds.</p>
+      </div>
+      <div class="card">
+        <h2>Outcome</h2>
+        <p>A clear daily answer: ready, pending, source not ready, stale, parse error, or failed. No fake success and no hidden missing data.</p>
+      </div>
+      <div class="card">
+        <h2>Proof</h2>
+        <p>Built from operational patterns proven in a local public-data analytics workspace: artifact checks, consensus reports, shadow validation, and audit trails.</p>
+      </div>
+    </section>
+
+    <section id="contact" class="card" style="margin-top:36px">
+      <h2>Start with a diagnostic</h2>
+      <p>Send one failing report, one source URL, and the business decision that depends on it. The first call decides whether a fixed-scope diagnostic is appropriate.</p>
+      <p class="note">Configure this section with an approved booking link or business email before publishing. No form submission is enabled in this static file.</p>
+    </section>
+  </main>
+</body>
+</html>
+

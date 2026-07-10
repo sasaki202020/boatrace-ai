@@ -1,0 +1,1788 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ボートレース 独自AI予想</title>
+  <link rel="icon" href="data:," />
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Noto Sans JP", "Yu Gothic", Meiryo, sans-serif;
+      color: #183047;
+      background:
+        radial-gradient(circle at 10% 0%, rgba(255,255,255,.9), rgba(255,255,255,0) 28%),
+        linear-gradient(180deg, #eaf8ff 0%, #f6fbff 42%, #edf3f7 100%);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrapper { width: 1000px; margin: 0 auto; }
+    .top {
+      background: linear-gradient(90deg, #ffffff 0%, #e7f8ff 55%, #ffffff 100%);
+      border-top: 7px solid #00a3df;
+      box-shadow: 0 2px 10px rgba(0,72,130,.08);
+    }
+    .top .wrapper {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nikkan {
+      width: 186px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      color: #0074b8;
+      background: #fff;
+      border: 2px solid #bde9fb;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: .08em;
+    }
+    .boat-logo {
+      width: 304px;
+      height: 46px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #009fe8 0%, #006fbd 100%);
+      color: #fff;
+      font-size: 22px;
+      font-weight: 700;
+      border-radius: 14px 14px 4px 14px;
+      box-shadow: 0 8px 18px rgba(0,102,174,.22);
+    }
+    .mv {
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 82% 22%, rgba(255,218,0,.95) 0 56px, rgba(255,218,0,0) 57px),
+        linear-gradient(110deg, #00a3df 0%, #0074c1 48%, #005da8 100%);
+      color: #fff;
+      border-bottom: 6px solid #ffd800;
+    }
+    .mv::after {
+      content: "";
+      position: absolute;
+      inset: auto -5% -38px -5%;
+      height: 88px;
+      background:
+        radial-gradient(60px 20px at 8% 40%, rgba(255,255,255,.25), rgba(255,255,255,0) 70%),
+        repeating-linear-gradient(170deg, rgba(255,255,255,.22) 0 18px, rgba(255,255,255,0) 19px 42px);
+      transform: rotate(-2deg);
+      pointer-events: none;
+    }
+    .mv .wrapper {
+      height: 116px;
+      display: flex;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+    .mv .txt {
+      padding: 10px 18px;
+      background: rgba(0,52,103,.24);
+      border: 1px solid rgba(255,255,255,.38);
+      border-radius: 16px;
+      font-size: 25px;
+      font-weight: 700;
+      text-shadow: 0 2px 0 rgba(0,0,0,.18);
+    }
+    .race-head {
+      background: rgba(255,255,255,.92);
+      border-bottom: 1px solid #bde9fb;
+      backdrop-filter: blur(6px);
+    }
+    .race-head .wrapper {
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .race_ttl { margin: 0; font-size: 24px; font-weight: 700; color: #004f93; }
+    .reload {
+      display: inline-block;
+      width: 136px;
+      height: 34px;
+      line-height: 34px;
+      border-radius: 999px;
+      text-align: center;
+      background: #ffd800;
+      color: #17304a;
+      border: 2px solid #f0c400;
+      box-shadow: 0 4px 0 #d5a900;
+      font-weight: 700;
+    }
+    .reload:active { transform: translateY(2px); box-shadow: 0 2px 0 #d5a900; }
+    .navbar {
+      background: #005da8;
+      box-shadow: inset 0 -4px 0 #ffd800;
+    }
+    .nav {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 2px;
+      padding: 8px 0 12px;
+      margin: 0;
+      list-style: none;
+    }
+    .nav a {
+      display: block;
+      height: 48px;
+      line-height: 48px;
+      text-align: center;
+      background: #fff;
+      color: #005da8;
+      border-radius: 10px 10px 3px 3px;
+      border: 1px solid #d7eef9;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .nav a.selected {
+      background: #ffd800;
+      color: #111;
+      border-color: #ffd800;
+      box-shadow: 0 5px 0 rgba(0,0,0,.14);
+    }
+    .nav span { font-size: 25px; }
+    .page { padding-top: 22px; }
+    .race_wrapper {
+      background: #fff;
+      border: 0;
+      border-left: 8px solid #00a3df;
+      border-radius: 16px;
+      padding: 15px 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 18px rgba(0,81,146,.08);
+    }
+    .race_line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .race_num { margin: 0; font-size: 30px; font-weight: 700; color: #005da8; }
+    .race_time { margin: 0; font-weight: 700; }
+    .race_time span { color: #d50000; font-size: 20px; }
+    .warning {
+      background: #fffde7;
+      border: 1px solid #f1dc62;
+      border-left: 6px solid #ffd800;
+      border-radius: 12px;
+      color: #5b4a00;
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      font-weight: 700;
+      box-shadow: 0 4px 12px rgba(130,108,0,.08);
+    }
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .status-card {
+      background: #fff;
+      border: 1px solid #d4dce6;
+      border-left: 5px solid #7a8898;
+      padding: 10px 12px;
+      min-height: 76px;
+      box-shadow: 0 1px 0 rgba(0,0,0,.04);
+    }
+    .status-card.ok { border-left-color: #008b57; }
+    .status-card.warn { border-left-color: #d38b00; }
+    .status-card.bad { border-left-color: #c70000; }
+    .status-card .label {
+      margin: 0 0 4px;
+      color: #555;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .status-card .value {
+      margin: 0;
+      color: #111;
+      font-size: 15px;
+      font-weight: 700;
+      word-break: break-word;
+    }
+    .status-card .sub {
+      margin: 4px 0 0;
+      color: #666;
+      font-size: 12px;
+    }
+    .source-link {
+      color: #0074c1;
+      text-decoration: underline;
+      font-weight: 700;
+    }
+    .muted {
+      color: #6b7f8f;
+      font-size: 11px;
+      margin-top: 3px;
+    }
+    .source-chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      max-width: 260px;
+    }
+    .source-chip {
+      display: inline-block;
+      padding: 3px 7px;
+      border: 1px solid #b7d8ef;
+      border-radius: 999px;
+      background: #f4fbff;
+      color: #005c99;
+      font-size: 11px;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .hamanako-current {
+      display: none;
+      margin-bottom: 16px;
+      padding: 16px;
+      background:
+        linear-gradient(135deg, rgba(0,163,223,.10), rgba(255,216,0,.18)),
+        #fff;
+      border: 1px solid #bde9fb;
+      border-radius: 16px;
+      box-shadow: 0 8px 22px rgba(0,81,146,.10);
+    }
+    .hamanako-current.show { display: block; }
+    .hamanako-current h2 {
+      margin: 0 0 10px;
+      color: #005da8;
+      font-size: 19px;
+    }
+    .hamanako-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .hamanako-pill {
+      display: inline-block;
+      padding: 5px 10px;
+      background: #fff;
+      border: 1px solid #bde9fb;
+      border-radius: 999px;
+      color: #004f93;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .hamanako-current .series {
+      margin: 0 0 12px;
+      padding: 10px 12px;
+      background: #005da8;
+      color: #fff;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: 700;
+      box-shadow: inset 0 -4px 0 #ffd800;
+    }
+    .hamanako-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .hamanako-action {
+      padding: 8px 12px;
+      background: #ffd800;
+      border-radius: 999px;
+      color: #17304a;
+      font-weight: 700;
+    }
+    .hamanako-note {
+      margin: 0;
+      color: #52677a;
+      font-size: 12px;
+    }
+    .entry-mini {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 0;
+      margin-bottom: 16px;
+      overflow: auto;
+      border: 1px solid #aeb8c2;
+      background: #fff;
+      box-shadow: 0 6px 18px rgba(0,81,146,.08);
+    }
+    .entry-card {
+      background: #fff;
+      border-right: 1px solid #b7b7b7;
+      border-radius: 0;
+      padding: 0;
+      min-width: 112px;
+      box-shadow: none;
+      text-align: center;
+    }
+    .entry-card:last-child { border-right: 0; }
+    .entry-card .boat {
+      margin: 0;
+    }
+    .entry-grade {
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border-bottom: 1px solid #b7b7b7;
+      color: #444;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .entry-score {
+      padding: 10px 0;
+      border-bottom: 1px solid #b7b7b7;
+      color: #333;
+      font-size: 22px;
+      font-weight: 700;
+    }
+    .entry-score.hot { color: #e60012; }
+    .entry-lane {
+      padding: 4px 0;
+      color: #fff;
+      font-weight: 700;
+    }
+    .entry-lane.lane-1 { background: #fff; color: #111; }
+    .entry-lane.lane-2 { background: #111; color: #fff; }
+    .entry-lane.lane-3 { background: #e60012; color: #fff; }
+    .entry-lane.lane-4 { background: #003cff; color: #fff; }
+    .entry-lane.lane-5 { background: #fff100; color: #111; }
+    .entry-lane.lane-6 { background: #078c32; color: #fff; }
+    .entry-photo {
+      height: 112px;
+      display: grid;
+      place-items: center;
+      margin: 0 6px;
+      background:
+        linear-gradient(180deg, #dff2ff 0%, #ffffff 100%);
+      border-left: 1px solid #d4dce6;
+      border-right: 1px solid #d4dce6;
+      color: #005da8;
+      font-size: 42px;
+      font-weight: 700;
+    }
+    .entry-id {
+      padding: 4px;
+      border-bottom: 1px solid #b7b7b7;
+      font-size: 14px;
+    }
+    .entry-name {
+      padding: 6px 4px;
+      border-bottom: 1px solid #b7b7b7;
+      font-weight: 700;
+      min-height: 34px;
+    }
+    .entry-row {
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      border-bottom: 1px solid #b7b7b7;
+      min-height: 30px;
+      align-items: center;
+      font-size: 12px;
+    }
+    .entry-row .label {
+      height: 100%;
+      display: grid;
+      place-items: center;
+      background: #f0f0f0;
+      border-right: 1px solid #b7b7b7;
+      color: #555;
+    }
+    .entry-row .value {
+      padding: 4px;
+      color: #333;
+      font-weight: 700;
+    }
+    .entry-row .hot { color: #e60012; }
+    .entry-section {
+      padding: 5px 0;
+      background: #eee;
+      border-bottom: 1px solid #b7b7b7;
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .nikkan-meta {
+      margin: 0;
+      padding: 8px 10px;
+      background: #fff8e6;
+      border: 1px solid #f1dc62;
+      border-top: 0;
+      color: #5b4a00;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .external-sources {
+      margin-bottom: 18px;
+    }
+    .external-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .external-card {
+      background: #fff;
+      border: 1px solid #cbeaf8;
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: 0 5px 16px rgba(0,81,146,.07);
+    }
+    .external-card.auto { border-left: 5px solid #008b57; }
+    .external-card.manual { border-left: 5px solid #d38b00; }
+    .external-card.off { border-left: 5px solid #7a8898; opacity: .82; }
+    .external-card h4 {
+      margin: 0 0 6px;
+      color: #004f93;
+      font-size: 14px;
+    }
+    .external-card p {
+      margin: 0 0 8px;
+      color: #52677a;
+      font-size: 12px;
+      min-height: 34px;
+    }
+    .external-card a {
+      display: inline-block;
+      padding: 6px 10px;
+      background: #ffd800;
+      border-radius: 999px;
+      color: #17304a;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .external-pred-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid #cbeaf8;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 5px 16px rgba(0,81,146,.07);
+    }
+    .external-pred-table th,
+    .external-pred-table td {
+      border-bottom: 1px solid #e2eef6;
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    .external-pred-table th {
+      background: #eaf8ff;
+      color: #004f93;
+    }
+    .subhead {
+      margin: 14px 0 8px;
+      color: #004f93;
+      font-size: 15px;
+    }
+    .batch-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 12px;
+    }
+    .batch-actions button {
+      border: 0;
+      border-radius: 999px;
+      background: #0074c1;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 700;
+      padding: 8px 12px;
+    }
+    .batch-actions button:disabled {
+      background: #9bb5c7;
+      cursor: wait;
+    }
+    .all-race-compare {
+      margin-bottom: 18px;
+    }
+    .all-race-scroll {
+      max-height: 520px;
+      overflow: auto;
+      background: #fff;
+      border: 1px solid #cbeaf8;
+      border-radius: 0 0 14px 14px;
+      box-shadow: 0 5px 16px rgba(0,81,146,.07);
+    }
+    .all-race-table {
+      width: 100%;
+      min-width: 920px;
+      border-collapse: collapse;
+    }
+    .all-race-table th,
+    .all-race-table td {
+      border-bottom: 1px solid #e2eef6;
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+    .all-race-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #eaf8ff;
+      color: #004f93;
+    }
+    .all-race-table .venue-cell {
+      color: #005da8;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .pred-list {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .pred-list li {
+      margin: 0 0 3px;
+      white-space: nowrap;
+    }
+    .source-status {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: #eee;
+      color: #555;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .source-status.ok { background: #e5f8ef; color: #007a4d; }
+    .source-status.none { background: #fff1d4; color: #8a5a00; }
+    .columns {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    section { margin-bottom: 18px; }
+    section h3 {
+      margin: 0;
+      min-height: 38px;
+      line-height: 38px;
+      padding: 0 14px;
+      background: linear-gradient(90deg, #0074c1 0%, #00a3df 100%);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 700;
+      border-radius: 12px 12px 0 0;
+      box-shadow: inset 0 -3px 0 rgba(255,216,0,.75);
+    }
+    .text_block,
+    .box0111,
+    .text_box {
+      background: #fff;
+      border: 1px solid #d7eef9;
+      border-top: 0;
+      border-radius: 0 0 12px 12px;
+      padding: 14px;
+      box-shadow: 0 5px 16px rgba(0,81,146,.07);
+    }
+    .box0111 p { margin: 0 0 6px; }
+    .box0111 span { color: #d50000; font-size: 22px; font-weight: 700; }
+    .history { height: 180px; overflow: auto; }
+    .history ul { margin: 0; padding-left: 18px; }
+    .history li { margin: 4px 0; color: #0074c1; }
+    .main { min-width: 0; }
+    .btn_odds {
+      text-align: right;
+      margin-bottom: 8px;
+    }
+    .mini-btn {
+      display: inline-block;
+      min-width: 150px;
+      height: 31px;
+      line-height: 31px;
+      margin-left: 4px;
+      background: #004f93;
+      color: #fff;
+      text-align: center;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+    .aiyosou {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #fff;
+      border: 1px solid #cbeaf8;
+      border-radius: 0 0 12px 12px;
+      overflow: hidden;
+    }
+    .aiyosou th {
+      background: #eaf8ff;
+      border: 0;
+      border-bottom: 1px solid #cbeaf8;
+      padding: 10px 8px;
+      font-weight: 700;
+      text-align: center;
+      color: #004f93;
+    }
+    .aiyosou td {
+      border: 0;
+      border-bottom: 1px solid #e2eef6;
+      padding: 10px 8px;
+      text-align: center;
+      font-size: 16px;
+      vertical-align: middle;
+    }
+    .aiyosou .combo { font-size: 24px; font-weight: 700; letter-spacing: 0; }
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+    .compare-panel h4 {
+      margin: 0;
+      height: 32px;
+      line-height: 32px;
+      padding: 0 10px;
+      background: #333;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      border-radius: 12px 12px 0 0;
+    }
+    .compare-panel.mine h4 { background: #0074c1; }
+    .compare-panel.nikkan h4 { background: #f08300; }
+    .compare-grid .aiyosou td {
+      padding: 8px 5px;
+      font-size: 14px;
+    }
+    .compare-grid .aiyosou .combo {
+      min-width: 110px;
+      white-space: nowrap;
+      font-size: 16px;
+    }
+    .compare-grid .boat {
+      width: 22px;
+      height: 22px;
+      margin: 0 1px;
+      font-size: 14px;
+    }
+    .match-mark { 
+      display: inline-block;
+      min-width: 46px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      background: #eee;
+      color: #555;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .match-mark.hit { background: #ffe7e7; color: #c70000; }
+    .firstred { color: #d50000; font-weight: 700; }
+    .prob { font-size: 13px; color: #555; }
+    .pick-decision {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 56px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: #fff;
+      font-weight: 700;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+    .pick-decision.buy { background: rgba(15, 123, 122, 0.94); }
+    .pick-decision.watch { background: rgba(109, 123, 138, 0.94); }
+    .pick-decision.skip { background: rgba(154, 107, 115, 0.94); }
+    .pick-decision.neutral { background: rgba(109, 123, 138, 0.22); color: #243447; }
+    .stop-reason {
+      color: #6b7f8f;
+      font-size: 11px;
+      line-height: 1.4;
+    }
+    .boat {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 2px;
+      border: 1px solid #222;
+      margin: 0 3px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .n1 { background: #fff; color: #111; }
+    .n2 { background: #111; color: #fff; }
+    .n3 { background: #d50000; color: #fff; }
+    .n4 { background: #0048b8; color: #fff; }
+    .n5 { background: #f2d600; color: #111; }
+    .n6 { background: #0b9b45; color: #fff; }
+    .n- { background: #eef3f7; color: #617589; }
+    .info_table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid #bbb;
+    }
+    .info_table th,
+    .info_table td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 7px 5px;
+      font-size: 13px;
+    }
+    .info_table th { background: #f2f2f2; font-weight: 700; }
+    .lane-title { font-size: 18px; font-weight: 700; }
+    .metric { color: #555; font-size: 12px; }
+    .foot {
+      margin-top: 26px;
+      padding: 24px 0;
+      background: #0074c1;
+      color: #fff;
+      text-align: center;
+      font-size: 12px;
+    }
+    @media (max-width: 1040px) {
+      .wrapper { width: calc(100% - 20px); }
+      .status-grid { grid-template-columns: repeat(2, 1fr); }
+      .external-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 760px) {
+      .top .wrapper, .race-head .wrapper { height: auto; padding: 10px 0; gap: 10px; flex-direction: column; }
+      .mv .wrapper { height: 86px; }
+      .mv .txt { font-size: 20px; }
+      .race_ttl { font-size: 20px; }
+      .nav { grid-template-columns: repeat(6, 1fr); }
+      .columns { grid-template-columns: 1fr; }
+      .race_line { flex-direction: column; gap: 6px; }
+      .compare-grid { grid-template-columns: 1fr; }
+      .status-grid { grid-template-columns: 1fr; }
+      .external-grid { grid-template-columns: 1fr; }
+      .entry-mini { grid-template-columns: repeat(6, minmax(112px, 1fr)); }
+      .aiyosou .combo { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="holdhead">
+    <header>
+      <div class="top">
+        <div class="wrapper">
+          <div class="nikkan">LOCAL AI</div>
+          <div id="venueLogo" class="boat-logo">ボートレース</div>
+        </div>
+      </div>
+      <div class="mv">
+        <div class="wrapper">
+          <div class="txt">RACE LIVE DATA × BOATRACE AI-MVP</div>
+        </div>
+      </div>
+    </header>
+    <div class="race-head">
+      <div class="wrapper">
+        <h1 id="raceTitle" class="race_ttl">読み込み中</h1>
+        <a class="reload" href="#" onclick="location.reload(); return false;">更新する</a>
+      </div>
+    </div>
+    <div class="navbar">
+      <div class="wrapper">
+        <ul id="raceNav" class="nav"></ul>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrapper page">
+    <div class="race_wrapper">
+      <div class="race_line">
+        <p id="raceNumber" class="race_num">-R</p>
+        <p class="race_time">場外締切予定時刻&nbsp;<span id="deadline">-</span></p>
+      </div>
+    </div>
+    <div id="statusBox" class="warning">独自AI予想を読み込み中です</div>
+    <div id="publicDataBox" class="warning">公式公開データを確認中です</div>
+    <div id="statusGrid" class="status-grid" aria-live="polite"></div>
+    <div id="entryDataPanel" class="entry-mini" aria-live="polite"></div>
+    <div id="hamanakoCurrent" class="hamanako-current" aria-live="polite"></div>
+    <section class="external-sources">
+      <h3>外部予想サイト比較</h3>
+      <div class="batch-actions">
+        <button id="saveVenueExternalBtn" type="button">この場の12Rを保存</button>
+        <button id="saveAllExternalBtn" type="button">開催中全レースを保存</button>
+        <button id="reconcileExternalBtn" type="button">保存済みを再照合</button>
+        <span id="externalBatchStatus" class="muted">未実行</span>
+      </div>
+      <div id="externalSourceGrid" class="external-grid" aria-live="polite"></div>
+      <table class="external-pred-table">
+        <thead>
+          <tr>
+            <th>参照元</th>
+            <th>取得状態</th>
+            <th>予想買い目</th>
+            <th>的中</th>
+            <th>払戻</th>
+            <th>元ページ</th>
+          </tr>
+        </thead>
+        <tbody id="externalPredictionBody">
+          <tr><td colspan="6">外部予想を取得中です</td></tr>
+        </tbody>
+      </table>
+      <h4 class="subhead">保存済み外部予想サマリー</h4>
+      <table class="external-pred-table">
+        <thead>
+          <tr>
+            <th>参照元</th>
+            <th>保存レース</th>
+            <th>予想あり</th>
+            <th>買い目数</th>
+            <th>的中/確定</th>
+            <th>Top1</th>
+            <th>Top3</th>
+            <th>Top5</th>
+            <th>回収率</th>
+            <th>状態</th>
+          </tr>
+        </thead>
+        <tbody id="externalSummaryBody">
+          <tr><td colspan="10">保存済み外部予想を集計中です</td></tr>
+        </tbody>
+      </table>
+    </section>
+    <section class="all-race-compare">
+      <h3>本日開催中 全レース予想比較</h3>
+      <div class="all-race-scroll">
+        <table class="all-race-table">
+          <thead>
+            <tr>
+              <th>場</th>
+              <th>R</th>
+              <th>独自AI Top3</th>
+              <th>公式コンピュータ Top3</th>
+              <th>日刊スポーツAI Top3</th>
+              <th>参照元</th>
+            </tr>
+          </thead>
+          <tbody id="allRaceCompareBody">
+            <tr><td colspan="6">本日開催中レースを読み込み中です</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="columns">
+      <aside>
+        <section>
+          <h3>スタート展示/展示タイム</h3>
+          <div class="text_block">
+            <p>内</p>
+            <p id="exhibitionOrder" style="text-align:center;font-size:20px;font-weight:700;">1 2 3 4 5 6</p>
+            <p style="text-align:right;">外</p>
+          </div>
+        </section>
+        <section>
+          <h3>独自AI予想 的中率/回収率</h3>
+          <div class="box0111">
+            <p>・的中率：<span id="hitRate">検証中</span></p>
+            <p>・回収率：<span id="roiRate">検証中</span></p>
+            ※本画面は本番BUY判定を変更しません
+          </div>
+        </section>
+        <section>
+          <h3>過去の直前予想</h3>
+          <div class="text_block history">
+            <ul id="historyList"></ul>
+          </div>
+        </section>
+        <section>
+          <h3>ボートAI予想とは</h3>
+          <div class="text_block">
+            <p>このリポジトリの事前予測・三連単候補・確率推定をもとに、場別ページ用に買い目候補を表示します。</p>
+          </div>
+        </section>
+        <section>
+          <h3>自信度とは</h3>
+          <div class="text_block">
+            <p>候補の推定確率と推奨順位から A / B / C に変換した表示用指標です。BUY閾値やEV計算は変更していません。</p>
+          </div>
+        </section>
+      </aside>
+
+      <div class="main">
+        <section>
+          <div class="btn_odds">
+            <span class="mini-btn">コンピ指数</span>
+            <span class="mini-btn">オッズ・結果</span>
+          </div>
+          <h3>独自AI予想</h3>
+          <div class="text_box">
+            <p id="modelMeta" class="title">-</p>
+          </div>
+          <div id="raceSummaryGrid" class="status-grid"></div>
+        </section>
+
+        <section>
+          <h3 id="aiHeader">AI予想</h3>
+          <div class="compare-grid">
+            <div class="compare-panel mine">
+              <h4>独自AI</h4>
+              <table class="aiyosou">
+                <thead>
+                  <tr>
+                    <th>推奨順</th>
+                    <th>買い目</th>
+                    <th>判定</th>
+                    <th>的中確率</th>
+                    <th>オッズ</th>
+                    <th>EV</th>
+                    <th>推奨</th>
+                    <th>stopReason</th>
+                    <th>照合</th>
+                  </tr>
+                </thead>
+                <tbody id="predictionBody"></tbody>
+              </table>
+            </div>
+            <div class="compare-panel nikkan">
+              <h4>日刊スポーツAI</h4>
+              <p id="nikkanMeta" class="nikkan-meta">日刊スポーツAIを照合中です</p>
+              <table class="aiyosou">
+                <thead>
+                  <tr>
+                    <th>推奨順</th>
+                    <th>買い目</th>
+                    <th>自信度</th>
+                    <th>照合</th>
+                  </tr>
+                </thead>
+                <tbody id="nikkanPredictionBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h3>出走データ / AI評価</h3>
+          <table class="info_table">
+            <thead>
+              <tr>
+                <th>艇番</th>
+                <th>選手ID</th>
+                <th>全国2連率</th>
+                <th>当地2連率</th>
+                <th>モーター2連率</th>
+                <th>ボート2連率</th>
+                <th>1着確率</th>
+                <th>順位</th>
+              </tr>
+            </thead>
+            <tbody id="boatBody"></tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+  </main>
+  <footer class="foot">BOATRACE AI-MVP local preview</footer>
+
+  <script>
+    const SLUG_TO_JCD = {
+      kiryu: "01",
+      toda: "02",
+      edogawa: "03",
+      heiwajima: "04",
+      tamagawa: "05",
+      hamanako: "06",
+      gamagori: "07",
+      tokoname: "08",
+      tsu: "09",
+      mikuni: "10",
+      biwako: "11",
+      suminoe: "12",
+      amagasaki: "13",
+      naruto: "14",
+      marugame: "15",
+      kojima: "16",
+      miyajima: "17",
+      tokuyama: "18",
+      shimonoseki: "19",
+      wakamatsu: "20",
+      ashiya: "21",
+      fukuoka: "22",
+      karatsu: "23",
+      omura: "24",
+    };
+    const JCD_TO_VENUE = {
+      "01": "桐生",
+      "02": "戸田",
+      "03": "江戸川",
+      "04": "平和島",
+      "05": "多摩川",
+      "06": "浜名湖",
+      "07": "蒲郡",
+      "08": "常滑",
+      "09": "津",
+      "10": "三国",
+      "11": "びわこ",
+      "12": "住之江",
+      "13": "尼崎",
+      "14": "鳴門",
+      "15": "丸亀",
+      "16": "児島",
+      "17": "宮島",
+      "18": "徳山",
+      "19": "下関",
+      "20": "若松",
+      "21": "芦屋",
+      "22": "福岡",
+      "23": "唐津",
+      "24": "大村",
+    };
+    const pathParts = location.pathname.split("/").filter(Boolean);
+    const venueSlug = SLUG_TO_JCD[pathParts[1]] ? pathParts[1] : "suminoe";
+    const JCD = SLUG_TO_JCD[venueSlug] || "12";
+    const fallbackVenue = JCD_TO_VENUE[JCD] || "住之江";
+    const dateFromPath = pathParts[2] || new Date().toISOString().slice(0, 10).replaceAll("-", "");
+    let selectedRace = Number(pathParts[3] || "1");
+    if (!Number.isFinite(selectedRace) || selectedRace < 1 || selectedRace > 12) selectedRace = 1;
+
+    const fmtPct = (v) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? `${(n * 100).toFixed(2)}%` : "-";
+    };
+    const esc = (v) => String(v ?? "").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    const dateLabel = (yyyymmdd) => `${yyyymmdd.slice(4, 6)}月${yyyymmdd.slice(6, 8)}日`;
+    const boatSpan = (lane) => {
+      const n = Number(lane);
+      const label = Number.isFinite(n) && n > 0 ? n : "-";
+      return `<span class="boat n${label}">${label}</span>`;
+    };
+    const comboHtml = (combo) => String(combo || "").split("-").filter(Boolean).map(boatSpan).join("－") || "-";
+    const displayRate = (value) => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "-";
+      return n > 1 ? `${n.toFixed(2)}%` : `${(n * 100).toFixed(2)}%`;
+    };
+    const sourceUrl = (kind) => {
+      const date = dateFromPath.replaceAll("-", "");
+      if (kind === "racelist") return `https://www.boatrace.jp/owpc/pc/race/racelist?hd=${date}&jcd=${JCD}&rno=${selectedRace}`;
+      if (kind === "beforeinfo") return `https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=${date}&jcd=${JCD}&rno=${selectedRace}`;
+      return `https://www.boatrace.jp/owpc/pc/race/index?hd=${date}`;
+    };
+    const statusClass = (value) => {
+      const text = String(value || "").toLowerCase();
+      if (["ok", "available", "live", "cache_public_ui"].some((key) => text.includes(key))) return "ok";
+      if (["pending", "cache", "not_published"].some((key) => text.includes(key))) return "warn";
+      if (["missing", "unavailable", "error", "failed"].some((key) => text.includes(key))) return "bad";
+      return "warn";
+    };
+    const statusLabel = (value) => esc(String(value || "-").replaceAll(",", " / "));
+    const normalizeDecision = (value) => {
+      const text = String(value || "").trim().toUpperCase();
+      return text || "-";
+    };
+    const normalizeList = (value) => {
+      if (Array.isArray(value)) return value.map((item) => String(item ?? "").trim()).filter(Boolean);
+      if (typeof value === "string") return value.trim() ? [value.trim()] : [];
+      if (value == null) return [];
+      const text = String(value).trim();
+      return text ? [text] : [];
+    };
+    const displayProb = (value) => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "-";
+      return n <= 1 ? `${(n * 100).toFixed(1)}%` : `${n.toFixed(1)}%`;
+    };
+    const displayOdds = (value) => {
+      const n = Number(value);
+      return Number.isFinite(n) ? `オッズ ${n.toFixed(1)}` : "-";
+    };
+    const displayEv = (value) => {
+      const n = Number(value);
+      return Number.isFinite(n) ? `EV ${n.toFixed(2)}` : "-";
+    };
+    const displayStake = (value) => {
+      const n = Number(value);
+      return Number.isFinite(n) ? `推奨 ${Math.round(n).toLocaleString("ja-JP")}円` : "-";
+    };
+    const summarizePredictions = (predictions) => {
+      const rows = Array.isArray(predictions) ? predictions : [];
+      const buyCount = rows.filter((item) => normalizeDecision(item.decision) === "BUY").length;
+      const maxEv = rows.map((item) => Number(item.ev ?? item.expectedValue ?? item.expected_value)).filter(Number.isFinite);
+      const maxProb = rows.map((item) => Number(item.prob ?? item.approxProb)).filter(Number.isFinite);
+      const warnings = rows.length ? [] : ["予想候補なし"];
+      return {
+        buyCount,
+        maxEv: maxEv.length ? Math.max(...maxEv) : null,
+        maxProb: maxProb.length ? Math.max(...maxProb) : null,
+        warnings,
+      };
+    };
+    const ACTIVE_PORTAL_SLUGS = new Set(["hamanako", "tokoname", "suminoe", "amagasaki", "kojima", "tokuyama", "ashiya", "omura"]);
+    const NIKKAN_AUTO_SLUGS = new Set(["suminoe", "amagasaki", "kojima", "tokuyama", "ashiya"]);
+    const EXTERNAL_SOURCE_BASES = [
+      {
+        id: "official",
+        name: "公式コンピュータ",
+        mode: "auto",
+        url: (raceNo = selectedRace) => `https://www.boatrace.jp/owpc/pc/race/pcexpect?rno=${raceNo}&jcd=${JCD}&hd=${dateFromPath.replaceAll("-", "")}`,
+        note: () => "BOATRACE公式pcexpectを自動取得して照合",
+      },
+      {
+        id: "nikkan",
+        name: "日刊スポーツAI",
+        mode: "auto",
+        url: (raceNo = selectedRace) => `https://nikkansports.raceyosou.jp/boatrace/${venueSlug}/${dateFromPath.replaceAll("-", "")}/${raceNo}`,
+        note: () => NIKKAN_AUTO_SLUGS.has(venueSlug) ? "買い目を自動取得して下の表で照合" : "日刊AI対象外の場は手動確認",
+      },
+      {
+        id: "teinavi",
+        name: "艇ナビ",
+        mode: "manual",
+        url: () => "https://teinavi.com/",
+        note: () => "全24場の出走表・オッズ・結果・予想ツール確認",
+      },
+      {
+        id: "simulator",
+        name: "BoatraceSimulator",
+        mode: "manual",
+        url: () => "https://www.boatrace-simulator.com/",
+        note: () => "無料のAI展開予想を手動照合",
+      },
+      {
+        id: "acemotorz",
+        name: "エースモーターズ",
+        mode: "manual",
+        url: () => "https://www.kyotei-acemotorz.net/",
+        note: () => "無料公開予想を手動照合",
+      },
+      {
+        id: "nihonkando",
+        name: "競艇AIプロ",
+        mode: "manual",
+        url: () => "https://nihonkando.jp/",
+        note: () => "AI予想公開ページを手動照合",
+      },
+      {
+        id: "asokabu",
+        name: "あそかぶ予想",
+        mode: "manual",
+        url: () => "https://a-so-ka.work/boatrace_forecast/",
+        note: () => "無料コンピューター予想を手動照合",
+      },
+    ];
+    const nikkanStatusText = (payload) => {
+      const status = payload?.status || "missing";
+      if (status === "ok") return "反映済み";
+      if (status === "not_published") return "日刊スポーツAIは未公開";
+      if (status === "fetch_error") return ACTIVE_PORTAL_SLUGS.has(venueSlug) ? "日刊スポーツAIを取得できません" : "非開催/日刊AI対象外";
+      if (status === "not_supported") return "日刊AI対象外";
+      return `日刊AIなし: ${status}`;
+    };
+    function renderExternalSources(nikkanPayload = null) {
+      const nikkanCount = (nikkanPayload?.predictions || []).length;
+      const nikkanStatus = nikkanPayload ? nikkanStatusText(nikkanPayload) : (NIKKAN_AUTO_SLUGS.has(venueSlug) ? "自動取得待ち" : "日刊AI対象外");
+      document.getElementById("externalSourceGrid").innerHTML = EXTERNAL_SOURCE_BASES.map((source) => {
+        const isNikkan = source.id === "nikkan";
+        const mode = isNikkan && nikkanCount > 0 ? "auto" : source.mode;
+        const note = isNikkan ? `${nikkanStatus} / ${nikkanCount}件` : source.note();
+        const label = isNikkan && nikkanCount > 0 ? "取得済み" : mode === "auto" ? "自動取得" : "取得対象";
+        return `
+          <div class="external-card ${mode}">
+            <h4>${esc(source.name)}</h4>
+            <p>${esc(note)}</p>
+            <a href="${esc(source.url())}" target="_blank" rel="noreferrer">${label}</a>
+          </div>
+        `;
+      }).join("");
+    }
+    const comboText = (items) => (items || []).length
+      ? `<ol class="pred-list">${items.map((item) => `<li>${esc(item.combo || "-")} ${item.hit ? `<span class="match-mark hit">的中</span>` : ""} ${item.confidence ? `<span class="prob">${esc(item.confidence)}</span>` : ""}</li>`).join("")}</ol>`
+      : "-";
+    const sourceStatusLabel = (status) => {
+      if (status === "ok") return "取得済み";
+      if (status === "not_published") return "未公開";
+      if (status === "not_parseable") return "自動抽出不可";
+      if (status === "fetch_error") return "取得失敗";
+      if (status === "not_supported") return "対象外";
+      return status || "-";
+    };
+    function renderExternalPredictions(payload) {
+      const body = document.getElementById("externalPredictionBody");
+      const result = payload.result || {};
+      const actual = result.actualTrifecta || "";
+      const savedNote = payload.savedPath ? `<div class="muted">保存済み: ${esc(payload.savedPath)}</div>` : "";
+      const rows = (payload.sources || []).map((source) => {
+        const ok = (source.predictions || []).length > 0;
+        const note = source.note || source.error || "";
+        const settlement = source.settlement || {};
+        const settled = settlement.status === "settled";
+        const hit = settlement.hit === true;
+        const hitLabel = settled ? (hit ? `的中 ${esc(actual)}` : `不的中 ${esc(actual || "-")}`) : "未確定";
+        const returnLabel = settlement.returnYen == null ? "-" : `¥${Number(settlement.returnYen || 0).toLocaleString()}`;
+        return `
+          <tr>
+            <td><strong>${esc(source.name)}</strong><div class="muted">${esc(note)}</div></td>
+            <td><span class="source-status ${ok ? "ok" : "none"}">${esc(sourceStatusLabel(source.status))}</span></td>
+            <td>${comboText(source.predictions || [])}</td>
+            <td><span class="source-status ${hit ? "ok" : "none"}">${hitLabel}</span></td>
+            <td>${esc(returnLabel)}</td>
+            <td>${source.sourceUrl ? `<a class="source-link" href="${esc(source.sourceUrl)}" target="_blank" rel="noreferrer">元ページ</a>` : "-"}</td>
+          </tr>
+        `;
+      });
+      body.innerHTML = rows.length ? rows.join("") + `<tr><td colspan="6">${savedNote}</td></tr>` : `<tr><td colspan="6">外部予想がありません</td></tr>`;
+    }
+    function loadExternalPredictions() {
+      return fetch(`/api/external-yosou?date=${encodeURIComponent(dateFromPath)}&jcd=${encodeURIComponent(JCD)}&race=${encodeURIComponent(selectedRace)}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(renderExternalPredictions)
+        .catch((err) => {
+          document.getElementById("externalPredictionBody").innerHTML = `<tr><td colspan="6">外部予想の取得に失敗しました: ${esc(err.message)}</td></tr>`;
+        });
+    }
+    const fmtRate = (value) => value == null ? "-" : `${(Number(value) * 100).toFixed(1)}%`;
+    function renderExternalSummary(payload) {
+      const body = document.getElementById("externalSummaryBody");
+      const rows = (payload.sources || []).map((source) => {
+        const settled = Number(source.settledPredictionRaceCount || 0);
+        const hits = Number(source.hitCount || 0);
+        const statusText = Object.entries(source.statusCounts || {})
+          .map(([key, value]) => `${key}:${value}`)
+          .join(" / ");
+        return `
+          <tr>
+            <td><strong>${esc(source.name)}</strong></td>
+            <td>${esc(source.raceCount)}</td>
+            <td>${esc(source.predictionRaceCount)}</td>
+            <td>${esc(source.predictionCount)}</td>
+            <td>${hits}/${settled}</td>
+            <td>${fmtRate(source.top1HitRate)}</td>
+            <td>${fmtRate(source.top3HitRate)}</td>
+            <td>${fmtRate(source.top5HitRate)}</td>
+            <td>${fmtRate(source.roi)}</td>
+            <td><span class="muted">${esc(statusText || "-")}</span></td>
+          </tr>
+        `;
+      });
+      body.innerHTML = rows.length
+        ? rows.join("") + `<tr><td colspan="10"><span class="muted">保存先: ${esc(payload.baseDir || "-")} / 保存レース ${esc(payload.raceFileCount || 0)}件</span></td></tr>`
+        : `<tr><td colspan="10">保存済み外部予想がありません</td></tr>`;
+    }
+    function loadExternalSummary() {
+      return fetch(`/api/external-yosou-summary?date=${encodeURIComponent(dateFromPath)}&jcd=${encodeURIComponent(JCD)}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(renderExternalSummary)
+        .catch((err) => {
+          document.getElementById("externalSummaryBody").innerHTML = `<tr><td colspan="10">保存済み外部予想の集計に失敗しました: ${esc(err.message)}</td></tr>`;
+        });
+    }
+    function runExternalBatch(scope) {
+      const status = document.getElementById("externalBatchStatus");
+      const buttons = document.querySelectorAll(".batch-actions button");
+      buttons.forEach((button) => { button.disabled = true; });
+      status.textContent = scope === "venue" ? "この場の12Rを保存中..." : "開催中全レースを保存中...";
+      const jcdParam = scope === "venue" ? `&jcd=${encodeURIComponent(JCD)}` : "";
+      return fetch(`/api/external-yosou-batch?date=${encodeURIComponent(dateFromPath)}${jcdParam}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((payload) => {
+          status.textContent = `保存 ${payload.savedCount || 0}件 / エラー ${payload.errorCount || 0}件`;
+          return loadExternalSummary();
+        })
+        .catch((err) => {
+          status.textContent = `保存失敗: ${err.message}`;
+        })
+        .finally(() => {
+          buttons.forEach((button) => { button.disabled = false; });
+        });
+    }
+    function runExternalReconcile() {
+      const status = document.getElementById("externalBatchStatus");
+      const buttons = document.querySelectorAll(".batch-actions button");
+      buttons.forEach((button) => { button.disabled = true; });
+      status.textContent = "保存済み予想を公式結果で再照合中...";
+      return fetch(`/api/external-yosou-reconcile?date=${encodeURIComponent(dateFromPath)}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then((payload) => {
+          status.textContent = `再照合 確定 ${payload.updatedCount || 0}件 / 未確定 ${payload.pendingCount || 0}件 / エラー ${payload.errorCount || 0}件`;
+          return loadExternalSummary();
+        })
+        .catch((err) => {
+          status.textContent = `再照合失敗: ${err.message}`;
+        })
+        .finally(() => {
+          buttons.forEach((button) => { button.disabled = false; });
+        });
+    }
+    function wireExternalBatchButtons() {
+      const venueBtn = document.getElementById("saveVenueExternalBtn");
+      const allBtn = document.getElementById("saveAllExternalBtn");
+      const reconcileBtn = document.getElementById("reconcileExternalBtn");
+      if (venueBtn && !venueBtn.dataset.wired) {
+        venueBtn.dataset.wired = "1";
+        venueBtn.addEventListener("click", () => runExternalBatch("venue"));
+      }
+      if (allBtn && !allBtn.dataset.wired) {
+        allBtn.dataset.wired = "1";
+        allBtn.addEventListener("click", () => runExternalBatch("all"));
+      }
+      if (reconcileBtn && !reconcileBtn.dataset.wired) {
+        reconcileBtn.dataset.wired = "1";
+        reconcileBtn.addEventListener("click", runExternalReconcile);
+      }
+    }
+    const allRaceSourceLinks = (venue, race, payload) => {
+      const officialUrl = race.officialSourceUrl || `https://www.boatrace.jp/owpc/pc/race/pcexpect?rno=${race.raceNo}&jcd=${venue.jcd}&hd=${payload.dateCompact}`;
+      const nikkanUrl = race.nikkanSourceUrl || `https://nikkansports.raceyosou.jp/boatrace/${venue.slug}/${payload.dateCompact}/${race.raceNo}`;
+      return EXTERNAL_SOURCE_BASES.map((source) => {
+        const href = source.id === "official" ? officialUrl : source.id === "nikkan" ? nikkanUrl : source.url(race.raceNo, venue);
+        return `<a class="source-chip" href="${esc(href)}" target="_blank" rel="noreferrer">${esc(source.name)}</a>`;
+      }).join("");
+    };
+
+    function renderAllRaceCompare(payload) {
+      const body = document.getElementById("allRaceCompareBody");
+      const rows = [];
+      (payload.venues || []).forEach((venue) => {
+        (venue.races || []).forEach((race) => {
+          const officialOk = (race.official || []).length > 0;
+          const nikkanOk = (race.nikkan || []).length > 0;
+          rows.push(`
+            <tr>
+              <td class="venue-cell"><a class="source-link" href="/boatrace/${esc(venue.slug)}/${esc(payload.dateCompact)}/${race.raceNo}">${esc(venue.venue)}</a></td>
+              <td>${race.raceNo}R</td>
+              <td>${comboText(race.own)}</td>
+              <td>${comboText(race.official)}<div><span class="source-status ${officialOk ? "ok" : "none"}">${esc(race.officialStatus || "-")}</span></div></td>
+              <td>${comboText(race.nikkan)}<div><span class="source-status ${nikkanOk ? "ok" : "none"}">${esc(race.nikkanStatus || "-")}</span></div></td>
+              <td><div class="source-chip-group">${allRaceSourceLinks(venue, race, payload)}</div></td>
+            </tr>
+          `);
+        });
+      });
+      body.innerHTML = rows.length ? rows.join("") : `<tr><td colspan="6">本日開催中レースの予想がありません</td></tr>`;
+    }
+
+    function loadAllRaceCompare() {
+      return fetch(`/api/today-active-prediction-compare?date=${encodeURIComponent(dateFromPath)}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(renderAllRaceCompare)
+        .catch((err) => {
+          document.getElementById("allRaceCompareBody").innerHTML = `<tr><td colspan="6">全レース比較の読み込みに失敗しました: ${esc(err.message)}</td></tr>`;
+        });
+    }
+    const shortBoatDetail = (boat) => {
+      const parts = [];
+      if (boat.racerId) parts.push(`ID ${boat.racerId}`);
+      if (boat.winProba != null) parts.push(`1着 ${fmtPct(boat.winProba)}`);
+      if (boat.motor2Rate != null) parts.push(`M2 ${displayRate(boat.motor2Rate)}`);
+      if (boat.exhibitionTime != null) parts.push(`展 ${Number(boat.exhibitionTime).toFixed(2)}`);
+      return parts.join(" / ") || "出走データ未取得";
+    };
+    const metricValue = (value, formatter = (v) => esc(v)) => {
+      const n = Number(value);
+      if (!Number.isFinite(n)) return "-";
+      return formatter(n);
+    };
+    const hotClass = (value, threshold) => {
+      const n = Number(value);
+      return Number.isFinite(n) && n >= threshold ? "hot" : "";
+    };
+    const entryRow = (label, value, hot = false) => `
+      <div class="entry-row">
+        <div class="label">${label}</div>
+        <div class="value ${hot ? "hot" : ""}">${value}</div>
+      </div>
+    `;
+
+    function renderEntryDataPanel(boats) {
+      const rows = (boats || []).slice().sort((a, b) => Number(a.lane) - Number(b.lane));
+      document.getElementById("entryDataPanel").innerHTML = rows.map((boat) => `
+        <div class="entry-card lane-${boat.lane || "-"}">
+          <div class="entry-grade">${boat.rank ? (boat.rank <= 2 ? "◎" : boat.rank <= 4 ? "△" : "○") : "○"}</div>
+          <div class="entry-score ${hotClass(boat.winProba, 0.16)}">${boat.winProba != null ? Math.round(Number(boat.winProba) * 100) : "-"}</div>
+          <div class="entry-lane lane-${boat.lane || "-"}">${boat.lane || "-"}号艇</div>
+          <div class="entry-photo">${boat.lane || "-"}</div>
+          <div class="entry-id">${esc(boat.racerId || "-")}</div>
+          <div class="entry-name">${esc(boat.racerName || `${boat.lane || "-"}号艇`)}</div>
+          ${entryRow("級別", esc(boat.class || "-"))}
+          ${entryRow("平均ST", metricValue(boat.avgSt, (n) => n.toFixed(2)), Number(boat.avgSt) <= 0.13)}
+          <div class="entry-section">全国成績</div>
+          ${entryRow("2連率", displayRate(boat.national2Rate), Number(boat.national2Rate) >= 50)}
+          <div class="entry-section">当地成績</div>
+          ${entryRow("2連率", displayRate(boat.local2Rate), Number(boat.local2Rate) >= 50)}
+          <div class="entry-section">モーター</div>
+          ${entryRow("2連率", displayRate(boat.motor2Rate), Number(boat.motor2Rate) >= 50)}
+          <div class="entry-section">ボート</div>
+          ${entryRow("2連率", displayRate(boat.boat2Rate), Number(boat.boat2Rate) >= 50)}
+          ${entryRow("AI", boat.winProba != null ? fmtPct(boat.winProba) : "-", Number(boat.winProba) >= 0.16)}
+        </div>
+      `).join("");
+    }
+
+    function renderStatusGrid(snapshot, predictionCount) {
+      const statuses = snapshot?.statuses || {};
+      const fetchStatus = snapshot?.fetchStatus || {};
+      const officialUrl = snapshot?.sourceUrls?.racelist || sourceUrl("racelist");
+      const beforeUrl = snapshot?.sourceUrls?.beforeinfo || sourceUrl("beforeinfo");
+      const cards = [
+        {
+          label: "独自AI候補",
+          value: `${predictionCount}件`,
+          sub: predictionCount ? "保存済み予測から表示" : "候補なし",
+          cls: predictionCount ? "ok" : "bad",
+        },
+        {
+          label: "公式出走表",
+          value: statusLabel(statuses.racelist),
+          sub: `<a class="source-link" href="${esc(officialUrl)}" target="_blank" rel="noreferrer">公式ページを開く</a>`,
+          cls: statusClass(statuses.racelist || fetchStatus.racelist),
+        },
+        {
+          label: "公式直前情報",
+          value: statusLabel(statuses.beforeinfo),
+          sub: `<a class="source-link" href="${esc(beforeUrl)}" target="_blank" rel="noreferrer">展示/気象を見る</a>`,
+          cls: statusClass(statuses.beforeinfo || fetchStatus.beforeinfo),
+        },
+        {
+          label: "更新状態",
+          value: esc(snapshot?.fetchedAt || "-"),
+          sub: "60秒ごとに自動更新",
+          cls: snapshot?.status === "unavailable" ? "bad" : "ok",
+        },
+      ];
+      document.getElementById("statusGrid").innerHTML = cards.map((card) => `
+        <div class="status-card ${card.cls}">
+          <p class="label">${card.label}</p>
+          <p class="value">${card.value}</p>
+          <p class="sub">${card.sub}</p>
+        </div>
+      `).join("");
+    }
+
+    function buildNav(dateCompact) {
+      const nav = document.getElementById("raceNav");
+      nav.innerHTML = Array.from({ length: 12 }, (_, i) => {
+        const raceNo = i + 1;
+        const href = `/boatrace/${venueSlug}/${dateCompact}/${raceNo}`;
+        const cls = raceNo === selectedRace ? "selected" : "";
+        return `<li><a class="${cls}" href="${href}"><span>${raceNo}</span>R</a></li>`;
+      }).join("");
+    }
+
+    function renderHistory(dateCompact) {
+      const dates = [0, 1, 2, 3, 4, 5].map((offset) => {
+        const d = new Date(`${dateCompact.slice(0, 4)}-${dateCompact.slice(4, 6)}-${dateCompact.slice(6, 8)}T00:00:00`);
+        d.setDate(d.getDate() - offset);
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}${m}${day}`;
+      });
+      document.getElementById("historyList").innerHTML = dates.map((d) => (
+        `<li><a href="/boatrace/${venueSlug}/${d}">${d.slice(0,4)}/${d.slice(4,6)}/${d.slice(6,8)}</a></li>`
+      )).join("");
+    }
+
+    function renderRace(payload) {
+      const dateCompact = payload.dateCompact || dateFromPath;
+      buildNav(dateCompact);
+      renderHistory(dateCompact);
+      const race = (payload.races || []).find((item) => Number(item.raceNo) === selectedRace) || (payload.races || [])[0] || {};
+      const venue = payload.venue || fallbackVenue;
+      const viewWarnings = normalizeList(payload.warnings);
+      const viewStatus = String(payload.dataStatus || "missing");
+      const raceStatus = String(race.dataStatus || viewStatus || "missing");
+      const raceWarnings = normalizeList(race.warnings);
+      const summary = summarizePredictions(race.predictions || []);
+      document.title = `ボートレース${venue} 独自AI予想`;
+      document.getElementById("venueLogo").textContent = `ボートレース${venue} ${JCD}#`;
+      document.getElementById("raceTitle").textContent = `${dateLabel(dateCompact)}　${venue} ${payload.event || "独自AI予想"}`;
+      document.getElementById("raceNumber").textContent = `${race.raceNo || selectedRace}R　一般戦`;
+      document.getElementById("deadline").textContent = race.deadline || "-";
+      const statusMessage = `${venue} ${race.raceNo || selectedRace}R の独自AI予想を表示しています / dataStatus=${viewStatus}`;
+      document.getElementById("modelMeta").textContent = `model=${payload.modelVersion || "-"} / generatedAt=${payload.generatedAt || "-"} / dataStatus=${viewStatus}`;
+      const raceSummaryGrid = document.getElementById("raceSummaryGrid");
+      if (raceSummaryGrid) {
+        raceSummaryGrid.innerHTML = [
+          {
+            label: "BUY件数",
+            value: `${summary.buyCount}件`,
+            sub: "AI予想のBUY判定数",
+            cls: summary.buyCount > 0 ? "ok" : "warn",
+          },
+          {
+            label: "最高EV",
+            value: summary.maxEv == null ? "-" : summary.maxEv.toFixed(2),
+            sub: "AI予想の最高EV",
+            cls: summary.maxEv != null ? "ok" : "warn",
+          },
+          {
+            label: "最高prob",
+            value: summary.maxProb == null ? "-" : displayProb(summary.maxProb),
+            sub: "AI予想の最高的中確率",
+            cls: summary.maxProb != null ? "ok" : "warn",
+          },
+          {
+            label: "dataStatus",
+            value: raceStatus,
+            sub: raceWarnings.length ? raceWarnings.join(" / ") : "状態正常",
+            cls: raceStatus === "available" ? "ok" : raceStatus === "pending" ? "warn" : "bad",
+          },
+          {
+            label: "warnings",
+            value: `${viewWarnings.length + raceWarnings.length}件`,
+            sub: [...viewWarnings, ...raceWarnings].slice(0, 2).join(" / ") || "なし",
+            cls: (viewWarnings.length + raceWarnings.length) > 0 ? "warn" : "ok",
+          },
+        ].map((card) => `
+          <div class="status-card ${card.cls}">
+            <div class="label">${esc(card.label)}</div>
+            <div class="value">${esc(card.value)}</div>
+            <div class="sub">${esc(card.sub)}</div>
+          </div>
+        `).join("");
+      }
+      const warningBox = document.getElementById("statusBox");
+      if (warningBox) {
+        warningBox.className = "warning";
+        const warningText = [...viewWarnings, ...raceWarnings].slice(0, 3).join(" / ");
+        warningBox.textContent = warningText ? `${statusMessage} / 警告: ${warningText}` : statusMessage;
+      }
+      renderExternalSources();
+
+      const predictions = race.predictions || [];
+      window.currentPredictionCount = predictions.length;
+      const maxProb = predictions.reduce((acc, item) => Math.max(acc, Number(item.approxProb) || 0), 0);
+      const confidence = maxProb >= 0.04 ? 90 : maxProb >= 0.03 ? 75 : 60;
+      document.getElementById("aiHeader").textContent = `AI予想　【自信度：${confidence}%】`;
+      window.currentOwnPredictions = predictions;
+      document.getElementById("predictionBody").innerHTML = predictions.length ? predictions.map((item) => `
+        <tr>
+          <td>${item.rank}</td>
+          <td class="combo">${comboHtml(item.combo)}</td>
+          <td>
+            <div class="pick-decision ${normalizeDecision(item.decision) === "BUY" ? "buy" : normalizeDecision(item.decision) === "WATCH" ? "watch" : normalizeDecision(item.decision) === "SKIP" ? "skip" : "neutral"}">${esc(normalizeDecision(item.decision))}</div>
+            <div class="firstred">${esc(item.confidence || "-")}</div>
+          </td>
+          <td><span class="prob">${esc(displayProb(item.prob ?? item.approxProb))}</span></td>
+          <td>${esc(displayOdds(item.odds))}</td>
+          <td>${esc(displayEv(item.ev ?? item.expectedValue ?? item.expected_value))}</td>
+          <td>${esc(displayStake(item.stake ?? item.bet_amount ?? item.betAmount))}</td>
+          <td class="stop-reason">${esc(item.stopReason || item.stop_reason || item.skip_reason || "-")}</td>
+          <td class="own-match" data-combo="${esc(item.combo)}"><span class="match-mark">未照合</span></td>
+        </tr>
+      `).join("") : `<tr><td colspan="9">このレースのAI候補はまだありません</td></tr>`;
+
+      const boats = race.boats || [];
+      window.currentBoats = boats;
+      renderBoats(boats);
+    }
+
+    function renderBoats(boats) {
+      const ordered = (boats || []).filter((boat) => Number(boat.startExhibitionCourse)).sort((a, b) => Number(a.startExhibitionCourse) - Number(b.startExhibitionCourse));
+      const exhibition = ordered.length ? ordered : (boats || []);
+      document.getElementById("exhibitionOrder").innerHTML = exhibition.map((boat) => {
+        const time = Number(boat.exhibitionTime);
+        return `${esc(boat.lane)}${Number.isFinite(time) ? `(${time.toFixed(2)})` : ""}`;
+      }).join(" ");
+      renderEntryDataPanel(boats || []);
+      document.getElementById("boatBody").innerHTML = (boats || []).map((boat) => `
+        <tr>
+          <td class="lane-title">${boatSpan(boat.lane)}</td>
+          <td>${esc(boat.racerName || boat.racerId || "-")}</td>
+          <td>${displayRate(boat.national2Rate)}</td>
+          <td>${displayRate(boat.local2Rate)}</td>
+          <td>${displayRate(boat.motor2Rate)}</td>
+          <td>${displayRate(boat.boat2Rate)}</td>
+          <td>${fmtPct(boat.winProba)}</td>
+          <td>${esc(boat.rank || "-")}</td>
+        </tr>
+      `).join("");
+    }
+
+    function mergeBoatRows(baseBoats, publicBoats) {
+      const publicByLane = new Map((publicBoats || []).map((boat) => [Number(boat.lane), boat]));
+      return (baseBoats || []).map((boat) => {
+        const patch = publicByLane.get(Number(boat.lane)) || {};
+        const merged = { ...boat };
+        Object.entries(patch).forEach(([key, value]) => {
+          if (value !== null && value !== undefined && value !== "") merged[key] = value;
+        });
+        return merged;
+      });
+    }
+
+    function weatherText(weather) {
+      if (!weather || typeof weather !== "object") return "";
+      const parts = [];
+      if (weather.sky) parts.push(`天候=${weather.sky}`);
+      if (weather.temperature != null) parts.push(`気温=${weather.temperature}℃`);
+      if (weather.windDirection) parts.push(`風向=${weather.windDirection}`);
+      if (weather.windSpeed != null) parts.push(`風速=${weather.windSpeed}m`);
+      if (weather.waveHeight != null) parts.push(`波=${weather.waveHeight}cm`);
+      if (weather.water && weather.water.temperature != null) parts.push(`水温=${weather.water.temperature}℃`);
+      return parts.join(" / ");
+    }
+
+    function renderPublicSnapshot(snapshot) {
+      if (!snapshot || snapshot.status === "unavailable") {
+        document.getElementById("publicDataBox").textContent = "公式公開データは現在取得できません";
+        renderStatusGrid(snapshot, window.currentPredictionCount || 0);
+        return;
+      }
+      if (snapshot.deadline) document.getElementById("deadline").textContent = snapshot.deadline;
+      if (snapshot.raceTitle) {
+        const label = String(snapshot.raceTitle);
+        document.getElementById("raceNumber").textContent = label.includes("R") ? label : `${snapshot.raceNo || selectedRace}R　${label}`;
+      }
+      if ((snapshot.boats || []).length) {
+        window.currentBoats = mergeBoatRows(window.currentBoats || [], snapshot.boats);
+        renderBoats(window.currentBoats);
+      }
+      const status = snapshot.statuses || {};
+      const weather = weatherText(snapshot.weather);
+      document.getElementById("publicDataBox").textContent = [
+        `公式公開データ: 出走表=${status.racelist || "-"} / 直前情報=${status.beforeinfo || "-"}`,
+        weather,
+        `取得=${snapshot.fetchedAt || "-"}`,
+      ].filter(Boolean).join(" / ");
+      renderStatusGrid(snapshot, window.currentPredictionCount || 0);
+    }
+
+    function loadPublicSnapshot() {
+      return fetch(`/api/public-race-snapshot?date=${encodeURIComponent(dateFromPath)}&jcd=${JCD}&race=${selectedRace}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(renderPublicSnapshot)
+        .catch((err) => {
+          document.getElementById("publicDataBox").textContent = `公式公開データの取得に失敗しました: ${err.message}`;
+        });
+    }
+
+    function renderHamanakoCurrent(payload) {
+      const box = document.getElementById("hamanakoCurrent");
+      if (!box || JCD !== "06") return;
+      if (!payload || payload.status !== "ok") {
+        box.classList.add("show");
+        box.innerHTML = `
+          <h2>浜名湖公式 現在開催情報</h2>
+          <p class="series">公式サイトから現在情報を取得できません</p>
+          <p class="hamanako-note">source=${esc(payload?.fetchStatus || "unavailable")}</p>
+        `;
+        return;
+      }
+      const tabs = (payload.raceTabs || []).slice(0, 6).map((tab) => `<a class="hamanako-action" href="${esc(payload.sourceUrl)}" target="_blank" rel="noreferrer">${esc(tab)}</a>`).join("");
+      const sales = (payload.salesBlocks || []).slice(0, 2).map((block) => {
+        const venues = (block.venues || []).slice(0, 7).join(" / ");
+        return `${esc(block.title || "発売")} ${esc(venues)}`;
+      }).join("　");
+      box.classList.add("show");
+      box.innerHTML = `
+        <h2>浜名湖公式 現在開催情報</h2>
+        <div class="hamanako-meta">
+          <span class="hamanako-pill">${esc(payload.dateInfo || "-")}</span>
+          <span class="hamanako-pill">開門 ${esc(payload.openTime || "-")}</span>
+          <span class="hamanako-pill">${esc(payload.stage || "開催情報")}</span>
+          <span class="hamanako-pill">公式取得 ${esc(payload.fetchedAt || "-")}</span>
+        </div>
+        <p class="series">${esc(payload.seriesTitle || "開催レース情報")}</p>
+        <div class="hamanako-actions">${tabs}</div>
+        <p class="hamanako-note">${sales || "発売情報は公式サイトで確認してください"}</p>
+      `;
+      if (payload.seriesTitle) {
+        document.getElementById("raceTitle").textContent = `${dateLabel(dateFromPath.replaceAll("-", ""))}　浜名湖 ${payload.seriesTitle}`;
+      }
+    }
+
+    function loadHamanakoCurrent() {
+      if (JCD !== "06") return Promise.resolve();
+      return fetch("/api/hamanako-current-info", { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(renderHamanakoCurrent)
+        .catch((err) => renderHamanakoCurrent({ status: "unavailable", fetchStatus: err.message }));
+    }
+
+    function renderNikkan(nikkanPayload) {
+      const nikkan = nikkanPayload.predictions || [];
+      const own = window.currentOwnPredictions || [];
+      const ownCombos = new Set(own.map((item) => String(item.combo || "")));
+      const nikkanCombos = new Set(nikkan.map((item) => String(item.combo || "")));
+      const source = nikkanPayload.sourceUrl || `https://nikkansports.raceyosou.jp/boatrace/${venueSlug}/${dateFromPath.replaceAll("-", "")}/${selectedRace}`;
+      const message = nikkanStatusText(nikkanPayload);
+      document.getElementById("nikkanMeta").innerHTML = [
+        esc(message),
+        `件数=${nikkan.length}`,
+        `<a class="source-link" href="${esc(source)}" target="_blank" rel="noreferrer">日刊スポーツ元ページ</a>`,
+      ].join(" / ");
+      renderExternalSources(nikkanPayload);
+      document.querySelectorAll(".own-match").forEach((cell) => {
+        const combo = cell.getAttribute("data-combo") || "";
+        const hit = nikkanCombos.has(combo);
+        cell.innerHTML = `<span class="match-mark ${hit ? "hit" : ""}">${hit ? "一致" : "-"}</span>`;
+      });
+      document.getElementById("nikkanPredictionBody").innerHTML = nikkan.length ? nikkan.map((item) => {
+        const hit = ownCombos.has(String(item.combo || ""));
+        return `
+          <tr>
+            <td>${esc(item.rank)}</td>
+            <td class="combo">${comboHtml(item.combo)}</td>
+            <td class="firstred">${esc(item.confidence || "-")}</td>
+            <td><span class="match-mark ${hit ? "hit" : ""}">${hit ? "一致" : "-"}</span></td>
+          </tr>
+        `;
+      }).join("") : `<tr><td colspan="4">${esc(message)}</td></tr>`;
+    }
+
+    function loadNikkan() {
+      return fetch(`/api/nikkan-ai-yosou?date=${encodeURIComponent(dateFromPath)}&jcd=${JCD}&race=${selectedRace}`, { cache: "no-store" })
+        .then((res) => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
+        .then(renderNikkan)
+        .catch((err) => {
+          const fallbackSource = `https://nikkansports.raceyosou.jp/boatrace/${venueSlug}/${dateFromPath.replaceAll("-", "")}/${selectedRace}`;
+          renderNikkan({ status: "fetch_error", predictions: [], sourceUrl: fallbackSource, error: err.message });
+        });
+    }
+
+    fetch(`/api/venue-ai-yosou?date=${encodeURIComponent(dateFromPath)}&jcd=${JCD}`, { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((payload) => {
+        renderRace(payload);
+        wireExternalBatchButtons();
+        loadNikkan();
+        loadExternalPredictions().then(loadExternalSummary);
+        loadAllRaceCompare();
+        if (!window.publicRefreshTimer) {
+          window.publicRefreshTimer = setInterval(loadPublicSnapshot, 60000);
+        }
+        return Promise.all([loadPublicSnapshot(), loadHamanakoCurrent()]);
+      })
+      .catch((err) => {
+        document.getElementById("statusBox").textContent = `読み込みに失敗しました: ${err.message}`;
+      });
+  </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+{
+  "spec_name": "phase1_win_model",
+  "phase": 1,
+  "goal": "1着モデルを official predictor として固定し、Phase 2 以降に安定した win probability 出力を渡す",
+  "regression_baseline": "core",
+  "official_predictor": {
+    "feature_set_name": "core_relative",
+    "source_feature_set": "win_baseline_core",
+    "relative_features": [
+      "national_2ren_rate_rank_in_race",
+      "national_2ren_rate_diff_from_race_mean",
+      "national_2ren_rate_z_in_race",
+      "local_2ren_rate_rank_in_race",
+      "local_2ren_rate_diff_from_race_mean",
+      "local_2ren_rate_z_in_race",
+      "avg_st_rank_in_race",
+      "avg_st_advantage_vs_mean",
+      "avg_st_advantage_z_in_race"
+    ]
+  },
+  "target": {
+    "name": "target_win",
+    "definition": "finish_position == 1 ? 1 : 0"
+  },
+  "split_policy": {
+    "type": "time_series",
+    "unit": "race_id",
+    "time_column": "date",
+    "no_random_split": true,
+    "recommended_layout": {
+      "train": "older history",
+      "valid": "period immediately before test",
+      "test": "most recent unseen period"
+    },
+    "manifest_fields": [
+      "train_start",
+      "train_end",
+      "valid_start",
+      "valid_end",
+      "test_start",
+      "test_end"
+    ]
+  },
+  "model": {
+    "type": "lightgbm_binary_classification",
+    "objective": "binary",
+    "random_seed": 42
+  },
+  "inference": {
+    "raw_probability_field": "win_proba_raw",
+    "normalized_probability_field": "win_proba_norm",
+    "normalization": "p_win_norm_i = p_raw_i / sum(p_raw within same race)",
+    "ranking_field": "rank_within_race"
+  },
+  "calibration": {
+    "evaluate": true,
+    "preferred_signal": [
+      "log_loss",
+      "calibration_error"
+    ],
+    "post_hoc_calibration": "optional_if_it_improves_validation_and_does_not_break_race_normalization"
+  },
+  "metrics": [
+    "log_loss",
+    "brier_score",
+    "calibration_error",
+    "top1_accuracy",
+    "top1_win_rate",
+    "top3_hit_rate"
+  ],
+  "outputs": {
+    "required_columns": [
+      "race_id",
+      "boat_no",
+      "win_proba_raw",
+      "win_proba_norm",
+      "rank_within_race",
+      "target_win",
+      "date",
+      "jcd",
+      "race_number",
+      "model_name",
+      "feature_set_name",
+      "split_name",
+      "calibrated_flag"
+    ],
+    "artifacts": [
+      "models/win_model_phase1/*.joblib",
+      "reports/model_eval/win_model_phase1*.json",
+      "reports/model_eval/win_model_phase1*.csv",
+      "reports/model_eval/win_model_phase1_split_manifest.json"
+    ]
+  },
+  "accepted_feature_sets": {
+    "baseline_regression": "win_baseline_core",
+    "official_predictor": "core_relative",
+    "rejected_for_phase1": [
+      "extended"
+    ]
+  },
+  "acceptance_criteria": [
+    "core_relative が core に対して test の log loss を悪化させない",
+    "Brier score が悪化しない",
+    "calibration error が許容範囲",
+    "top1_accuracy が同等以上、または運用上の改善を説明できる",
+    "race 内正規化後の確率が安定している"
+  ],
+  "handoff_to_phase2": {
+    "required_interface": [
+      "race_id",
+      "boat_no",
+      "win_proba_raw",
+      "win_proba_norm",
+      "rank_within_race",
+      "target_win",
+      "date",
+      "jcd",
+      "race_number"
+    ],
+    "consumer": "2着条件付きモデル",
+    "next_phase_goal": "1着固定後の2着条件付き分布を学習する"
+  },
+  "non_goals": [
+    "2着 / 3着モデルの実装",
+    "selector の変更",
+    "閾値チューニング",
+    "三連単の完成",
+    "extended の正式採用"
+  ]
+}

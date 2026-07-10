@@ -1,0 +1,201 @@
+{
+  "spec_name": "phase2_place2_model",
+  "phase": 2,
+  "goal": "P(2着 = j | 1着 = i) を学習し、Phase 3 に渡す条件付き2着分布を固定する",
+  "conditioned_on_phase1": {
+    "official_predictor": "core_relative",
+    "phase1_model_spec": "phase1_win_model",
+    "phase1_output_contract": [
+      "race_id",
+      "boat_no",
+      "win_proba_raw",
+      "win_proba_norm",
+      "rank_within_race",
+      "target_win",
+      "date",
+      "jcd",
+      "race_number"
+    ]
+  },
+  "training_unit": {
+    "context_key": "place2_context_id",
+    "definition": "(race_id, fixed_first_place_boat_no)",
+    "sample_unit": "one candidate boat per remaining boat",
+    "positive_label": "candidate_boat_no is the actual 2nd-place boat within the fixed-first context"
+  },
+  "target": {
+    "name": "target_place2",
+    "definition": "candidate_boat_no == actual 2nd-place boat within the place2_context_id ? 1 : 0"
+  },
+  "input_data": {
+    "base_dataset": "data/processed/trainable_win_training_data.csv",
+    "phase1_outputs_required": true,
+    "split_unit": "race_id",
+    "split_time_column": "date"
+  },
+  "feature_set": {
+    "base_feature_set_name": "win_baseline_core_relative",
+    "conditional_feature_set_name": "phase2_place2_conditional",
+    "candidate_features": [
+      "boat_no",
+      "jcd",
+      "race_number",
+      "national_2ren_rate_rank_in_race",
+      "national_2ren_rate_diff_from_race_mean",
+      "national_2ren_rate_z_in_race",
+      "local_2ren_rate_rank_in_race",
+      "local_2ren_rate_diff_from_race_mean",
+      "local_2ren_rate_z_in_race",
+      "avg_st_rank_in_race",
+      "avg_st_advantage_vs_mean",
+      "avg_st_advantage_z_in_race"
+    ],
+    "context_features": [
+      "place2_context_id",
+      "fixed_first_place_boat_no",
+      "fixed_first_place_rank_within_race",
+      "fixed_first_place_win_proba_raw",
+      "fixed_first_place_win_proba_norm",
+      "candidate_rank_within_race_before_fix",
+      "candidate_win_proba_raw",
+      "candidate_win_proba_norm",
+      "candidate_win_rank_within_race",
+      "candidate_phase1_margin_to_fixed_first",
+      "remaining_field_size"
+    ],
+    "official_input_feature_family": "core_relative_plus_phase1_context"
+  },
+  "remaining_field_policy": {
+    "fixed_first_place_removed": true,
+    "candidate_count_expected": 5,
+    "minimum_race_size": 6,
+    "invalid_race_action": "exclude_and_log"
+  },
+  "split_policy": {
+    "type": "time_series",
+    "unit": "race_id",
+    "time_column": "date",
+    "no_random_split": true,
+    "split_then_expand_context": true,
+    "manifest_fields": [
+      "train_start",
+      "train_end",
+      "valid_start",
+      "valid_end",
+      "test_start",
+      "test_end"
+    ]
+  },
+  "model": {
+    "type": "lightgbm_binary_classification",
+    "objective": "binary",
+    "random_seed": 42
+  },
+  "inference": {
+    "raw_probability_field": "p_place2_raw",
+    "normalized_probability_field": "p_place2_norm",
+    "normalization": "p_place2_norm_k = p_place2_raw_k / sum(p_place2_raw within same place2_context_id)",
+    "ranking_field": "rank_within_remaining_field"
+  },
+  "calibration": {
+    "evaluate": true,
+    "preferred_signal": [
+      "log_loss",
+      "calibration_error"
+    ],
+    "post_hoc_calibration": "optional_if_it_preserves_context_normalization"
+  },
+  "metrics": [
+    "log_loss",
+    "brier_score",
+    "calibration_error",
+    "top1_accuracy",
+    "top3_hit_rate",
+    "context_coverage"
+  ],
+  "naive_baseline": {
+    "name": "uniform_remaining_five",
+    "definition": "1着固定後の残り 5 艇を一様分布とする",
+    "probability_per_candidate": "1/5"
+  },
+  "outputs": {
+    "required_columns": [
+      "race_id",
+      "place2_context_id",
+      "fixed_first_place_boat_no",
+      "fixed_first_place_source",
+      "fixed_first_place_rank_within_race",
+      "fixed_first_place_win_proba_raw",
+      "fixed_first_place_win_proba_norm",
+      "candidate_boat_no",
+      "candidate_rank_within_race_before_fix",
+      "candidate_rank_within_remaining_field",
+      "p_place2_raw",
+      "p_place2_norm",
+      "target_place2",
+      "date",
+      "jcd",
+      "race_number",
+      "model_name",
+      "feature_set_name",
+      "split_name",
+      "calibrated_flag",
+      "remaining_field_size",
+      "phase1_model_name",
+      "phase1_feature_set_name"
+    ],
+    "artifacts": [
+      "models/phase2_place2/*.joblib",
+      "reports/model_eval/phase2_place2_model*.json",
+      "reports/model_eval/phase2_place2_model*.csv",
+      "reports/model_eval/phase2_place2_split_manifest.json"
+    ]
+  },
+  "acceptance_criteria": [
+    "naive baseline を log loss で上回る",
+    "Brier score が悪化しない",
+    "calibration error が許容範囲",
+    "top1 accuracy と top3 hit rate が再現可能",
+    "context 内正規化が安定している",
+    "Phase 3 が必要とする中間出力契約を満たす"
+  ],
+  "phase3_handoff": {
+    "consumer": "phase3_place1_place2_mid_eval",
+    "context_key": "place2_context_id",
+    "required_interface": [
+      "race_id",
+      "place2_context_id",
+      "fixed_first_place_boat_no",
+      "fixed_first_place_source",
+      "fixed_first_place_rank_within_race",
+      "fixed_first_place_win_proba_raw",
+      "fixed_first_place_win_proba_norm",
+      "candidate_boat_no",
+      "candidate_rank_within_race_before_fix",
+      "candidate_rank_within_remaining_field",
+      "p_place2_raw",
+      "p_place2_norm",
+      "target_place2",
+      "date",
+      "jcd",
+      "race_number",
+      "model_name",
+      "feature_set_name",
+      "split_name",
+      "calibrated_flag"
+    ],
+    "optional_fields": [
+      "remaining_field_size",
+      "phase1_model_name",
+      "phase1_feature_set_name"
+    ],
+    "next_phase_goal": "1着固定後の 2着候補を stable に返して 1着+2着 の中間評価へ渡す"
+  },
+  "non_goals": [
+    "3着条件付きモデルの実装",
+    "三連単再構成",
+    "selector の再設計",
+    "閾値チューニング",
+    "external odds を使った最適化"
+  ]
+}

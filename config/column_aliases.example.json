@@ -1,0 +1,10 @@
+{
+    "race_id": ["レースID", "RaceID", "race_index"],
+    "date": ["日付", "Date", "RaceDate"],
+    "venue": ["場名", "Venue", "Stadium"],
+    "lane": ["艇番", "枠番", "PitNo", "Lane"],
+    "racer_id": ["登録番号", "選手ID", "RacerID"],
+    "racer_class": ["級別", "ランク", "Class"],
+    "finish_position": ["着順", "Result", "Order"],
+    "exhibition_time": ["展示タイム", "展示", "ExTime"]
+}

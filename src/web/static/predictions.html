@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI紙上予想</title>
+    <link rel="icon" href="data:," />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f3f6fb;
+        --panel: rgba(255, 255, 255, 0.94);
+        --border: #dce3ea;
+        --text: #102033;
+        --muted: #64748b;
+        --buy: #d1fae5;
+        --buy-text: #065f46;
+        --watch: #dbeafe;
+        --watch-text: #1d4ed8;
+        --paper: #fef3c7;
+        --paper-text: #92400e;
+        --skip: #e5e7eb;
+        --skip-text: #4b5563;
+        --cons-a: #fecaca;
+        --cons-a-text: #991b1b;
+        --cons-b: #fed7aa;
+        --cons-b-text: #9a3412;
+        --cons-c: #d9f99d;
+        --cons-c-text: #3f6212;
+      }
+      body { margin: 0; font-family: "Noto Sans JP", sans-serif; background: linear-gradient(180deg, #eef4fb 0%, var(--bg) 100%); color: var(--text); }
+      .shell { max-width: 1500px; margin: 0 auto; padding: 20px; }
+      .banner { background: linear-gradient(135deg, #182338 0%, #24354d 100%); color: #fff; border-radius: 20px; padding: 18px 22px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12); }
+      .banner h1 { margin: 6px 0 8px; font-size: 30px; }
+      .banner strong { color: #ffd166; }
+      .meta { color: #dbe7ff; font-size: 13px; line-height: 1.7; }
+      .grid2 { display: grid; grid-template-columns: 1.3fr 1fr; gap: 14px; margin: 14px 0; }
+      .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+      .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05); }
+      .card h2, .card h3 { margin: 0 0 10px; }
+      .muted { color: var(--muted); }
+      .warning { color: #b45309; font-weight: 800; }
+      .tiny { font-size: 12px; }
+      .stat { font-size: 30px; font-weight: 800; margin-top: 6px; }
+      .stat.buy { color: #065f46; }
+      .stat.watch { color: #1d4ed8; }
+      .stat.paper { color: #92400e; }
+      .stat.skip { color: #4b5563; }
+      .list { margin: 0; padding-left: 18px; }
+      .controls { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+      .control label { display: block; font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
+      .control select { width: 100%; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
+      .subtle { font-size: 12px; color: var(--muted); }
+      .pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+      .pill.buy { background: var(--buy); color: var(--buy-text); }
+      .pill.watch { background: var(--watch); color: var(--watch-text); }
+      .pill.paper { background: var(--paper); color: var(--paper-text); }
+      .pill.skip { background: var(--skip); color: var(--skip-text); }
+      .pill.cons-a { background: var(--cons-a); color: var(--cons-a-text); }
+      .pill.cons-b { background: var(--cons-b); color: var(--cons-b-text); }
+      .pill.cons-c { background: var(--cons-c); color: var(--cons-c-text); }
+      .pill.cons-none { background: #f1f5f9; color: #64748b; }
+      .table-wrap { overflow: auto; }
+      table { width: 100%; border-collapse: collapse; min-width: 1320px; }
+      th, td { border-bottom: 1px solid #e8eef3; padding: 10px 8px; vertical-align: top; font-size: 13px; }
+      th { position: sticky; top: 0; background: #f8fafc; z-index: 1; text-align: left; }
+      tr.buy-row { background: #f0fdf4; }
+      tr.watch-row { background: #eff6ff; }
+      tr.paper-row { background: #fffdf0; }
+      tr.skip-row { opacity: 0.72; }
+      tr.cons-a-row { box-shadow: inset 5px 0 0 #dc2626; }
+      tr.cons-b-row { box-shadow: inset 5px 0 0 #f97316; }
+      tr.cons-c-row { box-shadow: inset 5px 0 0 #84cc16; }
+      .value { font-family: "Space Mono", monospace; }
+      .top-list { display: grid; gap: 8px; }
+      .top-item { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+      .top-item .combo { font-weight: 700; }
+      .top-item .detail { font-size: 12px; color: var(--muted); }
+      @media (max-width: 1200px) {
+        .grid2, .grid4, .controls { grid-template-columns: 1fr 1fr; }
+      }
+      @media (max-width: 760px) {
+        .grid2, .grid4, .controls { grid-template-columns: 1fr; }
+        .banner h1 { font-size: 24px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <div class="banner">
+        <div class="tiny">紙上予想Web v1</div>
+        <h1>紙上予想Web v1</h1>
+        <div class="meta">紙上予想Web v1。実賭け禁止。外部予想・合意スコアは表示専用で、BUY判定には未使用です。本番BUYのlive検証は未開始です。現在はWATCH/PAPER/合意スコア候補の紙上検証を蓄積中です。</div>
+        <div id="sheetMeta" class="meta">読み込み中...</div>
+      </div>
+
+      <div class="grid4" id="summaryCards"></div>
+      <div class="grid4" id="consensusCards"></div>
+
+      <div class="grid2">
+        <div class="card">
+          <h3>TOP WATCH / PAPER 5件</h3>
+          <div id="topCandidates" class="top-list"></div>
+        </div>
+        <div class="card">
+          <h3>独自AI × 外部予想 TOP5</h3>
+          <div id="topConsensus" class="top-list"></div>
+          <div class="warning tiny" style="margin-top:8px;">合意スコアは表示専用。BUY判定には未使用。</div>
+        </div>
+        <div class="card">
+          <h3>結果照合入口</h3>
+          <div id="reviewMeta" class="meta">読み込み中...</div>
+          <div id="reviewStatus" class="subtle" style="margin-top:8px;"></div>
+        </div>
+        <div class="card">
+          <h3>paper validation 進捗</h3>
+          <div id="paperValidationProgress" class="meta">読み込み中...</div>
+          <div class="warning tiny" style="margin-top:8px;">現在の主ブロッカーは eligible候補数不足です。ready日と結果照合可能日を増やしてください。</div>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h3>合意度B以上の候補</h3>
+          <div id="bPlusCandidates" class="top-list"></div>
+          <div class="warning tiny" style="margin-top:8px;">合意スコアは表示専用。BUY判定には未使用。</div>
+        </div>
+        <div class="card">
+          <h3>外部予想ソース状態</h3>
+          <div id="consensusSourcesMeta" class="meta">読み込み中...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="controls">
+          <div class="control">
+            <label>決定</label>
+            <select id="filterDecision">
+              <option value="ALL">ALL</option>
+              <option value="BUY">BUY</option>
+              <option value="WATCH">WATCH</option>
+              <option value="PAPER">PAPER</option>
+              <option value="SKIP">SKIP</option>
+            </select>
+          </div>
+          <div class="control">
+            <label>会場</label>
+            <select id="filterVenue"><option value="ALL">ALL</option></select>
+          </div>
+          <div class="control">
+            <label>stop_reason</label>
+            <select id="filterStopReason"><option value="ALL">ALL</option></select>
+          </div>
+          <div class="control">
+            <label>odds_status</label>
+            <select id="filterOddsStatus"><option value="ALL">ALL</option></select>
+          </div>
+          <div class="control">
+            <label>合意度</label>
+            <select id="filterConsensusGrade">
+              <option value="ALL">ALL</option>
+              <option value="A">A</option>
+              <option value="B">B</option>
+              <option value="C">C</option>
+              <option value="NONE">NONE</option>
+            </select>
+          </div>
+          <div class="control">
+            <label>一致タイプ</label>
+            <select id="filterMatchType">
+              <option value="ALL">ALL</option>
+              <option value="EXACT">exact matchあり</option>
+              <option value="AXIS">axis matchあり</option>
+              <option value="FIRST_SECOND">1-2着軸一致あり</option>
+              <option value="BOX">box overlapあり</option>
+            </select>
+          </div>
+          <div class="control">
+            <label>ソート</label>
+            <select id="filterSort">
+              <option value="consensus_score_desc">consensusScore 降順</option>
+              <option value="matched_sources_desc">一致サイト数順</option>
+              <option value="expected_value_desc">expected_value 降順</option>
+              <option value="approx_prob_desc">approx_prob 降順</option>
+              <option value="deadline_asc">締切順</option>
+            </select>
+          </div>
+          <div class="control">
+            <label>&nbsp;</label>
+            <button id="resetFilters" type="button" style="width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:10px;background:#fff;cursor:pointer;">フィルタ解除</button>
+          </div>
+        </div>
+        <div id="filterStats" class="subtle" style="margin-top:10px;">候補を読み込み中...</div>
+      </div>
+
+      <div class="card table-wrap" style="margin-top:14px;">
+        <table>
+          <thead>
+            <tr>
+              <th>会場</th>
+              <th>R</th>
+              <th>締切</th>
+              <th>買い目</th>
+              <th>final_decision</th>
+              <th>paper_decision</th>
+              <th>stop_reason</th>
+              <th>odds_status</th>
+              <th>approx_prob</th>
+              <th>real_odds</th>
+              <th>expected_value</th>
+              <th>合意度</th>
+              <th>一致サイト</th>
+              <th>一致タイプ</th>
+              <th>合意理由</th>
+              <th>risk_flag</th>
+              <th>reason</th>
+            </tr>
+          </thead>
+          <tbody id="candidateBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(location.search);
+      const requestedDate = params.get("date") || "";
+      const sheetUrl = requestedDate ? `/api/prediction-sheet?date=${encodeURIComponent(requestedDate)}` : "/api/prediction-sheet/latest";
+
+      const FILTER_KEYS = ["decision", "venue", "stopReason", "oddsStatus", "consensusGrade", "matchType", "sort"];
+      const filterDefaults = {
+        decision: "ALL",
+        venue: "ALL",
+        stopReason: "ALL",
+        oddsStatus: "ALL",
+        consensusGrade: "ALL",
+        matchType: "ALL",
+        sort: "consensus_score_desc",
+      };
+      const filterQueryValues = {
+        decision: new Set(["ALL", "BUY", "WATCH", "PAPER", "SKIP"]),
+        consensusGrade: new Set(["ALL", "A", "B", "C", "NONE"]),
+        matchType: new Set(["ALL", "EXACT", "AXIS", "FIRST_SECOND", "BOX"]),
+        sort: new Set(["consensus_score_desc", "matched_sources_desc", "expected_value_desc", "approx_prob_desc", "deadline_asc"]),
+      };
+
+      const readFilterFromUrl = (key) => {
+        const value = params.get(key);
+        if (!value) return filterDefaults[key];
+        if (filterQueryValues[key] && !filterQueryValues[key].has(value)) return filterDefaults[key];
+        return value;
+      };
+
+      const syncFiltersToUrl = () => {
+        const next = new URLSearchParams(location.search);
+        FILTER_KEYS.forEach((key) => {
+          const value = state.filters[key];
+          if (!value || value === filterDefaults[key]) {
+            next.delete(key);
+            return;
+          }
+          next.set(key, value);
+        });
+        const nextUrl = `${location.pathname}${next.toString() ? `?${next.toString()}` : ""}${location.hash}`;
+        history.replaceState(null, "", nextUrl);
+      };
+
+      const state = {
+        sheetPayload: null,
+        consensusPayload: null,
+        reviewPayload: null,
+        candidates: [],
+        filters: {
+          decision: readFilterFromUrl("decision"),
+          venue: readFilterFromUrl("venue"),
+          stopReason: readFilterFromUrl("stopReason"),
+          oddsStatus: readFilterFromUrl("oddsStatus"),
+          consensusGrade: readFilterFromUrl("consensusGrade"),
+          matchType: readFilterFromUrl("matchType"),
+          sort: readFilterFromUrl("sort"),
+        },
+      };
+
+      const num = (v) => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : null;
+      };
+
+      const fmt = (v, digits = 4) => (v === null || v === undefined || v === "" || Number.isNaN(Number(v)) ? "-" : Number(v).toFixed(digits));
+
+      const badge = (cls, text) => `<span class="pill ${cls}">${text}</span>`;
+
+      const decisionBadge = (value) => {
+        const cls = value === "BUY" ? "buy" : value === "WATCH" ? "watch" : value === "PAPER" ? "paper" : "skip";
+        return badge(cls, value || "");
+      };
+      const consensusBadge = (value) => {
+        const grade = value || "NONE";
+        const cls = grade === "A" ? "cons-a" : grade === "B" ? "cons-b" : grade === "C" ? "cons-c" : "cons-none";
+        return badge(cls, grade);
+      };
+
+      const displayStopReason = (reason) => {
+        if (!reason) return "-";
+        if (reason === "real_odds_pending_before_deadline") return "締切前オッズ未確定";
+        if (reason === "hard_guard_min_ev") return "EV条件未達";
+        return reason;
+      };
+
+      const displayOddsStatus = (value) => {
+        if (!value) return "-";
+        if (value === "real_odds_pending_before_deadline") return "締切前オッズ未確定";
+        if (value === "hard_guard_min_ev") return "EV条件未達";
+        return value;
+      };
+
+      function setMeta(sheetPayload, consensusPayload, reviewPayload, progressPayload) {
+        const data = sheetPayload.data || {};
+        const summary = data.summary || {};
+        const consensusData = consensusPayload.data || {};
+        const reviewData = reviewPayload.data || {};
+        const progressData = (progressPayload && progressPayload.data) || {};
+        const meta = [
+          `requestedDate=${sheetPayload.requestedDate || requestedDate || "-"}`,
+          `sourceDate=${sheetPayload.sourceDate || data.sourceDate || "-"}`,
+          `latestCompleteOpsDate=${summary.latestCompleteOpsDate || "-"}`,
+          `fallbackReason=${sheetPayload.fallbackReason || "-"}`,
+          `prediction_sheet=${sheetPayload.status === "ok" ? "generated" : "missing"}`,
+          `live BUY検証=${progressData.liveRevenueGateStatus || "NOT_READY"}`,
+          `paper検証=${progressData.paperValidationGateStatus || "RUNNING"}`,
+          `currentActiveBuyCount=${progressData.currentActiveBuyCount || 0}`,
+          `liveSettledBetCount=${progressData.liveSettledBetCount ?? 0}/100`,
+          `paperEligibleCandidateCount=${progressData.paperEligibleCandidateCount || 0}/100`,
+          `remainingPaperEligibleCandidateCount=${progressData.remainingPaperEligibleCandidateCount ?? 0}`,
+          `paperSettledCandidateCount=${progressData.paperSettledCandidateCount || 0}/100`,
+          `paperSettlementCoverageEligible=${progressData.paperSettlementCoverageEligible ?? "-"}`,
+          `paperSettlementCoverageRaw=${progressData.paperSettlementCoverageRaw ?? "-"}`,
+          `ineligibleSourceNotReadyCount=${progressData.ineligibleSourceNotReadyCount || 0}`,
+          `backfillSettledCount=${progressData.backfillSettledCount || 0}`,
+          `paperPrimaryBlocker=${progressData.paperPrimaryBlocker || "-"}`,
+          `primaryBlocker=${progressData.primaryBlocker || "-"}`,
+          `nextAction=${progressData.nextAction || "-"}`,
+          `revenueValidationReady=${progressData.revenueValidationReady ? "true" : "false"}`,
+        ].join(" / ");
+        document.getElementById("sheetMeta").textContent = meta;
+        const reviewLines = [
+          `results_status=${reviewData.dailySummaryStatus || reviewData.status || "-"}`,
+          `daily_summary=${reviewData.dailySummaryExists ? "あり" : "なし"}`,
+          `prediction_review=${reviewPayload.status !== "missing" ? "あり" : "なし"}`,
+          `prediction_review_generated=${reviewPayload.status !== "missing" ? "generated" : "missing"}`,
+          `liveRevenueGate=${progressData.liveRevenueGateStatus || "NOT_READY"}`,
+          `paperValidationGate=${progressData.paperValidationGateStatus || "RUNNING"}`,
+          `paperEligibleCandidateCount=${progressData.paperEligibleCandidateCount || 0}`,
+          `remainingPaperEligibleCandidateCount=${progressData.remainingPaperEligibleCandidateCount ?? 0}`,
+          `paperSettledCandidateCount=${progressData.paperSettledCandidateCount || 0}`,
+          `paperSettlementCoverageEligible=${progressData.paperSettlementCoverageEligible ?? "-"}`,
+          `paperSettlementCoverageRaw=${progressData.paperSettlementCoverageRaw ?? "-"}`,
+          `ineligibleSourceNotReadyCount=${progressData.ineligibleSourceNotReadyCount || 0}`,
+          `paperPrimaryBlocker=${progressData.paperPrimaryBlocker || "-"}`,
+          `nextAction=${progressData.nextAction || "-"}`,
+          `BUY 0 の主因=${summary.topStopReason || "-"}`,
+        ].join(" / ");
+        document.getElementById("reviewMeta").textContent = reviewLines;
+        document.getElementById("reviewStatus").innerHTML = reviewPayload.status === "ok"
+          ? badge("buy", "結果照合済み")
+          : (reviewPayload.status === "result_data_missing" ? badge("watch", "結果未確定") : badge("paper", "結果未照合"));
+        const loaded = (consensusData.loadedExternalSources || []).join(", ") || "-";
+        const missing = (consensusData.missingExternalSources || []).join(", ") || "-";
+        const unavailable = (consensusData.unavailableExternalSources || []).join(", ") || "-";
+        document.getElementById("consensusSourcesMeta").innerHTML = [
+          `loaded=${loaded}`,
+          `missing=${missing}`,
+          `unavailable=${unavailable}`,
+        ].join("<br>");
+      }
+
+      function populateFilters(candidates) {
+        const makeOpts = (selector, values, currentValue) => {
+          const el = document.getElementById(selector);
+          const current = currentValue || el.value || "ALL";
+          el.innerHTML = `<option value="ALL">ALL</option>` + [...new Set(values.filter(Boolean))].sort().map((v) => `<option value="${v}">${v}</option>`).join("");
+          el.value = [...el.options].some((opt) => opt.value === current) ? current : "ALL";
+        };
+        makeOpts("filterVenue", candidates.map((c) => c.venue), state.filters.venue);
+        makeOpts("filterStopReason", candidates.map((c) => c.stopReason), state.filters.stopReason);
+        makeOpts("filterOddsStatus", candidates.map((c) => c.oddsStatus), state.filters.oddsStatus);
+      }
+
+      function filteredCandidates() {
+        return state.candidates.filter((c) => {
+          if (state.filters.decision !== "ALL" && c.finalDecision !== state.filters.decision) return false;
+          if (state.filters.venue !== "ALL" && c.venue !== state.filters.venue) return false;
+          if (state.filters.stopReason !== "ALL" && c.stopReason !== state.filters.stopReason) return false;
+          if (state.filters.oddsStatus !== "ALL" && c.oddsStatus !== state.filters.oddsStatus) return false;
+          if (state.filters.consensusGrade !== "ALL" && c.consensusGrade !== state.filters.consensusGrade) return false;
+          if (state.filters.matchType === "EXACT" && !c.exactMatchSources.length) return false;
+          if (state.filters.matchType === "AXIS" && !c.axisMatchSources.length) return false;
+          if (state.filters.matchType === "FIRST_SECOND" && !c.firstSecondAxisMatchSources.length) return false;
+          if (state.filters.matchType === "BOX" && !c.boxOverlapSources.length) return false;
+          return true;
+        });
+      }
+
+      function sortCandidates(rows) {
+        const sorted = [...rows];
+        const byDeadline = (a, b) => {
+          const ad = a.deadline || "";
+          const bd = b.deadline || "";
+          return ad.localeCompare(bd, "ja");
+        };
+        sorted.sort((a, b) => {
+          if (state.filters.sort === "consensus_score_desc") {
+            return (num(b.consensusScore) ?? -Infinity) - (num(a.consensusScore) ?? -Infinity) || (b.matchedSources.length - a.matchedSources.length) || (num(b.expectedValue) ?? -Infinity) - (num(a.expectedValue) ?? -Infinity) || byDeadline(a, b);
+          }
+          if (state.filters.sort === "matched_sources_desc") {
+            return (b.matchedSources.length - a.matchedSources.length) || (num(b.consensusScore) ?? -Infinity) - (num(a.consensusScore) ?? -Infinity) || byDeadline(a, b);
+          }
+          if (state.filters.sort === "approx_prob_desc") {
+            return (num(b.approxProb) ?? -Infinity) - (num(a.approxProb) ?? -Infinity) || (num(b.expectedValue) ?? -Infinity) - (num(a.expectedValue) ?? -Infinity) || byDeadline(a, b);
+          }
+          if (state.filters.sort === "deadline_asc") {
+            return byDeadline(a, b) || (num(b.expectedValue) ?? -Infinity) - (num(a.expectedValue) ?? -Infinity);
+          }
+          return (num(b.expectedValue) ?? -Infinity) - (num(a.expectedValue) ?? -Infinity) || (num(b.approxProb) ?? -Infinity) - (num(a.approxProb) ?? -Infinity) || byDeadline(a, b);
+        });
+        return sorted;
+      }
+
+      function renderSummary(sheetPayload, consensusPayload, reviewPayload) {
+        const data = sheetPayload.data || {};
+        const summary = data.summary || {};
+        const consensusData = consensusPayload.data || {};
+        const items = [
+          ["BUY", summary.buyCount || 0, "buy"],
+          ["WATCH", summary.watchCount || 0, "watch"],
+          ["PAPER", summary.paperCount || 0, "paper"],
+          ["SKIP", summary.skipCount || 0, "skip"],
+        ];
+        document.getElementById("summaryCards").innerHTML = items.map(([label, value, cls]) => `
+          <div class="card">
+            <div class="muted">${label}</div>
+            <div class="stat ${cls}">${value}</div>
+          </div>
+        `).join("");
+        const gradeCounts = state.candidates.reduce((acc, c) => {
+          acc[c.consensusGrade] = (acc[c.consensusGrade] || 0) + 1;
+          return acc;
+        }, {});
+        const loadedSources = consensusData.loadedExternalSources || [];
+        document.getElementById("consensusCards").innerHTML = [
+          ["合意度A", gradeCounts.A || 0, "cons-a"],
+          ["合意度B", gradeCounts.B || 0, "cons-b"],
+          ["合意度C", gradeCounts.C || 0, "cons-c"],
+          ["NONE", gradeCounts.NONE || 0, "skip"],
+          ["loaded sources", loadedSources.length, "watch"],
+        ].map(([label, value, cls]) => `
+          <div class="card">
+            <div class="muted">${label}</div>
+            <div class="stat ${cls === "watch" ? "watch" : ""}">${value}</div>
+          </div>
+        `).join("");
+
+        const sourceCandidates = state.candidates.filter((c) => c.finalDecision !== "SKIP");
+        const topRows = sortCandidates(sourceCandidates).slice(0, 5);
+        const topList = topRows.length
+          ? topRows.map((c) => `
+              <div class="top-item">
+                <div>${decisionBadge(c.paperDecision)}</div>
+                <div>
+                  <div class="combo">${c.venue || ""} ${c.raceNo || ""}R ${c.combo || ""}</div>
+                  <div class="detail">${displayStopReason(c.stopReason)} / ${displayOddsStatus(c.oddsStatus)} / EV ${fmt(c.expectedValue, 3)}</div>
+                </div>
+                <div class="value">${fmt(c.approxProb, 4)}</div>
+              </div>
+            `).join("")
+          : `<div class="muted">候補なし</div>`;
+        document.getElementById("topCandidates").innerHTML = topList;
+        const topConsensus = [...state.candidates]
+          .filter((c) => c.consensusGrade !== "NONE")
+          .sort((a, b) => (num(b.consensusScore) ?? 0) - (num(a.consensusScore) ?? 0) || b.matchedSources.length - a.matchedSources.length)
+          .slice(0, 5);
+        document.getElementById("topConsensus").innerHTML = topConsensus.length
+          ? topConsensus.map((c) => `
+              <div class="top-item">
+                <div>${consensusBadge(c.consensusGrade)}</div>
+                <div>
+                  <div class="combo">${c.venue || ""} ${c.raceNo || ""}R ${c.combo || ""}</div>
+                  <div class="detail">${c.consensusReason || "-"} / ${c.matchedSources.join(", ") || "-"}</div>
+                </div>
+                <div class="value">${c.consensusScore}</div>
+              </div>
+            `).join("")
+          : `<div class="muted">一致レースなし</div>`;
+        const bPlus = [...state.candidates]
+          .filter((c) => c.consensusGrade === "A" || c.consensusGrade === "B")
+          .sort((a, b) => (num(b.consensusScore) ?? 0) - (num(a.consensusScore) ?? 0) || b.matchedSources.length - a.matchedSources.length);
+        document.getElementById("bPlusCandidates").innerHTML = bPlus.length
+          ? bPlus.map((c) => `
+              <div class="top-item">
+                <div>${consensusBadge(c.consensusGrade)}</div>
+                <div>
+                  <div class="combo">${c.venue || ""} ${c.raceNo || ""}R ${c.combo || ""}</div>
+                  <div class="detail">score=${c.consensusScore} / exact=${c.exactMatchSources.join(",") || "-"} / axis=${c.axisMatchSources.join(",") || "-"} / box=${c.boxOverlapSources.join(",") || "-"}</div>
+                  <div class="detail">${c.consensusReason || "-"}</div>
+                </div>
+                <div>${decisionBadge(c.paperDecision || "")}</div>
+              </div>
+            `).join("")
+          : `<div class="muted">B以上なし</div>`;
+
+        const review = reviewPayload.data || {};
+        const reviewText = [
+          `results_status=${review.dailySummaryStatus || review.status || "-"}`,
+          `daily_summary=${review.dailySummaryExists ? "あり" : "なし"}`,
+          `prediction_review=${reviewPayload.status !== "missing" ? "あり" : "なし"}`,
+          `fallbackReason=${sheetPayload.fallbackReason || "-"}`,
+          `consensusBplus=${(review.consensusSummary?.byGrade?.A?.count || 0) + (review.consensusSummary?.byGrade?.B?.count || 0)}`,
+        ].join(" / ");
+        document.getElementById("reviewMeta").textContent = reviewText;
+        document.getElementById("reviewStatus").innerHTML = reviewPayload.status === "ok"
+          ? badge("buy", "結果照合済み")
+          : (reviewPayload.status === "result_data_missing" ? badge("watch", "結果未確定") : badge("paper", "結果未照合"));
+        const nextDateRows = Array.isArray(progressData.paperEligibleNextDatesTop10) ? progressData.paperEligibleNextDatesTop10 : [];
+        document.getElementById("paperValidationProgress").innerHTML = [
+          `paperEligibleCandidateCount=${progressData.paperEligibleCandidateCount || 0}/100`,
+          `remainingPaperEligibleCandidateCount=${progressData.remainingPaperEligibleCandidateCount ?? 0}`,
+          `paperSettlementCoverageEligible=${progressData.paperSettlementCoverageEligible ?? "-"}`,
+          `primaryBlocker=${progressData.primaryBlocker || "-"}`,
+          `nextAction=${progressData.nextAction || "-"}`,
+          `eligibleDayCount=${progressData.paperEligibleDayCount ?? 0}`,
+          nextDateRows.length ? `nextDates=${nextDateRows.map((row) => `${row.date}:${row.next_action}`).join(" / ")}` : "nextDates=-",
+        ].join(" / ");
+      }
+
+      function renderTable() {
+        const rows = sortCandidates(filteredCandidates());
+        document.getElementById("filterStats").textContent = `表示件数 ${rows.length} / 全 ${state.candidates.length}`;
+        const body = document.getElementById("candidateBody");
+        if (!rows.length) {
+          body.innerHTML = `<tr><td colspan="17">候補がありません</td></tr>`;
+          return;
+        }
+        body.innerHTML = rows.map((c) => {
+          const rowClass = c.paperDecision === "BUY" ? "buy-row" : c.paperDecision === "WATCH" ? "watch-row" : c.paperDecision === "PAPER" ? "paper-row" : "skip-row";
+          const consClass = c.consensusGrade === "A" ? "cons-a-row" : c.consensusGrade === "B" ? "cons-b-row" : c.consensusGrade === "C" ? "cons-c-row" : "";
+          const matchType = [
+            c.exactMatchSources.length ? `exact:${c.exactMatchSources.join(",")}` : "",
+            c.axisMatchSources.length ? `axis:${c.axisMatchSources.join(",")}` : "",
+            c.firstSecondAxisMatchSources.length ? `1-2axis:${c.firstSecondAxisMatchSources.join(",")}` : "",
+            c.boxOverlapSources.length ? `box:${c.boxOverlapSources.join(",")}` : "",
+          ].filter(Boolean).join(" / ") || "-";
+          return `<tr class="${rowClass} ${consClass}">
+            <td>${c.venue || ""}</td>
+            <td>${c.raceNo ?? ""}</td>
+            <td>${c.deadline || ""}</td>
+            <td>${c.combo || ""}</td>
+            <td>${decisionBadge(c.finalDecision || "")}</td>
+            <td>${decisionBadge(c.paperDecision || "")}</td>
+            <td>${displayStopReason(c.stopReason || "")}</td>
+            <td>${displayOddsStatus(c.oddsStatus || "")}</td>
+            <td class="value">${fmt(c.approxProb, 4)}</td>
+            <td class="value">${fmt(c.realOdds, 2)}</td>
+            <td class="value">${fmt(c.expectedValue, 4)}</td>
+            <td>${consensusBadge(c.consensusGrade)} <span class="value">${c.consensusScore}</span></td>
+            <td>${c.matchedSources.join(", ") || "-"}</td>
+            <td>${matchType}</td>
+            <td>${c.consensusReason || "-"}</td>
+            <td>${c.riskFlag ? "true" : "false"}</td>
+            <td>${c.reason || ""}</td>
+          </tr>`;
+        }).join("");
+      }
+
+      function wireFilters() {
+        const binds = [
+          ["filterDecision", "decision"],
+          ["filterVenue", "venue"],
+          ["filterStopReason", "stopReason"],
+          ["filterOddsStatus", "oddsStatus"],
+          ["filterConsensusGrade", "consensusGrade"],
+          ["filterMatchType", "matchType"],
+          ["filterSort", "sort"],
+        ];
+        binds.forEach(([id, key]) => {
+          document.getElementById(id).addEventListener("change", (event) => {
+            state.filters[key] = event.target.value;
+            syncFiltersToUrl();
+            renderTable();
+            renderSummary(state.sheetPayload, state.consensusPayload, state.reviewPayload);
+          });
+        });
+        document.getElementById("resetFilters").addEventListener("click", () => {
+          state.filters = { ...filterDefaults };
+          document.getElementById("filterDecision").value = "ALL";
+          document.getElementById("filterVenue").value = "ALL";
+          document.getElementById("filterStopReason").value = "ALL";
+          document.getElementById("filterOddsStatus").value = "ALL";
+          document.getElementById("filterConsensusGrade").value = "ALL";
+          document.getElementById("filterMatchType").value = "ALL";
+          document.getElementById("filterSort").value = "consensus_score_desc";
+          syncFiltersToUrl();
+          renderTable();
+          renderSummary(state.sheetPayload, state.consensusPayload, state.reviewPayload);
+        });
+      }
+
+      async function loadPage() {
+        const sheetResp = await fetch(sheetUrl);
+        const sheetPayload = await sheetResp.json();
+        state.sheetPayload = sheetPayload;
+        if (sheetPayload.status !== "ok") {
+          document.getElementById("sheetMeta").textContent = "予想シートが見つかりません";
+          document.getElementById("reviewMeta").textContent = "結果照合不可";
+          document.getElementById("reviewStatus").innerHTML = badge("skip", "missing");
+          document.getElementById("candidateBody").innerHTML = `<tr><td colspan="17">予想シートが見つかりません</td></tr>`;
+          return;
+        }
+
+        const data = sheetPayload.data || {};
+        const consensusResp = await fetch(requestedDate ? `/api/consensus-sheet?date=${encodeURIComponent(requestedDate)}` : "/api/consensus-sheet/latest");
+        const consensusPayload = await consensusResp.json();
+        state.consensusPayload = consensusPayload;
+        const progressResp = await fetch("/api/final-goal-progress");
+        const progressPayload = await progressResp.json();
+        state.progressPayload = progressPayload;
+        state.candidates = (data.candidates || []).map((c) => ({
+          venue: c.venue || "",
+          jcd: c.jcd || "",
+          raceNo: Number(c.raceNo ?? c.race_no ?? 0) || 0,
+          raceId: c.raceId || c.race_id || "",
+          deadline: c.deadline || "",
+          combo: c.combo || "",
+          finalDecision: c.finalDecision || c.final_decision || "",
+          paperDecision: c.paperDecision || c.paper_decision || "",
+          stopReason: c.stopReason || c.stop_reason || "",
+          oddsStatus: c.oddsStatus || c.odds_status || "",
+          approxProb: c.approxProb ?? c.approx_prob ?? null,
+          realOdds: c.realOdds ?? c.real_odds ?? null,
+          expectedValue: c.expectedValue ?? c.expected_value ?? null,
+          riskFlag: Boolean(c.riskFlag ?? c.risk_flag ?? false),
+          confidenceRank: Number(c.confidenceRank ?? c.confidence_rank ?? 0) || 0,
+          reason: c.reason || "",
+          caution: c.caution || "",
+          consensusGrade: c.consensusGrade || "NONE",
+          consensusScore: Number(c.consensusScore || 0) || 0,
+          matchedSources: Array.isArray(c.matchedSources) ? c.matchedSources : [],
+          exactMatchSources: Array.isArray(c.exactMatchSources) ? c.exactMatchSources : [],
+          axisMatchSources: Array.isArray(c.axisMatchSources) ? c.axisMatchSources : [],
+          firstSecondAxisMatchSources: Array.isArray(c.firstSecondAxisMatchSources) ? c.firstSecondAxisMatchSources : [],
+          boxOverlapSources: Array.isArray(c.boxOverlapSources) ? c.boxOverlapSources : [],
+          consensusReason: c.consensusReason || "",
+          externalSourceCount: Number(c.externalSourceCount || 0) || 0,
+        }));
+        document.getElementById("filterDecision").value = state.filters.decision;
+        document.getElementById("filterConsensusGrade").value = state.filters.consensusGrade;
+        document.getElementById("filterMatchType").value = state.filters.matchType;
+        document.getElementById("filterSort").value = state.filters.sort;
+        populateFilters(state.candidates);
+        syncFiltersToUrl();
+
+        const reviewDate = sheetPayload.sourceDate || data.sourceDate || requestedDate || "";
+        const reviewResp = reviewDate ? await fetch(`/api/prediction-review?date=${encodeURIComponent(reviewDate)}`) : null;
+        const reviewPayload = reviewResp ? await reviewResp.json() : { status: "missing", data: null };
+        state.reviewPayload = reviewPayload;
+
+        setMeta(sheetPayload, consensusPayload, reviewPayload, progressPayload);
+        wireFilters();
+        renderSummary(sheetPayload, consensusPayload, reviewPayload);
+        renderTable();
+        document.title = `紙上予想Web v1 - ${sheetPayload.sourceDate || ""}`;
+      }
+
+      loadPage().catch((err) => {
+        document.getElementById("sheetMeta").textContent = `読み込み失敗: ${err}`;
+        document.getElementById("reviewMeta").textContent = "読み込み失敗";
+      });
+    </script>
+  </body>
+</html>

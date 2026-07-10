@@ -1,0 +1,18 @@
+{
+    "model_type": "LogisticRegression",
+    "features_to_use": "all_from_registry",
+    "time_split_col": "date",
+    "test_size_days": 1,
+    "model_params": {
+        "C": 1.0,
+        "class_weight": "balanced",
+        "random_state": 42,
+        "max_iter": 1000
+    },
+    "output_paths": {
+        "model_path": "models/win_model.joblib",
+        "metrics_path": "data/model_outputs/test_metrics.json",
+        "metrics_history_dir": "metrics/history",
+        "predictions_path": "data/model_outputs/test_predictions.csv"
+    }
+}

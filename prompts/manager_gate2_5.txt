@@ -1,0 +1,8 @@
+プロジェクト目標: Gate 2.5 Alias Hardening
+指示:
+1. config/column_aliases.seed.json を column_aliases.json にコピーして開始せよ。
+2. data/raw/official/ に手元の実ファイルを配置せよ。
+3. inspect_raw_columns.py を実行し、列名のミスマッチを特定せよ。
+4. audit.md を見て、列名揺れを column_aliases.json に手動で追加してマッピングを完成させよ。
+5. Required な列がすべて Mapped になるまで繰り返せ。
+6. マッピング完成後、build_processed.py を実行して Gate 2 を完遂せよ。
