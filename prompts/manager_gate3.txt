@@ -1,0 +1,7 @@
+プロジェクト目標: Gate 3 Feature Engineering
+指示:
+1. build_features.py を実行し、processed データから特徴量を生成せよ。
+2. feature_summary.json を確認し、生成された列名が registry.json と整合しているか確認せよ。
+3. 欠損率の異常（全行NaNなど）がないか、統計量を確認せよ。
+4. 特徴量リーク（結果列の混入）が絶対にないことを leakage_rules_for_features.md に照らして自己監査せよ。
+5. 生成された train_features.csv を使って、Gate 4 の Baseline モデル学習へ進め。

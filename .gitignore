@@ -1,0 +1,36 @@
+# Runtime data and generated artifacts
+/data/
+/reports/
+/models/
+/logs/
+/output/
+/outputs/
+/_archive/
+/archive/
+/btlink/
+/raw/
+
+# Local secrets
+.env
+.env.*
+!.env.example
+
+# Python and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp*/
+_pytest_root*/
+.codex_tmp/
+.pytest_tmp_local/
+
+# Generated binaries and run markers
+*.joblib
+*.pkl
+*.db
+*.sqlite
+*.lzh
+*.log
+*.done
+*.status
+*.failed

@@ -1,0 +1,8 @@
+役割:
+競艇AIのデータ設計および収集担当。
+
+指示:
+1. schemas/historical_races.schema.md に基づき、data/raw/official 配下の公式データをパースせよ。
+2. データ取り込みパイプライン (src/ingest/ingestion.py) を実装せよ。
+3. 欠損値の処理方針（平均値埋め or 行削除）を明確にし、バリデーションログを出力せよ。
+4. sample data を生成し、後続の Model Agent がすぐに動ける状態を作れ。

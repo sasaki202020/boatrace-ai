@@ -1,0 +1,30 @@
+{
+    "base_features": [
+        "lane", "racer_class", "avg_st", "national_win_rate", "national_2ren_rate", 
+        "local_2ren_rate", "motor_2ren_rate", "boat_2ren_rate", "win_rate_venue"
+    ],
+    "derived_features": [
+        "is_top_class", "experience_level"
+    ],
+    "relative_features": [
+        "win_rate_diff_to_avg",
+        "st_diff_to_min",
+        "national_2ren_rate_rank_in_race",
+        "national_2ren_rate_diff_from_race_mean",
+        "national_2ren_rate_z_in_race",
+        "local_2ren_rate_rank_in_race",
+        "local_2ren_rate_diff_from_race_mean",
+        "local_2ren_rate_z_in_race",
+        "avg_st_rank_in_race",
+        "avg_st_advantage_vs_mean",
+        "avg_st_advantage_z_in_race"
+    ],
+    "availability": {
+        "pre_race": [
+            "lane", "racer_class", "avg_st", "national_win_rate", 
+            "national_2ren_rate", "local_2ren_rate", "motor_2ren_rate", "boat_2ren_rate"
+        ],
+        "just_before": ["exhibition_time", "wind_speed", "weather"]
+    },
+    "blocked": ["finish_position", "win_label", "odds_trifecta"]
+}

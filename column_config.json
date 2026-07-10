@@ -1,0 +1,30 @@
+{
+  "proba": {
+    "race_id": ["race_id", "race_key"],
+    "date": ["date"],
+    "lane": ["lane"],
+    "trifecta": ["trifecta"],
+    "approx_prob": ["approx_prob", "win_proba_norm", "calibrated_hit_prob"],
+    "first_win_proba": ["first_win_proba", "win_proba_norm"],
+    "second_win_proba": ["second_win_proba"],
+    "third_win_proba": ["third_win_proba"]
+  },
+  "odds": {
+    "race_id": ["race_id", "race_key"],
+    "trifecta": ["trifecta"],
+    "odds": ["odds", "official_odds", "settled_odds"]
+  },
+  "result": {
+    "race_id": ["race_id", "normalized_race_key"],
+    "date": ["date"],
+    "combo": ["combo", "actual_trifecta"],
+    "payout": ["payout", "settled_odds", "official_odds"],
+    "hit": ["hit"]
+  },
+  "thresholds": {
+    "buy_ev": 1.0,
+    "strong_ev": 1.2,
+    "risk_odds": 1000.0,
+    "risk_low_prob": 0.01
+  }
+}
