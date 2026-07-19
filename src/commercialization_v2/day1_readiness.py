@@ -89,6 +89,18 @@ def _result_like_lines(text: str) -> list[str]:
     return [marker for marker in RESULT_MARKERS if marker in normalized]
 
 
+def _canonical_lane(value: Any) -> int:
+    if isinstance(value, (int, np.integer)) and not isinstance(value, (bool, np.bool_)):
+        lane = int(value)
+    elif isinstance(value, str) and value in {"1", "2", "3", "4", "5", "6"}:
+        lane = int(value)
+    else:
+        raise ValueError("lane_integrity:noncanonical_representation")
+    if lane not in range(1, 7):
+        raise ValueError("lane_integrity:out_of_range")
+    return lane
+
+
 def schema_signature(raw: bytes) -> str:
     text, encoding = _decode(raw)
     lines = raw.splitlines()
@@ -143,8 +155,9 @@ def validate_runtime_bfile(path: Path, *, supported_signatures: set[str] | None 
     required = {"date", "jcd", "race_no", "lane", "racer_id"}
     if not required.issubset(frame.columns) or frame[list(required)].isna().any().any():
         raise ValueError("required_identity_missing")
+    frame["lane"] = pd.Series((_canonical_lane(value) for value in frame["lane"]), index=frame.index, dtype="int64")
     for race_id, group in frame.groupby("race_id", sort=True):
-        lanes = pd.to_numeric(group["lane"], errors="coerce")
+        lanes = group["lane"]
         if len(group) != 6:
             raise ValueError(f"six_boats_required:{race_id}")
         if set(lanes.dropna().astype(int)) != set(range(1, 7)) or lanes.duplicated().any():
@@ -259,6 +272,8 @@ def audit_only_inference(entries: pd.DataFrame, history: pd.DataFrame, *, model_
 def generate_prediction_rows(entries: pd.DataFrame, history: pd.DataFrame, *, model_path: Path, expected_model_sha256: str) -> list[dict[str, Any]]:
     if sha256_file(model_path) != expected_model_sha256:
         raise ValueError("model_hash_mismatch")
+    if not pd.api.types.is_integer_dtype(entries["lane"]):
+        raise ValueError("noncanonical_lane_type")
     features = build_frozen_features(entries, history)
     model = joblib.load(model_path)
     if tuple(str(value) for value in getattr(model, "feature_names_in_", ())) != MODEL_FEATURES:
