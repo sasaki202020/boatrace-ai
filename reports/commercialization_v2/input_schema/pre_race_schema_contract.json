@@ -1,0 +1,145 @@
+{
+  "aliases": {
+    "boat_no": "lane",
+    "race_number": "race_no",
+    "registration_no": "racer_id",
+    "venue_code": "jcd"
+  },
+  "allowedFields": [
+    "date",
+    "jcd",
+    "race_no",
+    "deadline",
+    "lane",
+    "racer_id",
+    "racer_class",
+    "national_win_rate",
+    "national_2ren_rate",
+    "local_win_rate",
+    "local_2ren_rate",
+    "motor_2ren_rate",
+    "boat_2ren_rate"
+  ],
+  "allowedRecordTypes": [
+    "STARTB",
+    "VENUE_SECTION",
+    "RACE_HEADER",
+    "ENTRY_ROW",
+    "TEXT_HEADER",
+    "SEPARATOR",
+    "END"
+  ],
+  "dtype": {
+    "date": "YYYY-MM-DD",
+    "deadline": "HH:MM JST or null",
+    "jcd": "two-digit string",
+    "lane": "integer 1..6",
+    "race_no": "integer 1..12",
+    "racer_id": "four-digit string"
+  },
+  "fieldPosition": {
+    "boat_2ren_rate": "bytes[59:65]",
+    "lane": "bytes[0:1]",
+    "local_2ren_rate": "bytes[41:47]",
+    "local_win_rate": "bytes[36:41]",
+    "motor_2ren_rate": "bytes[50:56]",
+    "national_2ren_rate": "bytes[30:36]",
+    "national_win_rate": "bytes[25:30]",
+    "racer_class": "bytes[22:24]",
+    "racer_id": "bytes[2:6]"
+  },
+  "frozenFeatureMapping": {
+    "days_since_previous_race": "strict prior-date canonical history",
+    "feature_availability_count": "strict prior-date canonical history",
+    "jcd": "direct",
+    "lane": "direct",
+    "lane_prior_count": "strict prior-date canonical history",
+    "lane_prior_win_rate": "strict prior-date canonical history",
+    "race_no": "direct",
+    "racer_prior10_win_rate": "strict prior-date canonical history",
+    "racer_prior5_win_rate": "strict prior-date canonical history",
+    "racer_prior_count": "strict prior-date canonical history",
+    "racer_prior_mean_finish": "strict prior-date canonical history",
+    "racer_prior_top2_rate": "strict prior-date canonical history",
+    "racer_prior_win_rate": "strict prior-date canonical history",
+    "venue_lane_prior_count": "strict prior-date canonical history",
+    "venue_lane_prior_win_rate": "strict prior-date canonical history"
+  },
+  "ignoredFields": [
+    "racer_name",
+    "age",
+    "branch",
+    "weight",
+    "motor_number",
+    "boat_number",
+    "current_meet_results",
+    "hayami"
+  ],
+  "normalization": {
+    "fullWidthDigits": "ASCII",
+    "multibyteDescriptiveHeaders": "IGNORE_AFTER_RESULT_MARKER_SCAN",
+    "unknownAsciiControlRecords": "REJECT_FILE",
+    "unknownFields": "DROP",
+    "venue": "VENUE_MAP"
+  },
+  "nullable": [
+    "deadline",
+    "pre-race rate fields"
+  ],
+  "prohibitedFields": [
+    "result",
+    "winner",
+    "finish_position",
+    "actual",
+    "target",
+    "payout",
+    "return",
+    "refund",
+    "settlement",
+    "final_odds",
+    "\u7740\u9806",
+    "\u7d50\u679c",
+    "\u6255\u623b",
+    "\u8fd4\u9084",
+    "\u78ba\u5b9a\u30aa\u30c3\u30ba"
+  ],
+  "prohibitedRecordTypes": [
+    "RESULT",
+    "PAYOUT",
+    "REFUND",
+    "SETTLEMENT",
+    "FINAL_ODDS"
+  ],
+  "rejectionRules": [
+    "unsupported schema",
+    "result-like record",
+    "missing identity",
+    "unknown record type",
+    "not exactly six unique lanes",
+    "duplicate racer",
+    "hash mismatch"
+  ],
+  "requiredFields": [
+    "date",
+    "jcd",
+    "race_no",
+    "lane",
+    "racer_id"
+  ],
+  "requiredRecordTypes": [
+    "STARTB",
+    "VENUE_SECTION",
+    "RACE_HEADER",
+    "ENTRY_ROW",
+    "END"
+  ],
+  "runtimeRecheckRequired": true,
+  "schemaVersion": 1,
+  "supportedInputSchemaVersions": [
+    "OFFICIAL_B_FIXED_WIDTH_V1"
+  ],
+  "supportedSchemaSignatures": [
+    "2345e069dc738464f488cb7a776e2cf0f018a88856bf779d6cbcc1890a7d2836"
+  ],
+  "timezone": "Asia/Tokyo"
+}
