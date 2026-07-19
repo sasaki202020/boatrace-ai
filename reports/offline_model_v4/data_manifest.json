@@ -1,0 +1,25 @@
+{
+  "asofArtifactSha256": "c1ede746393c906e7197d9a461a32fcacb34e508387b6d189d57da20089f3bcb",
+  "baseGitCommit": "5da01d85764ddee9d5ebd42fcf2cda2fa0b2a219",
+  "canonicalDatasetSha256": "bc2294f85e482ac1c1e7458236be509afd5d3adc9aa7afd4ec53fc4658e54f23",
+  "catBoost": "1.2.8",
+  "featureSchemaSha256": "a3853bdbdb75d13d4a596928c13eaa034307b14a5a8c534d31fca9acdab623dd",
+  "joblib": "1.5.1",
+  "networkRequests": 0,
+  "numpy": "1.26.4",
+  "pandas": "3.0.3",
+  "productionAdoptionAllowed": false,
+  "prospectiveConnected": false,
+  "python": "3.13.5",
+  "raceCount": 112969,
+  "rowCount": 677814,
+  "scikitLearn": "1.6.1",
+  "scipy": "1.15.3",
+  "sourceCodeSha256": "5a4f0489db3a79b9d7df616186376b1a2d4a0e344e79ae370095a61cf77da2f1",
+  "sourcePaths": {
+    "asof": "C:\\Users\\goo10\\競艇-recovery\\boatrace-ai-clean\\data\\offline_model_v3\\asof_features.csv",
+    "canonical": "C:\\Users\\goo10\\競艇-recovery\\boatrace-ai-clean\\data\\offline_model_v3\\canonical_race_results.csv",
+    "tree15": "C:\\Users\\goo10\\競艇-recovery\\boatrace-ai-clean\\data\\commercialization_v1\\frozen_candidate\\tree_15.joblib"
+  },
+  "tree15ArtifactSha256": "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0"
+}
