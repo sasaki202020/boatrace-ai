@@ -88,7 +88,10 @@ class GitHubContentsTransport:
             with self._opener.open(request, timeout=20) as response:
                 if response.geturl() != url:
                     raise ValueError("unexpected_redirect")
-                return json.loads(response.read().decode("utf-8"))
+                result = json.loads(response.read().decode("utf-8"))
+                if isinstance(result, dict):
+                    result["_http_date"] = response.headers.get("Date", "")
+                return result
         except urllib.error.HTTPError as exc:
             if method == "GET" and exc.code == 404:
                 return None
@@ -112,11 +115,12 @@ class GitHubContentsTransport:
     def create_content(self, owner: str, repository: str, branch: str, path: str, content: bytes) -> Mapping[str, Any]:
         payload = json.loads(content)
         commitment = str(payload.get("commitment", ""))
+        anchor_type = "prospective" if payload.get("testType") == "PROSPECTIVE_COMMITMENT" else "synthetic"
         result = self._request(
             "PUT",
             self._endpoint(owner, repository, path),
             {
-                "message": f"anchor: synthetic {commitment[:12]}",
+                "message": f"anchor: {anchor_type} {commitment[:12]}",
                 "branch": branch,
                 "content": base64.b64encode(content).decode("ascii"),
             },

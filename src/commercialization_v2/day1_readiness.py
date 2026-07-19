@@ -254,3 +254,33 @@ def audit_only_inference(entries: pd.DataFrame, history: pd.DataFrame, *, model_
         "probabilityContract": "PASS",
         "deterministicOutputHash": hashlib.sha256("\n".join(digest_rows).encode()).hexdigest(),
     }
+
+
+def generate_prediction_rows(entries: pd.DataFrame, history: pd.DataFrame, *, model_path: Path, expected_model_sha256: str) -> list[dict[str, Any]]:
+    if sha256_file(model_path) != expected_model_sha256:
+        raise ValueError("model_hash_mismatch")
+    features = build_frozen_features(entries, history)
+    model = joblib.load(model_path)
+    if tuple(str(value) for value in getattr(model, "feature_names_in_", ())) != MODEL_FEATURES:
+        raise ValueError("feature_schema_mismatch")
+    raw = model.predict_proba(features[list(MODEL_FEATURES)])[:, 1]
+    output: list[dict[str, Any]] = []
+    entries_by_key = entries.set_index(["race_id", "lane"])
+    for race_id, group in features.groupby("race_id", sort=True):
+        indexes = group.index.to_numpy()
+        values = raw[indexes]
+        total = float(values.sum())
+        if not np.isfinite(total) or total <= 0:
+            raise ValueError("invalid_probability_total")
+        probabilities = values / total
+        order = np.argsort(-probabilities, kind="stable")
+        ranks = np.empty(len(order), dtype=int); ranks[order] = np.arange(1, len(order) + 1)
+        for offset, (_, feature) in enumerate(group.iterrows()):
+            source = entries_by_key.loc[(race_id, int(feature["lane"]))]
+            output.append({
+                "raceId": str(race_id), "venue": str(source["jcd"]).zfill(2),
+                "raceNumber": int(source["race_no"]), "lane": int(feature["lane"]),
+                "racerId": str(source["racer_id"]), "predictedProbability": float(probabilities[offset]),
+                "probabilityRank": int(ranks[offset]), "topPrediction": int(ranks[offset]) == 1,
+            })
+    return output
