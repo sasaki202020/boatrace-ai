@@ -98,6 +98,9 @@ class ShadowLedgerV2:
                 row_id = stable_hash({"packageId": package_id, "raceId": row["raceId"]})
                 row_hash = stable_hash({"id": row_id, "packageId": package_id, "raceId": row["raceId"], "winningLane": int(row["winningLane"])})
                 self.connection.execute("INSERT INTO result_rows VALUES(?,?,?,?,?)", (row_id, package_id, row["raceId"], int(row["winningLane"]), row_hash)); self._chain("result_row", row_id, row_hash)
+            integrity = self.verify_integrity()
+            if integrity.get("valid") is not True:
+                raise ValueError("result_append_integrity_failed")
         return package_id
 
     def prediction_digest(self) -> str:
