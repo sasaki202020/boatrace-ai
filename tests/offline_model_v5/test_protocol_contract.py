@@ -24,4 +24,3 @@ def test_v5_has_no_production_or_prospective_write_path() -> None:
     assert "frozen_bets" not in text
     assert "requests." not in text
     assert "urllib" not in text
-
