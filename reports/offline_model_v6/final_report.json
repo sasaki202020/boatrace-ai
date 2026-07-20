@@ -1,0 +1,55 @@
+{
+  "champion": "tree_15",
+  "conclusionLimit": "FIXED_EIGHT_SETTINGS_FAILED_COVERAGE_OR_PROMOTION_CONTRACT",
+  "deterministicRerun": true,
+  "fixedHashes": {
+    "asofArtifactSha256": "c1ede746393c906e7197d9a461a32fcacb34e508387b6d189d57da20089f3bcb",
+    "canonicalDatasetSha256": "bc2294f85e482ac1c1e7458236be509afd5d3adc9aa7afd4ec53fc4658e54f23",
+    "featureSchemaSha256": "a3853bdbdb75d13d4a596928c13eaa034307b14a5a8c534d31fca9acdab623dd",
+    "tree15ArtifactSha256": "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0"
+  },
+  "historicalCaptureTimestampVerified": false,
+  "leakageFreeEvidenceComplete": false,
+  "oracle": {
+    "raceCount": 38010,
+    "top1Accuracy": 0.5580636674559326,
+    "top2OracleGain": 0.1838989739542226,
+    "top3OracleGain": 0.30123651670613005,
+    "treeWrongWinnerRank2": 6990,
+    "treeWrongWinnerRank3": 4460,
+    "treeWrongWinnerRank4Plus": 5348,
+    "winnerInTop2": 0.7419626414101552,
+    "winnerInTop3": 0.8593001841620627
+  },
+  "predictionHash": "334548cca185198f1675ebc00e13a676bd37d06d72371bfd8ece15284851b42d",
+  "probabilityHash": "2b5fe69564d474a4ebc4554959f6741b963649e3c3dda8fbb7f9f1ce5255750e",
+  "probabilityMetrics": {
+    "ece10": 0.018993923505450885,
+    "multiclassBrier": 0.6050476943773007,
+    "raceCount": 38010,
+    "raceLogLoss": 1.2433071678376793,
+    "top1Accuracy": 0.5580636674559326
+  },
+  "probabilityMetricsUnchanged": true,
+  "productionAdoptionAllowed": false,
+  "promotionAudit": {
+    "accuracyDelta": 0.0,
+    "appliedRaceCount": 0,
+    "ci95Lower": 0.0,
+    "ci95Upper": 0.0,
+    "concentrationPassed": false,
+    "coveragePassed": false,
+    "deterministic": true,
+    "improvedFolds": 0,
+    "monthConcentration": 1.0,
+    "passed": false,
+    "segmentPassed": true,
+    "venueConcentration": 1.0
+  },
+  "prospectiveConnected": false,
+  "prospectiveDataUsed": false,
+  "roiCalculated": false,
+  "scopeSelectionEvidence": "CONSUMED_CHRONOLOGICAL_OOF_ORACLE_DIAGNOSTIC",
+  "selectedScope": 3,
+  "status": "NO_TOP_PICK_SELECTOR_FOUND"
+}
