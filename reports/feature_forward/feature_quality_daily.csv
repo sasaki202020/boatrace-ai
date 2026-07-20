@@ -1,0 +1,6 @@
+date,featureGroup,scheduledRaceCount,capturedRaceCount,verifiedPreDeadlineCount,coverage,missingRate,missingReasons,captureTimestampVerifiedRate,provenanceVerifiedRate,schemaConsistencyRate,deterministicParsing,parserFailureCount,schemaDriftCount,duplicateCount,postDeadlineCount,resultLeakageCount,externalAnchorRate,consecutiveCollectionDays,existingFeatureMissingPatternOverlap,constantColumns,lowVarianceColumns,coverageByVenue,coverageByRaceNo,coverageByTimeBand
+2026-07-21,course_and_start_exhibition,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
+2026-07-21,exhibition_time,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
+2026-07-21,motor_boat_recent_condition,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
+2026-07-21,racer_recent_condition,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
+2026-07-21,weather_and_water,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
