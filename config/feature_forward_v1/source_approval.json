@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "collectionEnabled": false,
+  "allowedSourceTypes": [],
+  "allowedSourceLocationPrefixes": [],
+  "rightsStatus": "UNVERIFIED_COMMERCIAL_USE",
+  "writtenConfirmation": false,
+  "evidencePath": null,
+  "evidenceSha256": null,
+  "automatedCollectionAllowed": null,
+  "numericStorageAllowed": null,
+  "rawStorageAllowed": null,
+  "requestsPerRace": null,
+  "requestsPerDay": null,
+  "retriesPerRace": null,
+  "reason": "No approved automated pre-race source is registered. Local collector remains fail-closed."
+}
