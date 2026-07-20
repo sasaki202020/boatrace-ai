@@ -28,6 +28,7 @@ EXPECTED = {
     "tree15ArtifactSha256": "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0",
     "featureSchemaSha256": "a3853bdbdb75d13d4a596928c13eaa034307b14a5a8c534d31fca9acdab623dd",
     "v4ResultHash": "c27bc3fb0b45a17a6eeac1371d4a55cb170e570338d7d913d03926249133fe93",
+    "v4OofPredictionSha256": "34e995cfc798c2f1aff1796f6dcad0a4fcc7cb12469025d7d8481b3727d0fca8",
     "v4FinalReportSha256": "2b8ac2d7659c79a2081d4daf549d5964c0d3c2611e4b7432493725c37da5ee89",
     "v4WalkForwardSha256": "ec0310a1ce4b2093e49e4578b4ccc5db4810f2c17401c70224918553be256c6b",
 }
@@ -210,6 +211,11 @@ def main() -> int:
     deterministic = first_hash == second_hash and first_results.equals(second_results) and first_errors.equals(second_errors)
     if not deterministic:
         raise SystemExit("V5_DETERMINISTIC_RERUN_FAILED")
+    v4_models = ["tree_15", "residual_c10_a10"]
+    actual_v4_oof_hash = prediction_hash(first_predictions[first_predictions["modelName"].isin(v4_models)])
+    v4_prediction_hash_matched = actual_v4_oof_hash == EXPECTED["v4OofPredictionSha256"]
+    if not v4_prediction_hash_matched:
+        raise SystemExit("V4_OOF_PREDICTION_HASH_MISMATCH")
     audits, segments, promoted = promotion_audit(first_results, first_predictions, deterministic, args.bootstrap_iterations)
     status = "OFFLINE_RESEARCH_CHALLENGER_V5" if promoted else "NO_CHALLENGER_FOUND"
     report_root = ROOT / "reports/offline_model_v5"
@@ -230,12 +236,18 @@ def main() -> int:
         residualLogLossImprovementRate=("residualLogLossDelta", lambda values: float((values < 0).mean())),
         meanResidualLogLossDelta=("residualLogLossDelta", "mean"),
     ).reset_index()
-    manifest = {**hashes, "v4ResultHash": EXPECTED["v4ResultHash"], "v4MetricReproduction": reproduction,
+    manifest = {**hashes, "v4ResultHash": EXPECTED["v4ResultHash"], "v4OofPredictionSha256": actual_v4_oof_hash,
+                "v4PredictionHashMatched": v4_prediction_hash_matched, "v4MetricReproduction": reproduction,
+                "v4OofReferenceEvaluatorCommit": "cee2cf161209050e90ec27efa193bc763a29d2d9",
+                "v4OofReferenceDerivation": "INDEPENDENT_V4_EVALUATOR_RUN",
+                "v4OofComparisonMode": "FIXED_REFERENCE_HASH_COMPARISON",
                 "benchmarkMode": "FOLD_RETRAINED_TREE15_CONFIGURATION", "frozenArtifactRole": "LINEAGE_ONLY_NOT_USED_FOR_PAST_FOLD_INFERENCE",
                 "outerFoldCount": 5, "innerFoldCount": 3, "candidateFamilies": 2, "candidateSettings": 6,
                 "gateFeatures": GATE_FEATURES, "residualFeatures": RESIDUAL_FEATURES, "seed": 42,
                 "python": platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__, "scikitLearn": sklearn.__version__, "scipy": scipy.__version__, "joblib": joblib.__version__,
                 "baseGitCommit": subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip(),
+                "workingTreeDirtyAtEvaluation": bool(subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()),
+                "commitShaRole": "RESEARCH_PARENT_NOT_PREDICTION_CODE_IDENTITY",
                 "sourceCodeSha256": source_code_hash(),
                 "productionAdoptionAllowed": False, "prospectiveConnected": False, "networkRequests": 0, "roiCalculated": False}
     write_json(report_root / "data_manifest.json", manifest)
@@ -247,11 +259,16 @@ def main() -> int:
     write_csv(pd.DataFrame(calibration), report_root / "calibration.csv")
     write_csv(error_summary, report_root / "error_analysis.csv")
     write_json(report_root / "champion_challenger_contract.json", {"champion": "tree_15", "challenger": promoted, "futureComparisonMode": "PARALLEL_SHADOW_DESIGN_ONLY", "currentProspectiveChanged": False, "productionAdoptionAllowed": False})
-    write_json(report_root / "candidate_manifest.json", {"candidate": promoted, "candidateType": "STATIC_LOG_PROBABILITY_BLEND" if promoted and promoted.startswith("static_") else "GATED_LOG_PROBABILITY_BLEND" if promoted else None, "configurationOnlyArtifact": True, "fixedHashes": hashes, "predictionCodeCommitSha": manifest["baseGitCommit"], "productionAdoptionAllowed": False, "prospectiveConnected": False})
+    write_json(report_root / "candidate_manifest.json", {"candidate": promoted, "candidateType": "STATIC_LOG_PROBABILITY_BLEND" if promoted and promoted.startswith("static_") else "GATED_LOG_PROBABILITY_BLEND" if promoted else None, "configurationOnlyArtifact": True, "fixedHashes": hashes, "predictionCodeCommitSha": None, "researchParentCommitSha": manifest["baseGitCommit"], "sourceCodeSha256": manifest["sourceCodeSha256"], "productionAdoptionAllowed": False, "prospectiveConnected": False})
     final = {"status": status, "champion": "tree_15", "bestCandidate": promoted, "offlineResearchChallengerSelected": promoted is not None,
              "candidateAcceptedForProspective": False, "selectionPeriodConsumed": True,
-             "v4PredictionHashMatched": True, "v4MetricReproduction": reproduction, "firstPredictionHash": first_hash, "secondPredictionHash": second_hash,
+             "v4PredictionHashMatched": v4_prediction_hash_matched, "v4OofPredictionSha256": actual_v4_oof_hash,
+             "v4ResultHash": EXPECTED["v4ResultHash"], "v4MetricReproduction": reproduction, "firstPredictionHash": first_hash, "secondPredictionHash": second_hash,
+             "v4OofReferenceEvaluatorCommit": "cee2cf161209050e90ec27efa193bc763a29d2d9",
+             "v4OofReferenceDerivation": "INDEPENDENT_V4_EVALUATOR_RUN",
+             "v4OofComparisonMode": "FIXED_REFERENCE_HASH_COMPARISON",
              "deterministicRerun": deterministic, "fixedHashes": hashes, "promotionAudits": audits.to_dict("records"),
+             "historicalCaptureTimestampVerified": False, "leakageFreeEvidenceComplete": False,
              "productionAdoptionAllowed": False, "prospectiveConnected": False, "roiCalculated": False}
     write_json(report_root / "final_report.json", final)
     summary = weighted_summary(first_results)

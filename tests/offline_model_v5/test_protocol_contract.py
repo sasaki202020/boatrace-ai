@@ -24,3 +24,15 @@ def test_v5_has_no_production_or_prospective_write_path() -> None:
     assert "frozen_bets" not in text
     assert "requests." not in text
     assert "urllib" not in text
+
+
+def test_runner_recomputes_v4_oof_prediction_hash() -> None:
+    root = Path(__file__).resolve().parents[2]
+    source = (root / "scripts/run_offline_model_v5.py").read_text(encoding="utf-8")
+    assert '"v4OofPredictionSha256"' in source
+    assert 'raise SystemExit("V4_OOF_PREDICTION_HASH_MISMATCH")' in source
+    assert '"historicalCaptureTimestampVerified": False' in source
+    assert '"leakageFreeEvidenceComplete": False' in source
+    assert '"v4OofReferenceDerivation": "INDEPENDENT_V4_EVALUATOR_RUN"' in source
+    assert '"v4OofComparisonMode": "FIXED_REFERENCE_HASH_COMPARISON"' in source
+    assert '"predictionCodeCommitSha": None' in source
