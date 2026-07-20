@@ -128,6 +128,9 @@ class FeatureCollector:
      records.append({"boat_no":boat.get("boatNo"),"feature_group":group,"payload":payload,"parse_status":"ok" if payload else "missing","missing_reason":"" if payload else "group_missing"})
   reasons=sorted(set(reasons));eligible=not reasons
   provenance=stable_hash({"sourceType":item.get("sourceType"),"sourceLocation":item.get("sourceLocation"),"fetchedAtUtc":item.get("fetchedAtUtc"),"fetchedAtJst":item.get("fetchedAtJst"),"deadlineJst":item.get("raceDeadlineJst"),"rawSha256":raw_hash,"schemaSha256":SCHEMA_SHA256})
+  if "RESULT_LEAKAGE" in reasons:
+   dead=Path(self.config.store_root)/"dead-letter"/f"{snapshot_id}.json";dead.write_bytes(raw)
+   return CaptureResult("REJECTED",snapshot_id,raw_hash,SCHEMA_SHA256,provenance,False,tuple(reasons))
   if not identity_valid:
    dead=Path(self.config.store_root)/"dead-letter"/f"{snapshot_id}.json";dead.write_bytes(raw)
    return CaptureResult("REJECTED",snapshot_id,raw_hash,SCHEMA_SHA256,provenance,False,tuple(reasons))

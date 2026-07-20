@@ -47,6 +47,15 @@ def test_fail_closed_inputs_are_recorded_not_eligible(tmp_path,mutation,reason):
     item=envelope();mutation(item);result=collector(tmp_path).capture(json.dumps(item).encode())
     assert result.status=="REJECTED" and reason in result.reasons and result.research_eligible is False
 
+
+def test_result_leakage_is_quarantined_outside_normal_raw_store(tmp_path):
+    item=envelope();item["boats"][0]["groups"]["A"]["result"]=1
+    result=collector(tmp_path).capture(json.dumps(item).encode())
+    assert result.status=="REJECTED"
+    assert list((tmp_path/"store"/"dead-letter").glob("*.json"))
+    assert not list((tmp_path/"store"/"raw").rglob("*.json"))
+    assert FeatureStore(tmp_path/"store").existing(result.snapshot_id) is None
+
 def test_schema_drift_is_quarantined(tmp_path):
     item=envelope();item["schemaVersion"]=2
     result=collector(tmp_path).capture(json.dumps(item).encode())
