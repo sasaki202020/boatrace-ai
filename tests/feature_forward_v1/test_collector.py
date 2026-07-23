@@ -20,7 +20,7 @@ def envelope(now=None):
             "C":{"racerRecentStarts":5,"racerRecentAvgSt":0.16,"motorRecentRate":0.35,"boatRecentRate":0.34,"sampleCount":10}}})
     return {"schemaVersion":1,"sourceType":"LOCAL_APPROVED_SNAPSHOT","sourceLocation":"fixture://pre-race",
         "fetchedAtUtc":now.isoformat(),"fetchedAtJst":now.astimezone(JST).isoformat(),
-        "raceDeadlineJst":deadline.isoformat(),"clockDriftSeconds":0.2,"raceDate":"2026-07-21",
+        "raceDeadlineJst":deadline.isoformat(),"clockDriftSeconds":0.2,"raceDate":deadline.date().isoformat(),
         "jcd":"01","raceNo":1,"boats":boats}
 
 def collector(tmp_path):
@@ -57,7 +57,7 @@ def test_result_leakage_is_quarantined_outside_normal_raw_store(tmp_path):
     assert FeatureStore(tmp_path/"store").existing(result.snapshot_id) is None
 
 def test_schema_drift_is_quarantined(tmp_path):
-    item=envelope();item["schemaVersion"]=2
+    item=envelope();item["schemaVersion"]=3
     result=collector(tmp_path).capture(json.dumps(item).encode())
     assert result.status=="QUARANTINED_SCHEMA_DRIFT"
     assert list((tmp_path/"store"/"dead-letter").glob("*.json"))
@@ -177,3 +177,49 @@ def test_timestamp_timezone_contract_is_strict(tmp_path, field, value):
  item=envelope();item[field]=value
  result=collector(tmp_path).capture(json.dumps(item).encode())
  assert result.status=="REJECTED" and "TIMESTAMP_INVALID" in result.reasons
+
+
+def test_beforeinfo_v2_accepts_only_collected_feature_groups(tmp_path):
+ now = datetime.now(timezone.utc)
+ item = {
+  "schemaVersion": 2,
+  "sourceType": "OFFICIAL_PUBLIC_BEFOREINFO",
+  "sourceLocation": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260723&jcd=01&rno=1",
+  "fetchedAtUtc": now.isoformat(),
+  "fetchedAtJst": now.astimezone(JST).isoformat(),
+  "raceDeadlineJst": (now.astimezone(JST) + timedelta(minutes=7)).isoformat(),
+  "clockDriftSeconds": 0.0,
+  "raceDate": "2026-07-23",
+  "jcd": "01",
+  "raceNo": 1,
+  "boats": [{
+   "boatNo": boat,
+   "groups": {
+    "course_and_start_exhibition": {
+     "courseEntry": boat, "startExhibition": 0.10, "tilt": 0.0, "bodyWeight": 50.0,
+    },
+    "exhibition_time": {"exhibitionTime": 6.70},
+    "weather_and_water": {
+     "weather": "晴", "airTemp": 30.0, "waterTemp": 27.0,
+     "windDirection": "北", "windSpeed": 2.0, "waveHeight": 2.0,
+    },
+   },
+  } for boat in range(1, 7)],
+ }
+ cfg = CollectorConfig(
+  store_root=tmp_path/"store",
+  allowed_source_types=("OFFICIAL_PUBLIC_BEFOREINFO",),
+  parser_version="beforeinfo-v1",
+  contract_version="feature-forward-v2",
+  allowed_source_location_prefixes=("https://www.boatrace.jp/owpc/pc/race/beforeinfo",),
+ )
+ result = FeatureCollector(cfg).capture(json.dumps(item, ensure_ascii=False).encode())
+ assert result.status == "CAPTURED"
+ groups = {
+  row[0] for row in FeatureStore(tmp_path/"store").connection.execute(
+   "SELECT DISTINCT feature_group FROM feature_records"
+  )
+ }
+ assert groups == {
+  "course_and_start_exhibition", "exhibition_time", "weather_and_water",
+ }

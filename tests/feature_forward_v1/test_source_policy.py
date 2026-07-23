@@ -60,8 +60,10 @@ def test_unsafe_policy_fails_closed(field, value):
 
 
 def test_automated_fetch_requires_integrated_persistent_safety_path():
-    with pytest.raises(ValueError, match="automated_fetch_path_not_implemented"):
-        policy(automated_fetch_allowed=True)
+    result = policy(automated_fetch_allowed=True).evaluate()
+    assert result.automated_fetch_gate == "READY"
+    with pytest.raises(ValueError, match="automated_fetch_safety_incomplete"):
+        policy(automated_fetch_allowed=True, network_safety_integrated=False)
 
 
 def test_request_limiter_enforces_same_url_race_and_daily_limits():

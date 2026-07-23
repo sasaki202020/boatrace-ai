@@ -57,15 +57,17 @@ class PersonalResearchPolicy:
             raise ValueError("request_budget_type_invalid")
         if self.requests_per_race != 1 or self.requests_per_day < 1 or self.retries_per_race != 0:
             raise ValueError("unsafe_request_budget")
-        if self.automated_fetch_allowed:
-            raise ValueError("automated_fetch_path_not_implemented")
+        if self.automated_fetch_allowed and (
+            not self.network_safety_integrated or not self.allowed_https_hosts
+        ):
+            raise ValueError("automated_fetch_safety_incomplete")
         if any(not host or "://" in host or "/" in host for host in self.allowed_https_hosts):
             raise ValueError("allowed_host_invalid")
 
     def evaluate(self) -> GateResult:
         return GateResult(
             personal_gate="ALLOWED_WITH_RESTRICTIONS",
-            automated_fetch_gate="MANUAL_ONLY",
+            automated_fetch_gate="READY" if self.automated_fetch_allowed else "MANUAL_ONLY",
             commercial_gate="PROHIBITED",
         )
 
