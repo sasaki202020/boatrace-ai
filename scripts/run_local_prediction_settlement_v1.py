@@ -12,13 +12,25 @@ from src.feature_forward_v1.local_pipeline import (
     generate_daily_predictions,
     settle_available_predictions,
 )
+from src.feature_forward_v1.runtime_sync import (
+    sync_runtime_official_inputs,
+)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--runtime", type=Path, required=True)
     parser.add_argument("--artifact-root", type=Path, required=True)
+    parser.add_argument("--entry-source", type=Path, action="append", default=[])
+    parser.add_argument("--result-source", type=Path, action="append", default=[])
+    parser.add_argument("--minimum-token", default="260721")
     args = parser.parse_args()
+    input_sync = sync_runtime_official_inputs(
+        runtime_root=args.runtime,
+        entry_sources=args.entry_source,
+        result_sources=args.result_source,
+        minimum_token=args.minimum_token,
+    )
     b_root = args.runtime / "data/raw/official/entries"
     latest_b = sorted(b_root.glob("B*.TXT"))[-1]
     prediction = generate_daily_predictions(
@@ -33,6 +45,7 @@ def main() -> int:
         k_root=args.runtime / "data/raw/official/results",
     )
     report = {
+        "inputSync": input_sync,
         "latestB": latest_b.name,
         "prediction": prediction,
         "settlement": settlement,
@@ -43,7 +56,9 @@ def main() -> int:
     status.parent.mkdir(parents=True, exist_ok=True)
     status.write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report))
-    return 2 if settlement["conflicts"] else 0
+    if settlement["conflicts"]:
+        return 2
+    return 3 if input_sync["sourceErrors"] else 0
 
 
 if __name__ == "__main__":
