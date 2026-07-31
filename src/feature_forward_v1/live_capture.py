@@ -101,7 +101,7 @@ class RequestLedger:
         legacy = self.selected_venue(race_date)
         if legacy and legacy not in selected:
             selected.insert(0, legacy)
-        return selected
+        return selected[:5]
 
     def select_venue(self, race_date: str, jcd: str) -> None:
         with self.connection:

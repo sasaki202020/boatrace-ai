@@ -211,7 +211,7 @@ def _selected_scope_by_date(request_ledger: Path) -> dict[str, list[str]]:
         for date, venues in legacy.items():
             key = f"venues:{date}"
             current = values.setdefault(key, [])
-            values[key] = venues + [venue for venue in current if venue not in venues]
+            values[key] = (venues + [venue for venue in current if venue not in venues])[:5]
         return {
             key.removeprefix("venues:"): venues
             for key, venues in values.items()

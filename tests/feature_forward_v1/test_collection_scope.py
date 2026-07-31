@@ -21,3 +21,6 @@ def test_legacy_single_venue_state_is_preserved_when_scope_expands(tmp_path):
     assert ledger.selected_venues("2026-07-31") == ["10"]
     ledger.select_venues("2026-07-31", ["10", "11", "13"])
     assert ledger.selected_venues("2026-07-31") == ["10", "11", "13"]
+    ledger.select_venue("2026-08-01", "01")
+    ledger.select_venues("2026-08-01", ["02", "03", "04", "05", "06", "07"])
+    assert ledger.selected_venues("2026-08-01") == ["01", "02", "03", "04", "05"]
