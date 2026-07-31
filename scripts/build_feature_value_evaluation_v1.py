@@ -25,7 +25,7 @@ from src.feature_forward_v1.value_evaluation import (
     validate_schedule_manifest,
     verify_contract,
 )
-from src.feature_forward_v1.collector import SCHEMA_SHA256
+from src.feature_forward_v1.collector import LIVE_SCHEMA_SHA256, SCHEMA_SHA256
 from src.feature_forward_v1.store import FeatureStore, stable_hash
 
 
@@ -61,6 +61,15 @@ def _time_band(deadline: str | None) -> str:
 
 
 def _split_feature_record(base: dict, payload: dict, source_group: str) -> list[dict]:
+    if source_group in FEATURE_GROUPS:
+        return [{
+            **base,
+            "featureGroup": source_group,
+            "values": {
+                column: payload.get(column)
+                for column in FEATURE_GROUPS[source_group]
+            },
+        }]
     output = []
     for group, columns in FEATURE_GROUPS.items():
         allowed_source = "A" if group in {"course_and_start_exhibition", "exhibition_time"} else "B" if group == "weather_and_water" else "C"
@@ -68,6 +77,10 @@ def _split_feature_record(base: dict, payload: dict, source_group: str) -> list[
             continue
         output.append({**base, "featureGroup": group, "values": {column: payload.get(column) for column in columns}})
     return output
+
+
+def _schema_is_supported(schema_sha256: str) -> bool:
+    return schema_sha256 in {SCHEMA_SHA256, LIVE_SCHEMA_SHA256}
 
 
 def load_records_read_only(store_root: Path) -> list[dict]:
@@ -144,7 +157,7 @@ def load_records_read_only(store_root: Path) -> list[dict]:
             "provenanceSha256": row["provenance_sha256"],
             "schemaSha256": row["schema_sha256"],
             "provenanceVerified": expected_provenance == row["provenance_sha256"],
-            "schemaVerified": row["schema_sha256"] == SCHEMA_SHA256,
+            "schemaVerified": _schema_is_supported(row["schema_sha256"]),
             "parseStatus": row["parse_status"],
             "missingReason": row["missing_reason"],
             "reasons": reasons,

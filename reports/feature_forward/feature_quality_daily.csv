@@ -4,3 +4,8 @@ date,featureGroup,scheduledRaceCount,capturedRaceCount,verifiedPreDeadlineCount,
 2026-07-21,motor_boat_recent_condition,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
 2026-07-21,racer_recent_condition,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
 2026-07-21,weather_and_water,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
+2026-07-31,course_and_start_exhibition,,98,98,,0.0,{},1.0,1.0,1.0,True,0,0,0,0,0,0.0,9,,[],[],{},{},{}
+2026-07-31,exhibition_time,,98,98,,0.0,{},1.0,1.0,1.0,True,0,0,0,0,0,0.0,9,,[],[],{},{},{}
+2026-07-31,motor_boat_recent_condition,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
+2026-07-31,racer_recent_condition,,0,0,,,{},,,,False,0,0,0,0,0,,0,,[],[],{},{},{}
+2026-07-31,weather_and_water,,98,98,,0.0,{},1.0,1.0,1.0,True,0,0,0,0,0,0.0,9,,[],"[""weather""]",{},{},{}

@@ -9,11 +9,8 @@
 
 ## Blocked Reasons
 
-- deterministic_parsing_not_verified:course_and_start_exhibition
-- deterministic_parsing_not_verified:exhibition_time
 - deterministic_parsing_not_verified:motor_boat_recent_condition
 - deterministic_parsing_not_verified:racer_recent_condition
-- deterministic_parsing_not_verified:weather_and_water
 - minimum_coverage_not_met:course_and_start_exhibition
 - minimum_coverage_not_met:exhibition_time
 - minimum_coverage_not_met:motor_boat_recent_condition
@@ -25,13 +22,7 @@
 - minimum_forward_days_not_met:racer_recent_condition
 - minimum_forward_days_not_met:weather_and_water
 - minimum_settled_races_not_met
-- provenance_not_fully_verified:course_and_start_exhibition
-- provenance_not_fully_verified:exhibition_time
 - provenance_not_fully_verified:motor_boat_recent_condition
 - provenance_not_fully_verified:racer_recent_condition
-- provenance_not_fully_verified:weather_and_water
-- timestamp_not_fully_verified:course_and_start_exhibition
-- timestamp_not_fully_verified:exhibition_time
 - timestamp_not_fully_verified:motor_boat_recent_condition
 - timestamp_not_fully_verified:racer_recent_condition
-- timestamp_not_fully_verified:weather_and_water

@@ -4,8 +4,8 @@
 
 | Feature group | Priority | Reason | Coverage | Days |
 |---|---|---|---:|---:|
-| course_and_start_exhibition | ★☆☆☆☆ | 現状では研究利用不可 | UNKNOWN | 0 |
-| exhibition_time | ★☆☆☆☆ | 現状では研究利用不可 | UNKNOWN | 0 |
-| weather_and_water | ★☆☆☆☆ | 現状では研究利用不可 | UNKNOWN | 0 |
+| course_and_start_exhibition | ★★★☆☆ | 収集中・証拠不足 | UNKNOWN | 9 |
+| exhibition_time | ★★★☆☆ | 収集中・証拠不足 | UNKNOWN | 9 |
+| weather_and_water | ★★★☆☆ | 収集中・証拠不足 | UNKNOWN | 9 |
 | racer_recent_condition | ★☆☆☆☆ | 現状では研究利用不可 | UNKNOWN | 0 |
 | motor_boat_recent_condition | ★☆☆☆☆ | 現状では研究利用不可 | UNKNOWN | 0 |

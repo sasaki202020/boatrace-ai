@@ -40,6 +40,24 @@ def ready_quality():
     }
 
 
+def test_store_group_names_are_preserved_by_value_evaluation_loader():
+    rows = cli._split_feature_record(
+        {"raceDate": "2026-07-31", "jcd": "01", "raceNo": 1, "boatNo": 1},
+        {"courseEntry": 1, "startExhibition": 0.14, "tilt": 0, "bodyWeight": 52},
+        "course_and_start_exhibition",
+    )
+
+    assert len(rows) == 1
+    assert rows[0]["featureGroup"] == "course_and_start_exhibition"
+    assert rows[0]["values"]["courseEntry"] == 1
+
+
+def test_value_evaluation_accepts_live_schema_contract_hash():
+    from src.feature_forward_v1.collector import LIVE_SCHEMA_SHA256
+
+    assert cli._schema_is_supported(LIVE_SCHEMA_SHA256)
+
+
 def test_unsettled_and_small_sample_predictive_evaluation_is_blocked():
     result = predictive_value_gate(ready_quality(), settled_races=0)
     assert result["status"] == "PREDICTIVE_VALUE_EVALUATION_BLOCKED"
