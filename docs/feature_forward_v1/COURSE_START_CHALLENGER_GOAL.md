@@ -54,3 +54,10 @@ collectorは検証済みcollection日数に応じて1会場、2会場、5会場�
 未達時は `NO_CHALLENGER_FOUND` とし、`tree_15` を維持する。
 候補が合格しても、別途新規prospective parallel shadowを通過するまで
 個人用predictionへ反映しない。`productionAdoptionAllowed` は常にfalseとする。
+
+## 自動監視
+
+`BOATRACE-CourseStart-Challenger-Gate-V1` は30分ごとにread-only runnerを実行する。
+閾値未達時はreadiness reportだけを更新し、モデル学習、prediction、settlement、
+prospective ledger、production領域への書込みは行わない。閾値到達後にだけOOF評価を開始し、
+合格しても自動採用しない。既存のB/K、prediction、feature collector taskとは分離する。
