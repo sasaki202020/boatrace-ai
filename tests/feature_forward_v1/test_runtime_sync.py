@@ -12,8 +12,8 @@ from src.feature_forward_v1.runtime_sync import (
 )
 
 
-def _bfile(*, race_count: int = 1) -> bytes:
-    lines = [b"STARTB", b"01BBGN"]
+def _bfile(*, race_count: int = 1, jcd: str = "01") -> bytes:
+    lines = [b"STARTB", f"{jcd}BBGN".encode("ascii")]
     for race_no in range(1, race_count + 1):
         lines.append(
             f"{race_no}R 電話投票締切予定12:34".encode("cp932")
@@ -35,6 +35,10 @@ def _kfile(*, race_count: int, completed_count: int | None = None) -> bytes:
             lines.append("３連単 １－２－３ 1,000 1人気")
     lines.append("01KEND")
     return "\r\n".join(lines).encode("cp932")
+
+
+def _not_held_kfile(*, jcd: str = "09") -> bytes:
+    return f"{jcd}KBGN\r\n{jcd}KEND".encode("cp932")
 
 
 def test_runtime_sync_copies_missing_file_and_is_idempotent(tmp_path: Path) -> None:
@@ -109,6 +113,22 @@ def test_runtime_sync_rejects_partial_k_result_file(tmp_path: Path) -> None:
     partial.write_bytes(_kfile(race_count=12, completed_count=1))
     assert not _valid_k_file(
         partial,
+        entry_root=entry_root,
+        today=date(2026, 1, 2),
+    )
+
+
+def test_runtime_sync_accepts_explicit_not_held_venue(tmp_path: Path) -> None:
+    entry_root = tmp_path / "entries"
+    result_root = tmp_path / "results"
+    entry_root.mkdir()
+    result_root.mkdir()
+    (entry_root / "B260101.TXT").write_bytes(_bfile(race_count=12, jcd="09"))
+    not_held = result_root / "K260101.TXT"
+    not_held.write_bytes(_not_held_kfile())
+
+    assert _valid_k_file(
+        not_held,
         entry_root=entry_root,
         today=date(2026, 1, 2),
     )

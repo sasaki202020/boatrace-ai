@@ -181,15 +181,16 @@ def test_timestamp_timezone_contract_is_strict(tmp_path, field, value):
 
 def test_beforeinfo_v2_accepts_only_collected_feature_groups(tmp_path):
  now = datetime.now(timezone.utc)
+ today = now.astimezone(JST).date().isoformat()
  item = {
   "schemaVersion": 2,
   "sourceType": "OFFICIAL_PUBLIC_BEFOREINFO",
-  "sourceLocation": "https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd=20260723&jcd=01&rno=1",
+  "sourceLocation": f"https://www.boatrace.jp/owpc/pc/race/beforeinfo?hd={today.replace('-', '')}&jcd=01&rno=1",
   "fetchedAtUtc": now.isoformat(),
   "fetchedAtJst": now.astimezone(JST).isoformat(),
   "raceDeadlineJst": (now.astimezone(JST) + timedelta(minutes=7)).isoformat(),
   "clockDriftSeconds": 0.0,
-  "raceDate": "2026-07-23",
+  "raceDate": today,
   "jcd": "01",
   "raceNo": 1,
   "boats": [{

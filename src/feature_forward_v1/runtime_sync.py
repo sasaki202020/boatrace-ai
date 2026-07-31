@@ -122,6 +122,18 @@ def _valid_k_file(
         .itertuples()
     }
     result_rows = parsed.get("races", [])
+    terminal_rows = [
+        row
+        for row in result_rows
+        if str(row.get("raceStatus") or "").lower()
+        in {"not_held", "canceled", "refund"}
+        and row.get("raceNo") is None
+    ]
+    terminal_venues = {
+        str(row.get("jcd") or "").zfill(2)
+        for row in terminal_rows
+        if row.get("jcd") is not None
+    }
     actual = {
         (str(row.get("jcd")).zfill(2), int(row["raceNo"]))
         for row in result_rows
@@ -129,35 +141,52 @@ def _valid_k_file(
     }
     if (
         not expected
-        or not actual
-        or len(actual) != len(result_rows)
-        or int(parsed.get("resultTxtOkCount", 0)) <= 0
+        or (not actual and not terminal_rows)
+        or len(actual) + len(terminal_rows) != len(result_rows)
+        or (
+            int(parsed.get("resultTxtOkCount", 0)) <= 0
+            and not terminal_rows
+        )
         or not actual.issubset(expected)
+        or bool(terminal_venues & {venue for venue, _ in actual})
     ):
         return False
     incomplete_statuses = {
         "",
         "missing",
-        "not_held",
         "pending",
         "unavailable",
         "parse_error",
     }
     if any(
-        str(row.get("raceStatus") or "").lower() in incomplete_statuses
+        (
+            str(row.get("raceStatus") or "").lower() in incomplete_statuses
+            or (
+                str(row.get("raceStatus") or "").lower() == "not_held"
+                and row.get("raceNo") is not None
+            )
+        )
         for row in result_rows
     ):
         return False
 
     expected_venues = {venue for venue, _ in expected}
-    if {venue for venue, _ in actual} != expected_venues:
+    covered_venues = {venue for venue, _ in actual} | (
+        terminal_venues & expected_venues
+    )
+    if covered_venues != expected_venues:
         return False
     for venue in expected_venues:
+        if venue in terminal_venues:
+            continue
         expected_races = sorted(race for code, race in expected if code == venue)
         actual_races = sorted(race for code, race in actual if code == venue)
         if actual_races != expected_races[: len(actual_races)]:
             return False
-    return len(actual) / len(expected) >= MIN_FINAL_RESULT_COVERAGE
+    resolved_count = len(actual) + sum(
+        1 for venue, _ in expected if venue in terminal_venues
+    )
+    return resolved_count / len(expected) >= MIN_FINAL_RESULT_COVERAGE
 
 
 def _eligible_files(
