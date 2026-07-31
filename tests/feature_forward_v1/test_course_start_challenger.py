@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import copy
 import math
+import sqlite3
 
+import pandas as pd
 import pytest
 
 from src.feature_forward_v1.course_start_challenger import (
@@ -12,6 +14,7 @@ from src.feature_forward_v1.course_start_challenger import (
     build_readiness_report,
     evaluate_course_start_challenger,
 )
+from scripts import run_course_start_challenger_v1 as cli
 
 
 def _race(index: int, *, winner: int = 1) -> dict:
@@ -103,3 +106,34 @@ def test_evaluation_is_deterministic_and_does_not_mutate_inputs():
 
     assert first == second
     assert races == original
+
+
+def test_schedule_denominator_uses_selected_scope_and_source_hash(tmp_path, monkeypatch):
+    b_root = tmp_path / "entries"
+    b_root.mkdir()
+    b_file = b_root / "B260731.TXT"
+    b_file.write_bytes(b"local-b-source")
+    ledger = tmp_path / "request_ledger.sqlite3"
+    connection = sqlite3.connect(ledger)
+    connection.execute("CREATE TABLE state(key TEXT PRIMARY KEY,value TEXT NOT NULL)")
+    connection.execute("INSERT INTO state VALUES(?,?)", ("venue:2026-07-31", "10"))
+    connection.commit()
+    connection.close()
+    monkeypatch.setattr(
+        cli,
+        "validate_runtime_bfile",
+        lambda path: pd.DataFrame([
+            {"date": "2026-07-31", "jcd": "10", "race_no": 1, "deadline": "12:00"},
+            {"date": "2026-07-31", "jcd": "11", "race_no": 1, "deadline": "12:00"},
+        ]),
+    )
+
+    schedule, metadata = cli.load_selected_scope_schedule(
+        b_root, ledger, {"2026-07-31"}
+    )
+
+    assert metadata["status"] == "VERIFIED_LOCAL_SELECTED_SCOPE"
+    assert metadata["scope"] == "collector_selected_venues"
+    assert metadata["scheduledRaceCount"] == 1
+    assert schedule == [{"raceDate": "2026-07-31", "jcd": "10", "raceNo": 1, "timeBand": "unknown"}]
+    assert len(metadata["sourceFiles"][0]["sha256"]) == 64

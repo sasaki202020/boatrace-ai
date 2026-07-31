@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 import sys
+import sqlite3
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -25,6 +26,7 @@ from src.feature_forward_v1.value_evaluation import (
     build_collection_quality,
     complete_verified_race_keys,
 )
+from src.commercialization_v2.day1_readiness import validate_runtime_bfile
 from scripts.build_feature_value_evaluation_v1 import load_records_read_only
 
 FEATURE_SCHEMA_SHA256 = "a3853bdbdb75d13d4a596928c13eaa034307b14a5a8c534d31fca9acdab623dd"
@@ -189,6 +191,76 @@ def build_joined_race_rows(
     return build_course_start_race_rows(joined)
 
 
+def _selected_scope_by_date(request_ledger: Path) -> dict[str, list[str]]:
+    if not request_ledger.is_file():
+        return {}
+    connection = sqlite3.connect(f"file:{request_ledger.resolve().as_posix()}?mode=ro", uri=True)
+    try:
+        values = {
+            str(row[0]): [value for value in str(row[1]).split(",") if value]
+            for row in connection.execute(
+                "SELECT key,value FROM state WHERE key LIKE 'venues:%'"
+            )
+        }
+        legacy = {
+            str(row[0]).removeprefix("venue:"): [str(row[1])]
+            for row in connection.execute(
+                "SELECT key,value FROM state WHERE key LIKE 'venue:%'"
+            )
+        }
+        for date, venues in legacy.items():
+            key = f"venues:{date}"
+            current = values.setdefault(key, [])
+            values[key] = venues + [venue for venue in current if venue not in venues]
+        return {
+            key.removeprefix("venues:"): venues
+            for key, venues in values.items()
+            if venues
+        }
+    finally:
+        connection.close()
+
+
+def load_selected_scope_schedule(
+    b_root: Path, request_ledger: Path, dates: set[str],
+) -> tuple[list[dict[str, Any]] | None, dict[str, Any]]:
+    selected_by_date = _selected_scope_by_date(request_ledger)
+    schedule: list[dict[str, Any]] = []
+    source_files: list[dict[str, Any]] = []
+    missing: list[str] = []
+    for race_date in sorted(dates):
+        b_file = b_root / f"B{race_date[2:].replace('-', '')}.TXT"
+        venues = selected_by_date.get(race_date)
+        if not b_file.is_file() or not venues:
+            missing.append(race_date)
+            continue
+        entries = validate_runtime_bfile(b_file)
+        rows = entries[["date", "jcd", "race_no", "deadline"]].drop_duplicates()
+        for row in rows.itertuples(index=False):
+            if str(row.date) == race_date and str(row.jcd).zfill(2) in venues:
+                schedule.append({
+                    "raceDate": race_date,
+                    "jcd": str(row.jcd).zfill(2),
+                    "raceNo": int(row.race_no),
+                    "timeBand": "unknown",
+                })
+        source_files.append({
+            "name": b_file.name,
+            "sha256": hashlib.sha256(b_file.read_bytes()).hexdigest(),
+            "selectedVenues": venues,
+        })
+    metadata = {
+        "status": "VERIFIED_LOCAL_SELECTED_SCOPE" if not missing and schedule else "UNAVAILABLE",
+        "scope": "collector_selected_venues",
+        "scheduledRaceCount": len({
+            (row["raceDate"], row["jcd"], row["raceNo"]) for row in schedule
+        }),
+        "sourceFiles": source_files,
+        "missingDates": missing,
+    }
+    return (schedule if metadata["status"] != "UNAVAILABLE" else None), metadata
+
+
 def _write_json(path: Path, payload: Any) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8", newline="\n")
@@ -228,6 +300,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--feature-store", type=Path, required=True)
     parser.add_argument("--report-root", type=Path, required=True)
     parser.add_argument("--model-artifact", type=Path)
+    parser.add_argument("--b-root", type=Path)
+    parser.add_argument("--request-ledger", type=Path)
     args = parser.parse_args(argv)
     report_root = args.report_root.resolve()
     allowed = (ROOT / "reports" / "feature_forward").resolve()
@@ -241,9 +315,22 @@ def main(argv: list[str] | None = None) -> int:
         args.prediction_root.resolve(), args.settlement_root.resolve()
     )
     records = load_records_read_only(args.feature_store.resolve())
-    quality = build_collection_quality(records)
-    feature_quality = quality[FEATURE_GROUP]
     feature_keys = complete_verified_race_keys(records, FEATURE_GROUP)
+    schedule = None
+    coverage_metadata = {
+        "status": "UNAVAILABLE",
+        "scope": "collector_selected_venues",
+        "scheduledRaceCount": None,
+        "sourceFiles": [],
+        "missingDates": sorted({str(key[0]) for key in feature_keys}),
+    }
+    if args.b_root and args.request_ledger:
+        schedule, coverage_metadata = load_selected_scope_schedule(
+            args.b_root.resolve(), args.request_ledger.resolve(),
+            {str(key[0]) for key in feature_keys},
+        )
+    quality = build_collection_quality(records, scheduled_races=schedule)
+    feature_quality = quality[FEATURE_GROUP]
     joined = build_joined_race_rows(predictions, settlements, records)
     eligible_settled_count = len(joined)
     report = build_readiness_report(
@@ -268,7 +355,14 @@ def main(argv: list[str] | None = None) -> int:
         "tree15Changed": False,
         "productionWrites": 0,
         "prospectiveWrites": 0,
+        "coverageScope": coverage_metadata["scope"],
+        "coverageEvidenceStatus": coverage_metadata["status"],
+        "coverageDenominatorRaceCount": coverage_metadata["scheduledRaceCount"],
+        "coverageSourceFiles": coverage_metadata["sourceFiles"],
+        "coverageMissingDates": coverage_metadata["missingDates"],
     })
+    if coverage_metadata["status"] != "VERIFIED_LOCAL_SELECTED_SCOPE":
+        report["blockedReasons"] = sorted(set(report["blockedReasons"] + ["coverage_denominator_unavailable"]))
     if report["status"] == "COURSE_START_CHALLENGER_READY":
         evaluation = evaluate_course_start_challenger(joined)
         rerun = evaluate_course_start_challenger(joined)

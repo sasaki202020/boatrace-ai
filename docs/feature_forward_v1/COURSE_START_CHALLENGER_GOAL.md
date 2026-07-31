@@ -22,6 +22,11 @@ settlement、BUY、EV、bettingには接続しない。
 全体のsettlement件数だけでは評価開始条件を満たしたとみなさない。
 feature snapshotとsettlementがrace単位で結合できる件数を使用する。
 
+coverageの分母は、Bファイルとappend-only request stateから復元した
+`collector_selected_venues` の範囲に限定する。これは公式サイト全開催のcoverageではない。
+collectorは検証済みcollection日数に応じて1会場、2会場、5会場へ段階拡張する。
+このscope外のraceを未取得だからといって、source全体の品質問題とは判定しない。
+
 ## 評価契約
 
 - chronological expanding-window 5-fold

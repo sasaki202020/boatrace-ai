@@ -93,11 +93,29 @@ class RequestLedger:
         ).fetchone()
         return str(row[0]) if row else None
 
+    def selected_venues(self, race_date: str) -> list[str]:
+        row = self.connection.execute(
+            "SELECT value FROM state WHERE key=?", (f"venues:{race_date}",)
+        ).fetchone()
+        selected = [value for value in str(row[0]).split(",") if value] if row else []
+        legacy = self.selected_venue(race_date)
+        if legacy and legacy not in selected:
+            selected.insert(0, legacy)
+        return selected
+
     def select_venue(self, race_date: str, jcd: str) -> None:
         with self.connection:
             self.connection.execute(
                 "INSERT OR IGNORE INTO state(key,value) VALUES(?,?)",
                 (f"venue:{race_date}", jcd),
+            )
+
+    def select_venues(self, race_date: str, jcds: list[str]) -> None:
+        values = ",".join(jcds)
+        with self.connection:
+            self.connection.execute(
+                "INSERT OR IGNORE INTO state(key,value) VALUES(?,?)",
+                (f"venues:{race_date}", values),
             )
 
     def stopped(self) -> bool:
@@ -145,6 +163,29 @@ def targets_from_bfile(path: Path, now: datetime) -> list[CaptureTarget]:
                 CaptureTarget(str(row.date), str(row.jcd).zfill(2), int(row.race_no), deadline)
             )
     return sorted(targets, key=lambda item: (item.deadline_jst, item.jcd, item.race_no))
+
+
+def _verified_collection_days(store_root: Path) -> int:
+    database = Path(store_root) / "feature_forward.sqlite3"
+    if not database.is_file():
+        return 0
+    try:
+        connection = sqlite3.connect(f"file:{database.as_posix()}?mode=ro", uri=True)
+        count = int(connection.execute(
+            "SELECT COUNT(DISTINCT race_date) FROM snapshots WHERE research_eligible=1"
+        ).fetchone()[0])
+        connection.close()
+        return count
+    except sqlite3.Error:
+        return 0
+
+
+def _venue_limit_for_days(collection_days: int) -> int:
+    if collection_days >= 7:
+        return 5
+    if collection_days >= 3:
+        return 2
+    return 1
 
 
 def _start_value(value: object) -> float | None:
@@ -275,20 +316,40 @@ def _run_capture_cycle_unlocked(
         target for target in targets
         if (target.deadline_jst - now_jst).total_seconds() >= 360
     ]
-    venue = ledger.selected_venue(now_jst.date().isoformat())
-    if venue is None and selectable_targets:
+    race_date = now_jst.date().isoformat()
+    venue_limit = _venue_limit_for_days(_verified_collection_days(store_root))
+    selected_venues = ledger.selected_venues(race_date)
+    if selectable_targets and not selected_venues:
         by_venue: dict[str, list[CaptureTarget]] = {}
         for target in selectable_targets:
             by_venue.setdefault(target.jcd, []).append(target)
         candidates = {
             key: values for key, values in by_venue.items() if len(values) >= 3
         } or by_venue
-        venue = min(
+        selected_venues = sorted(
             candidates,
             key=lambda key: (candidates[key][0].deadline_jst, key),
+        )[:venue_limit]
+        ledger.select_venues(race_date, selected_venues)
+    elif selectable_targets and len(selected_venues) < venue_limit:
+        by_venue = {}
+        for target in selectable_targets:
+            by_venue.setdefault(target.jcd, []).append(target)
+        candidates = sorted(
+            by_venue,
+            key=lambda key: (by_venue[key][0].deadline_jst, key),
         )
-        ledger.select_venue(now_jst.date().isoformat(), venue)
-    targets = [target for target in targets if target.jcd == venue]
+        selected_venues = [
+            venue for venue in selected_venues if venue in by_venue
+        ] + [
+            venue for venue in candidates if venue not in selected_venues
+        ]
+        selected_venues = selected_venues[:venue_limit]
+        if not ledger.connection.execute(
+            "SELECT 1 FROM state WHERE key=?", (f"venues:{race_date}",)
+        ).fetchone():
+            ledger.select_venues(race_date, selected_venues)
+    targets = [target for target in targets if target.jcd in selected_venues]
     due = [
         target for target in targets
         if 360 <= (target.deadline_jst - now_jst).total_seconds() <= 480
@@ -298,11 +359,18 @@ def _run_capture_cycle_unlocked(
         return {
             "status": "WAITING_FOR_CAPTURE_WINDOW",
             "networkRequests": 0,
-            "selectedVenue": venue,
+            "selectedVenue": selected_venues[0] if selected_venues else None,
+            "selectedVenues": selected_venues,
+            "venueLimit": venue_limit,
         }
     previous = ledger.last_requested_at()
     if previous is not None and (now - previous).total_seconds() < 60:
-        return {"status": "REQUEST_INTERVAL_BLOCKED", "networkRequests": 0}
+        return {
+            "status": "REQUEST_INTERVAL_BLOCKED",
+            "networkRequests": 0,
+            "selectedVenues": selected_venues,
+            "venueLimit": venue_limit,
+        }
     target = due[0]
     requested_at = datetime.now(timezone.utc)
     request = Request(target.url, headers={"User-Agent": "boatrace-ai-mvp/1.0"})
