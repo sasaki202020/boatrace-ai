@@ -293,6 +293,11 @@ def _write_markdown(path: Path, report: dict[str, Any]) -> None:
     path.write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
 
 
+def _readiness_forward_days(feature_quality: dict[str, Any]) -> int:
+    """Use the trailing consecutive verified collection run, not unique dates."""
+    return int(feature_quality.get("consecutiveCollectionDays") or 0)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Read-only course/start challenger readiness and OOF evaluation.")
     parser.add_argument("--prediction-root", type=Path, required=True)
@@ -338,7 +343,7 @@ def main(argv: list[str] | None = None) -> int:
         feature_races=len(feature_keys),
         quality=feature_quality,
         model_sha256=CHAMPION_MODEL_SHA256,
-        observed_forward_days=len({str(key[0]) for key in feature_keys}),
+        observed_forward_days=_readiness_forward_days(feature_quality),
     )
     observed_dates = (
         [str(record.get("raceDate")) for record in records if record.get("raceDate")]

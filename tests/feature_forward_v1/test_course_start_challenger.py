@@ -77,6 +77,12 @@ def test_readiness_is_blocked_without_schedule_denominator_or_thresholds():
     assert "coverage_denominator_unavailable" in report["blockedReasons"]
 
 
+def test_runner_readiness_uses_consecutive_verified_days() -> None:
+    assert cli._readiness_forward_days({"consecutiveCollectionDays": 9}) == 9
+    assert cli._readiness_forward_days({"consecutiveCollectionDays": 0}) == 0
+    assert cli._readiness_forward_days({}) == 0
+
+
 def test_race_rows_reject_target_like_feature_keys():
     race = _race(0)
     race["features"][0]["winner"] = 1
