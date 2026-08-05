@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "artifactType": "OOF_PROTOCOL_FREEZE",
+  "protocolPath": "docs/feature_forward_v1/OOF_DECISION_PROTOCOL.md",
+  "protocolSha256": "6b686d6103278726aa128402f536fdc80f026b1e3d582fc2f339d8ae49cedcc7",
+  "specPath": "config/feature_forward_v1/oof_evaluation_spec.json",
+  "specSha256": "aa50c8a4529472b53cc8bb833cfc87f251b46474bd983a5b4882d9f6e992809b",
+  "tree15Sha256": "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0",
+  "featureSchemaSha256": "a3853bdbdb75d13d4a596928c13eaa034307b14a5a8c534d31fca9acdab623dd",
+  "frozenAtUtc": "2026-08-05T15:15:43.7643033Z",
+  "frozenAtJst": "2026-08-06T00:15:43.7643033+09:00",
+  "oofExecutedAtFreeze": false,
+  "featureSettledAtFreeze": 305,
+  "forwardDaysAtFreeze": 14,
+  "coverageDefinition": "mature_selected_capture_window_passed",
+  "decisionGate": {
+    "minimumForwardDays": 30,
+    "minimumFeatureSettledRaces": 1500,
+    "minimumMatureCoverage": 0.8,
+    "minimumValidationRacesPerFold": 250,
+    "minimumOofDates": 25,
+    "minimumOofRaces": 1250
+  },
+  "productionAdoptionAllowed": false,
+  "personalAdoptionAllowed": false,
+  "productionWritesAtFreeze": 0,
+  "prospectiveWritesAtFreeze": 0
+}

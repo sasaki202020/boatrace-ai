@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "mode": "PRE_FLIGHT_ONLY",
+  "baselines": [
+    "baseline_lane1",
+    "baseline_tree15"
+  ],
+  "challenger": "challenger_tree15_course_start",
+  "featureGroup": "course_and_start_exhibition",
+  "split": {
+    "method": "chronological_5_fold",
+    "sameRaceSingleFold": true,
+    "groupBy": "targetDate",
+    "gapDays": 0,
+    "validationBalancing": "minimize_max_race_count_deviation",
+    "randomSplit": false,
+    "preprocessingFit": "train_only",
+    "calibrationFit": "train_only"
+  },
+  "comparison": {
+    "pairedByRace": true,
+    "primaryMetric": "log_loss",
+    "secondaryMetrics": [
+      "brier",
+      "top1",
+      "ece"
+    ]
+  },
+  "diagnosticGate": {
+    "minimumForwardDays": 30,
+    "minimumCoverage": 0.8,
+    "minimumFeatureSettledRaces": 500,
+    "minimumValidationRacesPerFold": 75,
+    "minimumOofRaces": 375,
+    "minimumOofDates": 25,
+    "newUnknownCount": 0,
+    "terminalConflictCount": 0,
+    "leakageCount": 0,
+    "hashChainValid": true,
+    "productionRelevantFailureCount": 0
+  },
+  "decisionGate": {
+    "minimumForwardDays": 30,
+    "minimumCoverage": 0.8,
+    "minimumFeatureSettledRaces": 1500,
+    "minimumValidationRacesPerFold": 250,
+    "minimumOofRaces": 1250,
+    "minimumOofDates": 25,
+    "newUnknownCount": 0,
+    "terminalConflictCount": 0,
+    "leakageCount": 0,
+    "hashChainValid": true,
+    "productionRelevantFailureCount": 0
+  },
+  "adoption": {
+    "requiresExplicitApproval": true,
+    "productionAdoptionAllowed": false,
+    "personalAdoptionAllowed": false
+  }
+}
