@@ -27,8 +27,8 @@ def test_parse_meta_uses_canonical_race_id() -> None:
 
 def test_build_output_paths_points_to_repo_contract() -> None:
     paths = build_output_paths(Path("data"), "2026-04-19")
-    assert str(paths["odds_csv"]).endswith("data\\odds\\20260419\\all_trifecta_odds.csv")
-    assert str(paths["summary_json"]).endswith("data\\predictions\\20260419\\summary.json")
+    assert paths["odds_csv"] == Path("data") / "odds" / "20260419" / "all_trifecta_odds.csv"
+    assert paths["summary_json"] == Path("data") / "predictions" / "20260419" / "summary.json"
 
 
 def test_parse_racelist_extracts_current_line_based_boat_blocks() -> None:
