@@ -88,8 +88,9 @@ py -m py_compile src\web\app.py src\pipeline\health_check.py src\pipeline\ops_go
 
 ## When Resuming
 
-次回 Codex は、まずこの 3 つを読む。
+次回 Codex は、まずこの 4 つを読む。
 
 1. `AGENTS.md`
-2. `docs/CODEX_CONTEXT.md`
-3. `docs/CODEX_HANDOFF.md`
+2. `docs/FINAL_PRODUCT_SPEC.md`
+3. `docs/CODEX_CONTEXT.md`
+4. `docs/CODEX_HANDOFF.md`

@@ -2,6 +2,10 @@
 
 このプロジェクトを実戦で使いこなし、継続的に進化させるための全リソースへの入り口です。
 
+> **最初に読む正本**: [FINAL_PRODUCT_SPEC.md](FINAL_PRODUCT_SPEC.md)
+> このファイルはナビゲーション用です。設計、運用、安全境界、証拠ゲートが矛盾する場合は
+> FINAL_PRODUCT_SPEC.md を優先します。
+
 ## 🗺️ 運用のロードマップ
 1. **[開始ガイド](file:///c:/Users/goo10/競艇/boatrace-ai-mvp/boatrace_start_here.md)**: 実データ投入の最初の一歩。
 2. **[初回実行コマンド](file:///c:/Users/goo10/競艇/boatrace-ai-mvp/commands/01_first_commands.md)**: エイリアス監査とインジェクション。
