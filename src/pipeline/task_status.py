@@ -35,6 +35,25 @@ TASK_DEFINITIONS = [
         "logPrefix": "paper_ops_monitor",
     },
 ]
+SUCCESSFUL_TASK_RESULTS = {0, 267011}
+ACTIVE_TASK_STATES = {"queued", "running"}
+
+
+def _execution_status(task: dict[str, Any]) -> str:
+    if not task.get("registered"):
+        return "warning" if task.get("status") == "warning" else "missing"
+    state = str(task.get("state") or "").strip().lower()
+    if state in ACTIVE_TASK_STATES:
+        return "running"
+    if state == "disabled":
+        return "failed"
+    result = task.get("lastTaskResult")
+    if result is None:
+        return "warning"
+    try:
+        return "ok" if int(result) in SUCCESSFUL_TASK_RESULTS else "failed"
+    except (TypeError, ValueError):
+        return "warning"
 
 
 def _latest_path(pattern: str) -> Path | None:
@@ -179,17 +198,21 @@ def task_status() -> dict[str, Any]:
         tasks = []
         missing = 0
         failed = 0
+        warning = 0
+        running = 0
         for task_def in TASK_DEFINITIONS:
             task_name = task_def["taskName"]
             info = _resolve_windows_task(task_name, list(task_def.get("aliases", [])))
-            if not info.get("registered"):
+            execution_status = _execution_status(info)
+            info["status"] = execution_status
+            if execution_status == "missing":
                 missing += 1
-            try:
-                last_task_result = int(info.get("lastTaskResult") or 0)
-                if last_task_result not in {0, 267011}:
-                    failed += 1
-            except Exception:
-                pass
+            elif execution_status == "failed":
+                failed += 1
+            elif execution_status == "warning":
+                warning += 1
+            elif execution_status == "running":
+                running += 1
             prefix = task_def.get("logPrefix", task_name.lower())
             latest_log = _latest_path(f"{prefix}_*.log")
             info["logFileExists"] = bool(latest_log and latest_log.exists())
@@ -201,13 +224,15 @@ def task_status() -> dict[str, Any]:
         }
         summary = {
             "platform": platform_name,
-            "status": "warning" if missing or failed else "ok",
+            "status": "warning" if missing or failed or warning else "ok",
             "generatedAt": datetime.now().isoformat(timespec="seconds"),
             "tasks": tasks,
             "taskCount": len(TASK_DEFINITIONS),
             "registeredTaskCount": sum(1 for task in tasks if task.get("registered")),
             "missingTaskCount": missing,
             "failedTaskCount": failed,
+            "warningTaskCount": warning,
+            "runningTaskCount": running,
             "latestHealthCheckExists": bool(_latest_report_path("*_health_check.json")),
             "latestDailyReportExists": bool(_latest_report_path("*_summary.json") or _latest_report_path("daily_report.json")),
             "latestTaskLogs": latest_logs,

@@ -10,13 +10,25 @@ $featureArgs = @(
   "--status `"$runtime\reports\feature_forward_v1\latest_status.json`""
 ) -join " "
 $featureAction = New-ScheduledTaskAction -Execute $python -Argument $featureArgs -WorkingDirectory $repo
+$featureTaskName = "BOATRACE-Feature-Forward-Collector-V1"
+$existingFeatureTask = Get-ScheduledTask -TaskName $featureTaskName -ErrorAction SilentlyContinue
+$featureUser = if ($existingFeatureTask -and $existingFeatureTask.Principal.UserId) {
+  $existingFeatureTask.Principal.UserId
+} else {
+  $env:USERNAME
+}
+if ([string]::IsNullOrWhiteSpace($featureUser)) {
+  throw "FEATURE_COLLECTOR_TASK_USER_UNRESOLVED"
+}
+$featurePrincipal = New-ScheduledTaskPrincipal -UserId $featureUser -LogonType S4U -RunLevel Limited
 $featureTrigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(1) `
   -RepetitionInterval (New-TimeSpan -Minutes 1) `
   -RepetitionDuration (New-TimeSpan -Days 3650)
 $featureSettings = New-ScheduledTaskSettingsSet -MultipleInstances IgnoreNew `
+  -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
   -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Minutes 1)
-Register-ScheduledTask -TaskName "BOATRACE-Feature-Forward-Collector-V1" `
-  -Action $featureAction -Trigger $featureTrigger -Settings $featureSettings `
+Register-ScheduledTask -TaskName $featureTaskName `
+  -Action $featureAction -Trigger $featureTrigger -Settings $featureSettings -Principal $featurePrincipal `
   -Description "Personal research beforeinfo capture; one request per due race; no retries." `
   -Force | Out-Null
 

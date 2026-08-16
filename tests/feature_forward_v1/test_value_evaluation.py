@@ -72,6 +72,20 @@ def test_less_than_30_days_is_blocked():
     assert "minimum_forward_days_not_met:exhibition_time" in result["blockedReasons"]
 
 
+def test_target_group_gate_does_not_block_course_start_on_uncollected_groups():
+    quality = ready_quality()
+    quality["racer_recent_condition"]["consecutiveCollectionDays"] = 0
+    quality["motor_boat_recent_condition"]["consecutiveCollectionDays"] = 0
+    result = predictive_value_gate(
+        quality,
+        settled_races=0,
+        target_groups=["course_and_start_exhibition"],
+    )
+    assert result["observedForwardDays"] == 30
+    assert result["targetFeatureGroups"] == ["course_and_start_exhibition"]
+    assert "minimum_forward_days_not_met:racer_recent_condition" not in result["blockedReasons"]
+
+
 def test_post_deadline_feature_is_excluded():
     quality = ready_quality()
     quality["weather_and_water"]["postDeadlineCount"] = 1
@@ -147,6 +161,69 @@ def test_collection_report_is_deterministic():
     first = build_collection_quality([], scheduled_races=[])
     second = build_collection_quality([], scheduled_races=[])
     assert first == second
+
+
+def test_quality_report_refresh_writes_current_collection_snapshot(tmp_path):
+    report_root = tmp_path / "reports" / "feature_forward"
+    quality = build_collection_quality([], scheduled_races=[])
+
+    cli.write_collection_quality_reports(
+        report_root=report_root,
+        as_of_date="2026-08-01",
+        quality=quality,
+    )
+
+    latest = (report_root / "feature_quality_latest.md").read_text(encoding="utf-8")
+    daily = (report_root / "feature_quality_daily.csv").read_text(encoding="utf-8")
+    assert "asOfDate: 2026-08-01" in latest
+    assert daily.count("2026-08-01") == len(CONTRACT["featureGroups"])
+
+
+def test_quality_markdown_shows_raw_and_mature_capture_coverage():
+    quality = build_collection_quality([], scheduled_races=[])
+    for entry in quality.values():
+        entry.update({
+            "rawCaptureCoverage": 0.75,
+            "matureCaptureCoverage": 0.84,
+            "matureSelectedRaceCount": 576,
+            "captureWindowNotDueRaceCount": 60,
+        })
+
+    markdown = cli._quality_markdown("2026-08-08", quality)
+
+    assert "Raw coverage" in markdown
+    assert "Mature coverage" in markdown
+    assert "0.750" in markdown
+    assert "0.840" in markdown
+
+
+def test_quality_report_refresh_adds_new_columns_to_existing_csv(tmp_path):
+    report_root = tmp_path / "reports" / "feature_forward"
+    quality = build_collection_quality([], scheduled_races=[])
+    cli.write_collection_quality_reports(
+        report_root=report_root,
+        as_of_date="2026-08-01",
+        quality=quality,
+    )
+
+    for entry in quality.values():
+        entry["coverageBasis"] = "selected_scope_from_verified_lifecycle_report"
+    cli.write_collection_quality_reports(
+        report_root=report_root,
+        as_of_date="2026-08-02",
+        quality=quality,
+    )
+
+    daily = (report_root / "feature_quality_daily.csv").read_text(encoding="utf-8")
+    assert "coverageBasis" in daily.splitlines()[0]
+    assert daily.count("2026-08-02") == len(CONTRACT["featureGroups"])
+
+
+def test_feature_store_file_path_fails_closed(tmp_path):
+    database = tmp_path / "feature_forward.sqlite3"
+    database.touch()
+    with pytest.raises(ValueError, match="feature_store_must_be_directory"):
+        cli.load_records_read_only(database)
 
 
 def test_race_coverage_requires_all_six_boats():
@@ -260,6 +337,23 @@ def test_cli_rejects_existing_contract_change(tmp_path, monkeypatch):
             "--as-of-date",
             "2026-07-21",
         ])
+
+
+def test_lifecycle_evidence_requires_consistent_selected_scope_and_settlement(tmp_path):
+    report = {
+        "reportType": "RACE_LIFECYCLE_HWM",
+        "cohort": {"selectedRaceCount": 10, "validCaptureRaceCount": 9, "featureSettledRaceCount": 7},
+        "coverage": {"validCaptureAgainstSelectedScope": 0.9},
+        "consistency": {"a": True, "b": True},
+        "settlementStatusCounts": {"SETTLED": 7},
+    }
+    path = tmp_path / "lifecycle.json"
+    path.write_text(json.dumps(report), encoding="utf-8")
+    assert cli._load_lifecycle_evidence(path)["featureSettledRaceCount"] == 7
+    report["consistency"]["b"] = False
+    path.write_text(json.dumps(report), encoding="utf-8")
+    with pytest.raises(ValueError, match="lifecycle_evidence_consistency_invalid"):
+        cli._load_lifecycle_evidence(path)
 
 
 def test_cli_rejects_unbacked_settled_count(tmp_path, monkeypatch):

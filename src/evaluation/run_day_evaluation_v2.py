@@ -170,7 +170,7 @@ def evaluate_shadow_day_v2(
         compare_status=compare_status,
         target_races=_as_int(summary.get("target_races")),
         result_available_races=_as_int(summary.get("result_available_races")),
-        odds_covered_races=_as_int(summary.get("odds_covered_races")),
+        odds_available_races=_as_int(summary.get("odds_covered_races")),
         compare_possible=bool(summary.get("compare_possible")),
         v1_payload=v1_payload,
         evaluation_error=evaluation_error,

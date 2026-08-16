@@ -188,6 +188,53 @@ def _venue_limit_for_days(collection_days: int) -> int:
     return 1
 
 
+def _select_feasible_venues(
+    candidates: dict[str, list[CaptureTarget]],
+    limit: int,
+    preferred: list[str] | tuple[str, ...] = (),
+) -> list[str]:
+    """Select venues whose capture windows can be served serially.
+
+    A capture window is 120 seconds wide and requests are separated by at
+    least 60 seconds. Keeping overlapping deadline windows in the selected
+    scope would make full coverage impossible under the existing contract.
+    Previously selected venues remain preferred and are not rewritten.
+    """
+    if limit <= 0:
+        return []
+
+    ordered = list(preferred)
+    ordered.extend(
+        venue
+        for venue in sorted(
+            candidates,
+            key=lambda key: (candidates[key][0].deadline_jst, key),
+        )
+        if venue not in ordered
+    )
+    selected: list[str] = []
+    selected_deadlines: list[datetime] = []
+    for venue in ordered:
+        deadlines = sorted(
+            target.deadline_jst for target in candidates.get(venue, [])
+        )
+        if not deadlines:
+            continue
+        if venue in preferred:
+            selected.append(venue)
+            selected_deadlines.extend(deadlines)
+        elif all(
+            abs((deadline - existing).total_seconds()) >= 120
+            for deadline in deadlines
+            for existing in selected_deadlines
+        ):
+            selected.append(venue)
+            selected_deadlines.extend(deadlines)
+        if len(selected) >= limit:
+            break
+    return selected
+
+
 def _start_value(value: object) -> float | None:
     text = str(value or "").strip().upper()
     if not text:
@@ -326,25 +373,17 @@ def _run_capture_cycle_unlocked(
         candidates = {
             key: values for key, values in by_venue.items() if len(values) >= 3
         } or by_venue
-        selected_venues = sorted(
-            candidates,
-            key=lambda key: (candidates[key][0].deadline_jst, key),
-        )[:venue_limit]
+        selected_venues = _select_feasible_venues(candidates, venue_limit)
         ledger.select_venues(race_date, selected_venues)
     elif selectable_targets and len(selected_venues) < venue_limit:
         by_venue = {}
         for target in selectable_targets:
             by_venue.setdefault(target.jcd, []).append(target)
-        candidates = sorted(
+        selected_venues = _select_feasible_venues(
             by_venue,
-            key=lambda key: (by_venue[key][0].deadline_jst, key),
+            venue_limit,
+            preferred=selected_venues,
         )
-        selected_venues = [
-            venue for venue in selected_venues if venue in by_venue
-        ] + [
-            venue for venue in candidates if venue not in selected_venues
-        ]
-        selected_venues = selected_venues[:venue_limit]
         if not ledger.connection.execute(
             "SELECT 1 FROM state WHERE key=?", (f"venues:{race_date}",)
         ).fetchone():

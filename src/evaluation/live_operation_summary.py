@@ -89,6 +89,10 @@ def _has_prediction_hash(payload: dict[str, Any]) -> bool:
 
 def _load_daily_payload(date_key: str) -> dict[str, Any]:
     for candidate in [
+        REPORT_DAILY_ROOT / f"{date_key[:4]}-{date_key[4:6]}-{date_key[6:8]}" / "daily_summary.json",
+        REPORT_DAILY_ROOT / f"{date_key[:4]}-{date_key[4:6]}-{date_key[6:8]}" / "daily_report.json",
+        REPORT_DAILY_ROOT / date_key / "daily_summary.json",
+        REPORT_DAILY_ROOT / date_key / "daily_report.json",
         REPORT_DAILY_ROOT / f"{date_key}_summary.json",
         REPORT_DAILY_ROOT / f"{date_key}_settlement.json",
         REPORT_DAILY_ROOT / f"{date_key}_report.json",

@@ -12,6 +12,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
 
+from src.feature_forward_v1.oof_readiness import plan_chronological_fold_groups
+
 FEATURE_GROUP = "course_and_start_exhibition"
 FEATURE_COLUMNS = ("courseEntry", "startExhibition", "tilt", "bodyWeight")
 CHAMPION_ID = "tree_15"
@@ -19,6 +21,11 @@ CHAMPION_MODEL_SHA256 = "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43
 MIN_FORWARD_DAYS = 30
 MIN_SETTLED_RACES = 1500
 MIN_COVERAGE = 0.8
+MIN_OOF_RACES = 1250
+MIN_OOF_DATES = 25
+MIN_VALIDATION_RACES_PER_FOLD = 250
+MIN_SEGMENT_RACES = 100
+MAX_SEGMENT_LOG_LOSS_DEGRADATION = 0.002
 BOOTSTRAP_SEED = 0
 BOOTSTRAP_REPETITIONS = 1000
 TARGET_TOKENS = (
@@ -91,11 +98,16 @@ def build_course_start_race_rows(rows: Iterable[dict[str, Any]]) -> list[dict[st
             raise ValueError("feature_boat_identity_invalid")
         if type(race.get("winnerBoat")) is not int or not 1 <= race["winnerBoat"] <= 6:
             raise ValueError("winner_identity_invalid")
-        if race.get("featureGroup") not in {None, FEATURE_GROUP}:
+        if race.get("featureGroup") != FEATURE_GROUP:
             raise ValueError("feature_group_invalid")
         if race.get("researchEligible") is False:
             raise ValueError("ineligible_feature_row")
-        if race.get("captureTimestampVerified") is False or race.get("provenanceVerified") is False or race.get("schemaVerified") is False:
+        if (
+            race.get("researchEligible") is not True
+            or race.get("captureTimestampVerified") is not True
+            or race.get("provenanceVerified") is not True
+            or race.get("schemaVerified") is not True
+        ):
             raise ValueError("feature_provenance_invalid")
         if float(race.get("secondsBeforeDeadline") or 0) <= 0:
             raise ValueError("post_deadline_feature")
@@ -174,6 +186,12 @@ def build_readiness_report(
         "remainingForwardDays": max(0, MIN_FORWARD_DAYS - days),
         "coverage": coverage,
         "minimumCoverage": MIN_COVERAGE,
+        "cohortStart": None,
+        "cohortEnd": None,
+        "cohortDigest": None,
+        "evaluationLocked": False,
+        "oofValidationRaceCount": 0,
+        "oofValidationDateCount": 0,
         "blockedReasons": sorted(set(reasons)),
         "productionAdoptionAllowed": False,
     }
@@ -329,22 +347,62 @@ def _segment_metrics(rows: list[dict[str, Any]], candidate_rows: list[dict[str, 
     return output
 
 
+def segment_stability_failures(segments: dict[str, dict[str, Any]]) -> list[str]:
+    """Return material candidate log-loss degradations in sufficiently large segments."""
+    failures: list[str] = []
+    for field, groups in segments.items():
+        for key, metrics in groups.items():
+            if int(metrics.get("raceCount") or 0) < MIN_SEGMENT_RACES:
+                continue
+            baseline_log_loss = metrics.get("baseline", {}).get("logLoss")
+            candidate_log_loss = metrics.get("candidate", {}).get("logLoss")
+            if baseline_log_loss is None or candidate_log_loss is None:
+                continue
+            if float(candidate_log_loss) - float(baseline_log_loss) > MAX_SEGMENT_LOG_LOSS_DEGRADATION:
+                failures.append(f"segment_stability_failed:{field}:{key}")
+    return sorted(failures)
+
+
+def brier_adoption_failures(
+    folds: Iterable[dict[str, Any]], *, aggregate_difference: float,
+) -> list[str]:
+    """Enforce the frozen Brier stability rule independently of log loss."""
+    fold_list = list(folds)
+    non_degraded_fold_count = sum(
+        float(fold["deltaBrier"]) <= 0.0 for fold in fold_list
+    )
+    reasons: list[str] = []
+    if non_degraded_fold_count < 4:
+        reasons.append("brier_not_non_degraded_in_4_of_5_folds")
+    if float(aggregate_difference) > 0.0:
+        reasons.append("brier_aggregate_degraded")
+    return reasons
+
+
 def evaluate_course_start_challenger(
     rows: Iterable[dict[str, Any]], *, bootstrap_repetitions: int = BOOTSTRAP_REPETITIONS,
 ) -> dict[str, Any]:
     races = build_course_start_race_rows(rows)
     if len(races) < 6:
         raise ValueError("insufficient_races_for_five_fold_oof")
-    count = len(races)
-    boundaries = [round(index * count / 6) for index in range(7)]
+    unique_dates = sorted({race["raceDate"] for race in races})
+    if len(unique_dates) < 6:
+        raise ValueError("insufficient_dates_for_five_fold_oof")
+    fold_plan = plan_chronological_fold_groups(races)
+    if fold_plan.get("blockedReasons"):
+        raise ValueError(str(fold_plan["blockedReasons"][0]))
     folds: list[dict[str, Any]] = []
     all_baseline: list[dict[str, Any]] = []
     all_candidate: list[dict[str, Any]] = []
     for fold_number in range(1, 6):
-        train_start, train_end = 0, boundaries[fold_number]
-        validation_start, validation_end = boundaries[fold_number], boundaries[fold_number + 1]
-        train = races[train_start:train_end]
-        validation = races[validation_start:validation_end]
+        train_dates = set(fold_plan["initialTrainDates"])
+        for previous in fold_plan["foldDates"][: fold_number - 1]:
+            train_dates.update(previous)
+        validation_dates = set(fold_plan["foldDates"][fold_number - 1])
+        train = [race for race in races if race["raceDate"] in train_dates]
+        validation = [
+            race for race in races if race["raceDate"] in validation_dates
+        ]
         if not train or not validation:
             raise ValueError("oof_fold_empty")
         model_bundle = _fit_candidate(train)
@@ -356,6 +414,7 @@ def evaluate_course_start_challenger(
             "fold": fold_number,
             "trainRaceCount": len(train),
             "validationRaceCount": len(validation),
+            "validationDateCount": len(validation_dates),
             "trainStart": train[0]["raceDate"],
             "trainEnd": train[-1]["raceDate"],
             "validationStart": validation[0]["raceDate"],
@@ -372,21 +431,34 @@ def evaluate_course_start_challenger(
     aggregate_baseline = _metrics(all_baseline)
     aggregate_candidate = _metrics(all_candidate)
     ci = _bootstrap_ci(all_baseline, all_candidate, bootstrap_repetitions)
+    oof_validation_dates = sorted({row["raceDate"] for row in all_candidate})
+    oof_validation_race_counts = [fold["validationRaceCount"] for fold in folds]
     log_loss_improved_folds = sum(fold["deltaLogLoss"] < 0 for fold in folds)
     brier_improved_folds = sum(fold["deltaBrier"] < 0 for fold in folds)
+    brier_non_degraded_folds = sum(fold["deltaBrier"] <= 0 for fold in folds)
     reasons: list[str] = []
     if log_loss_improved_folds < 4:
         reasons.append("log_loss_not_improved_in_4_of_5_folds")
     if ci["logLossDifference"] is None or ci["logLossDifference"][1] >= 0:
         reasons.append("log_loss_ci_includes_zero")
-    if brier_improved_folds < 4 and (ci["brierDifference"] is None or ci["brierDifference"][1] >= 0):
-        reasons.append("brier_not_stably_improved")
+    reasons.extend(
+        brier_adoption_failures(
+            folds,
+            aggregate_difference=aggregate_candidate["brier"] - aggregate_baseline["brier"],
+        )
+    )
     if aggregate_candidate["ece"] > aggregate_baseline["ece"] + 0.005:
         reasons.append("ece_materially_worse")
     if aggregate_candidate["top1"] < aggregate_baseline["top1"]:
         reasons.append("top1_degraded")
     if max(fold["deltaLogLoss"] for fold in folds) > 0.002:
         reasons.append("worst_fold_log_loss_degradation_exceeded")
+    if (
+        len(all_candidate) < MIN_OOF_RACES
+        or len(oof_validation_dates) < MIN_OOF_DATES
+        or any(count < MIN_VALIDATION_RACES_PER_FOLD for count in oof_validation_race_counts)
+    ):
+        reasons.append("insufficient_oof_validation_sample")
     segments = {
         "venue": _segment_metrics(all_baseline, all_candidate, "venue"),
         "raceNo": _segment_metrics(all_baseline, all_candidate, "raceNo"),
@@ -395,6 +467,7 @@ def evaluate_course_start_challenger(
     }
     if len(segments["venue"]) < 2 or len(segments["month"]) < 2 or len(segments["topPredictedBoat"]) < 3:
         reasons.append("segment_diversity_insufficient")
+    reasons.extend(segment_stability_failures(segments))
     return {
         "status": "PERSONAL_OFFLINE_CHALLENGER" if not reasons else "NO_CHALLENGER_FOUND",
         "candidateId": "tree_15_plus_course_start_logistic",
@@ -420,8 +493,17 @@ def evaluate_course_start_challenger(
             "ece": aggregate_candidate["ece"] - aggregate_baseline["ece"],
         },
         "bootstrap95Ci": ci,
+        "oofValidationRaceCount": len(all_candidate),
+        "oofValidationDateCount": len(oof_validation_dates),
+        "oofValidationRaceCounts": oof_validation_race_counts,
+        "minimumOofRaces": MIN_OOF_RACES,
+        "minimumOofDates": MIN_OOF_DATES,
+        "minimumValidationRacesPerFold": MIN_VALIDATION_RACES_PER_FOLD,
+        "minimumSegmentRaces": MIN_SEGMENT_RACES,
+        "maxSegmentLogLossDegradation": MAX_SEGMENT_LOG_LOSS_DEGRADATION,
         "logLossImprovedFoldCount": log_loss_improved_folds,
         "brierImprovedFoldCount": brier_improved_folds,
+        "brierNonDegradedFoldCount": brier_non_degraded_folds,
         "adoptionReasons": sorted(reasons),
         "leakageAuditPassed": True,
         "probabilityContractPassed": all(
@@ -444,3 +526,9 @@ def evaluate_course_start_challenger(
 
 def result_digest(result: dict[str, Any]) -> str:
     return _hash({key: value for key, value in result.items() if key != "candidate"})
+
+
+def candidate_prediction_digest(result: dict[str, Any]) -> str:
+    candidate = result.get("candidate")
+    predictions = candidate.get("predictions", []) if isinstance(candidate, dict) else []
+    return _hash(predictions)

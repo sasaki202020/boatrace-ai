@@ -459,12 +459,16 @@ def predictive_value_gate(
     settled_races: int,
     oof_rows: Iterable[dict[str, Any]] | None = None,
     oof_artifact_root: Any = None,
+    target_groups: Iterable[str] | None = None,
 ) -> dict[str, Any]:
     reasons: list[str] = []
-    observed_days = min((quality[group].get("consecutiveCollectionDays", 0) for group in FEATURE_GROUPS), default=0)
+    groups = list(target_groups) if target_groups is not None else list(FEATURE_GROUPS)
+    if not groups or any(group not in FEATURE_GROUPS for group in groups):
+        raise ValueError("feature_gate_target_group_invalid")
+    observed_days = min((quality[group].get("consecutiveCollectionDays", 0) for group in groups), default=0)
     if settled_races < CONTRACT["minimumSettledRaces"]:
         reasons.append("minimum_settled_races_not_met")
-    for group in FEATURE_GROUPS:
+    for group in groups:
         entry = quality[group]
         if entry.get("consecutiveCollectionDays", 0) < CONTRACT["minimumForwardDays"]:
             reasons.append(f"minimum_forward_days_not_met:{group}")
@@ -501,6 +505,7 @@ def predictive_value_gate(
         "minimumForwardDays": CONTRACT["minimumForwardDays"],
         "observedForwardDays": observed_days,
         "remainingForwardDays": max(0, CONTRACT["minimumForwardDays"] - observed_days),
+        "targetFeatureGroups": groups,
         "targetEvaluationExecuted": False,
         "productionAdoptionAllowed": False,
     }

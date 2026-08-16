@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "challengerVersion": "course_start_residual_shadow_v1",
+  "championId": "tree_15",
+  "championModelSha256": "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0",
+  "featureSchemaSha256": "a3853bdbdb75d13d4a596928c13eaa034307b14a5a8c534d31fca9acdab623dd",
+  "featureGroup": "course_and_start_exhibition",
+  "seed": 0,
+  "preprocessing": "fixed_center_scale_only",
+  "normalization": {
+    "courseEntry": {"center": 3.5, "scale": 2.5},
+    "startExhibition": {"center": 0.15, "scale": 0.1},
+    "tilt": {"center": 0.0, "scale": 0.5},
+    "bodyWeight": {"center": 52.0, "scale": 5.0}
+  },
+  "coefficients": {
+    "courseEntry": -0.1,
+    "startExhibition": -0.08,
+    "tilt": -0.02,
+    "bodyWeight": -0.02
+  },
+  "residualScale": 0.1,
+  "residualClip": 0.25,
+  "missingPolicy": "fallback_to_tree_15",
+  "probabilityMethod": "log_baseline_plus_fixed_residual_then_race_softmax",
+  "productionAdoptionAllowed": false,
+  "prospectiveConnectionAllowed": false,
+  "oofExecuted": false
+}

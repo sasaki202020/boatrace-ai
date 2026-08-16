@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+from pathlib import Path
 from urllib.parse import urlsplit
 
 
@@ -12,6 +15,10 @@ class FetchDecision(Enum):
     RACE_BUDGET_EXHAUSTED = "RACE_BUDGET_EXHAUSTED"
     DAILY_BUDGET_EXHAUSTED = "DAILY_BUDGET_EXHAUSTED"
     COLLECTION_STOPPED = "COLLECTION_STOPPED"
+
+
+class PolicyGateError(ValueError):
+    """Raised when a runtime collection policy cannot be verified."""
 
 
 @dataclass(frozen=True)
@@ -151,3 +158,40 @@ def policy_from_manifest(manifest: dict) -> PersonalResearchPolicy:
         requests_per_day=manifest["requestsPerDay"],
         retries_per_race=manifest["retriesPerRace"],
     )
+
+
+def load_policy_manifest(
+    path: Path,
+    *,
+    require_automated_fetch: bool = False,
+) -> tuple[PersonalResearchPolicy, dict[str, object]]:
+    """Load and attest a policy without exposing its contents in metadata.
+
+    The scheduled collector integration can require automated fetching explicitly.
+    Manual/personal research manifests remain valid when that requirement is false.
+    """
+    path = Path(path)
+    if not path.is_file():
+        raise PolicyGateError("policy_file_missing")
+    try:
+        raw = path.read_bytes()
+        payload = json.loads(raw.decode("utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise PolicyGateError("policy_file_invalid") from exc
+    if not isinstance(payload, dict) or payload.get("schemaVersion") != 2:
+        raise PolicyGateError("policy_schema_unsupported")
+    try:
+        policy = policy_from_manifest(payload)
+    except (KeyError, TypeError, ValueError) as exc:
+        raise PolicyGateError("policy_schema_invalid") from exc
+    if require_automated_fetch and not policy.automated_fetch_allowed:
+        raise PolicyGateError("automated_fetch_not_allowed")
+    return policy, {
+        "policyLoaded": True,
+        "policyPath": str(path.resolve()),
+        "policyHash": hashlib.sha256(raw).hexdigest(),
+        "policyVersion": payload["schemaVersion"],
+        "automatedFetchRequired": require_automated_fetch,
+        "automatedFetchAllowed": policy.automated_fetch_allowed,
+        "commercialUseAllowed": policy.commercial_use_allowed,
+    }

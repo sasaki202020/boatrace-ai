@@ -35,12 +35,12 @@ def test_health_check_ok_when_core_artifacts_present(tmp_path, monkeypatch) -> N
                     lambda: {
                         "summary": {
                             "status": "ok",
-                            "latestTaskLogs": {"Boatrace_DailyFreeze": "logs/tasks/daily_freeze_20260425.log"},
+                            "latestTaskLogs": {"Boatrace_PaperOps_Morning": "logs/tasks/daily_freeze_20260425.log"},
                             "tasks": [
-                                {"taskName": "Boatrace_DailyFreeze", "lastRunTime": "2026-04-25T07:00:00", "registered": True},
-                                {"taskName": "Boatrace_EveningSettle", "lastRunTime": "2026-04-25T21:30:00", "registered": True},
-                                {"taskName": "Boatrace_DailyReport", "lastRunTime": "2026-04-25T22:00:00", "registered": True},
-                                {"taskName": "Boatrace_HealthCheck", "lastRunTime": "2026-04-25T07:30:00", "registered": True},
+                                {"taskName": "Boatrace_PaperOps_Preflight", "lastRunTime": "2026-04-25T06:50:00", "registered": True},
+                                {"taskName": "Boatrace_PaperOps_Morning", "lastRunTime": "2026-04-25T07:00:00", "registered": True},
+                                {"taskName": "Boatrace_PaperOps_Evening", "lastRunTime": "2026-04-25T21:30:00", "registered": True},
+                                {"taskName": "Boatrace_PaperOps_Monitor", "lastRunTime": "2026-04-25T22:00:00", "registered": True},
                             ],
                         },
                         "files": {"json": "task_status.json", "md": "task_status.md"},
@@ -66,8 +66,11 @@ def test_health_check_ok_when_core_artifacts_present(tmp_path, monkeypatch) -> N
     assert summary["resultMissingCount"] >= 1
     assert summary["status"] == "ok"
     assert summary["taskSchedulerStatus"]["status"] == "ok"
-    assert summary["latestTaskLogs"]["Boatrace_DailyFreeze"].endswith("daily_freeze_20260425.log")
+    assert summary["latestTaskLogs"]["Boatrace_PaperOps_Morning"].endswith("daily_freeze_20260425.log")
     assert summary["dailyFreezeLastRun"] == "2026-04-25T07:00:00"
+    assert summary["eveningSettleLastRun"] == "2026-04-25T21:30:00"
+    assert summary["dailyReportLastRun"] == "2026-04-25T22:00:00"
+    assert summary["healthCheckLastRun"] == "2026-04-25T22:00:00"
     assert Path(result["files"]["json"]).exists()
     assert Path(result["files"]["md"]).exists()
 
@@ -88,7 +91,25 @@ def test_health_check_warns_when_frozen_or_daily_report_missing(tmp_path, monkey
     monkeypatch.setattr(
         health_check_mod,
         "task_status_mod",
-        type("TaskStatusStub", (), {"task_status": staticmethod(lambda: {"summary": {"status": "warning", "latestTaskLogs": {}, "tasks": []}, "files": {}})}),
+        type(
+            "TaskStatusStub",
+            (),
+            {
+                "task_status": staticmethod(
+                    lambda: {
+                        "summary": {
+                            "status": "warning",
+                            "latestTaskLogs": {},
+                            "tasks": [
+                                {"taskName": "Boatrace_PaperOps_Preflight", "status": "failed"},
+                                {"taskName": "Boatrace_PaperOps_Morning", "status": "failed"},
+                            ],
+                        },
+                        "files": {},
+                    }
+                )
+            },
+        ),
     )
 
     _write_json(tmp_path / "data" / "normalized" / "20260425" / "today_venues.json", {"date": "20260425", "venues": [{"jcd": "24"}]})
@@ -103,3 +124,9 @@ def test_health_check_warns_when_frozen_or_daily_report_missing(tmp_path, monkey
     assert "frozen_bets_missing" in summary["warnings"]
     assert "daily_report_missing" in summary["warnings"]
     assert summary["taskSchedulerStatus"]["status"] == "warning"
+    assert summary["failedScheduledTasks"] == [
+        "Boatrace_PaperOps_Preflight",
+        "Boatrace_PaperOps_Morning",
+    ]
+    assert summary["dailyIssueClassification"] == "pre_race_scheduler_failure"
+    assert summary["recommendedNextAction"] == "wait_for_next_scheduled_pre_race"

@@ -13,11 +13,13 @@ settlement、BUY、EV、bettingには接続しない。
 
 - 完全なcourse/start snapshot付きのsettled raceが1,500以上
 - forward collectionが連続30日以上
+- forward日数は末尾の連続した暦日で判定し、scopeまたはfeatureが欠損した日は翌日から再起算する
 - schedule denominatorに基づくcoverageが80%以上
 - 全snapshotが締切前、timestamp/provenance/schema検証済み
 - result leakage、duplicate、schema drift、parser failureが0
 - `tree_15` model SHA-256が固定値と一致
 - deterministic rerunが一致
+- OOF validationが1,250 race以上、25日以上、各fold 250 race以上
 
 全体のsettlement件数だけでは評価開始条件を満たしたとみなさない。
 feature snapshotとsettlementがrace単位で結合できる件数を使用する。
@@ -49,6 +51,7 @@ collectorは検証済みcollection日数に応じて1会場、2会場、5会場�
 - Top-1が悪化しない
 - 最悪foldのlog loss悪化が0.002以内
 - venue/month/top predicted boatの分布が単一segmentに偏らない
+- 100 race以上のsegmentでcandidateのlog loss悪化が0.002以内
 - segment別指標、leakage、非決定性に問題がない
 
 未達時は `NO_CHALLENGER_FOUND` とし、`tree_15` を維持する。
@@ -61,3 +64,10 @@ collectorは検証済みcollection日数に応じて1会場、2会場、5会場�
 閾値未達時はreadiness reportだけを更新し、モデル学習、prediction、settlement、
 prospective ledger、production領域への書込みは行わない。閾値到達後にだけOOF評価を開始し、
 合格しても自動採用しない。既存のB/K、prediction、feature collector taskとは分離する。
+
+## 固定コホート
+
+評価開始時に、評価対象日、selected scopeのBファイルSHA-256、model/schema SHA-256、
+joined raceのdigestを `course_start_evaluation_cohort.json` へ一度だけ保存する。
+以後digestが変わった場合は再評価せず、レビュー待ちでfail-closedにする。
+同じdigestと既存評価結果がある場合は、OOFを再実行せず結果を再利用する。

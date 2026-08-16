@@ -49,6 +49,48 @@ def _write_contract(path: Path) -> None:
     _json(path, {**CONTRACT, "contractSha256": digest})
 
 
+def _load_lifecycle_evidence(path: Path) -> dict[str, object]:
+    """Load a freshly generated read-only lifecycle report as settlement evidence."""
+    try:
+        report = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError("lifecycle_evidence_invalid") from exc
+    if report.get("reportType") != "RACE_LIFECYCLE_HWM":
+        raise ValueError("lifecycle_evidence_type_invalid")
+    cohort = report.get("cohort")
+    coverage = report.get("coverage")
+    consistency = report.get("consistency")
+    statuses = report.get("settlementStatusCounts")
+    if not isinstance(cohort, dict) or not isinstance(coverage, dict) or not isinstance(consistency, dict):
+        raise ValueError("lifecycle_evidence_shape_invalid")
+    if not consistency:
+        raise ValueError("lifecycle_evidence_consistency_invalid")
+    for key, value in consistency.items():
+        if key == "duplicateScheduleKeys":
+            if type(value) is not int or value != 0:
+                raise ValueError("lifecycle_evidence_consistency_invalid")
+        elif value is not True:
+            raise ValueError("lifecycle_evidence_consistency_invalid")
+    selected = cohort.get("selectedRaceCount")
+    valid = cohort.get("validCaptureRaceCount")
+    settled = cohort.get("featureSettledRaceCount")
+    selected_coverage = coverage.get("validCaptureAgainstSelectedScope")
+    if any(type(value) is not int or value < 0 for value in (selected, valid, settled)):
+        raise ValueError("lifecycle_evidence_count_invalid")
+    if not isinstance(selected_coverage, (int, float)) or not 0 <= float(selected_coverage) <= 1:
+        raise ValueError("lifecycle_evidence_coverage_invalid")
+    if valid > selected or settled > valid:
+        raise ValueError("lifecycle_evidence_count_inconsistent")
+    if isinstance(statuses, dict) and int(statuses.get("SETTLED", 0)) != settled:
+        raise ValueError("lifecycle_evidence_settlement_count_invalid")
+    return {
+        "selectedRaceCount": selected,
+        "validCaptureRaceCount": valid,
+        "featureSettledRaceCount": settled,
+        "selectedScopeCoverage": float(selected_coverage),
+    }
+
+
 def _time_band(deadline: str | None) -> str:
     if not deadline or "T" not in deadline:
         return "UNKNOWN"
@@ -84,6 +126,9 @@ def _schema_is_supported(schema_sha256: str) -> bool:
 
 
 def load_records_read_only(store_root: Path) -> list[dict]:
+    store_root = store_root.resolve()
+    if store_root.is_file() or store_root.suffix.lower() == ".sqlite3":
+        raise ValueError("feature_store_must_be_directory")
     database = store_root / "feature_forward.sqlite3"
     if not database.is_file():
         return []
@@ -193,20 +238,35 @@ def _quality_rows(as_of_date: str, quality: dict[str, dict]) -> list[dict]:
 
 def _write_daily_csv(path: Path, rows: list[dict]) -> None:
     existing: list[dict] = []
+    existing_fieldnames: list[str] = []
     if path.is_file():
         with path.open(encoding="utf-8", newline="") as handle:
-            existing = list(csv.DictReader(handle))
+            reader = csv.DictReader(handle)
+            existing = list(reader)
+            existing_fieldnames = list(reader.fieldnames or [])
     keys = {(row["date"], row["featureGroup"]) for row in rows}
     merged = [row for row in existing if (row["date"], row["featureGroup"]) not in keys] + rows
     merged.sort(key=lambda row: (row["date"], row["featureGroup"]))
     path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = list(existing_fieldnames)
+    for row in rows:
+        for key in row:
+            if key not in fieldnames:
+                fieldnames.append(key)
+    for row in merged:
+        for key in fieldnames:
+            row.setdefault(key, "")
     with path.open("w", encoding="utf-8", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=list(rows[0]), lineterminator="\n")
+        writer = csv.DictWriter(handle, fieldnames=fieldnames, lineterminator="\n")
         writer.writeheader()
         writer.writerows(merged)
 
 
 def _quality_markdown(as_of_date: str, quality: dict[str, dict]) -> str:
+    has_coverage_views = any(
+        "rawCaptureCoverage" in entry or "matureCaptureCoverage" in entry
+        for entry in quality.values()
+    )
     lines = [
         "# Feature Quality Latest",
         "",
@@ -214,15 +274,47 @@ def _quality_markdown(as_of_date: str, quality: dict[str, dict]) -> str:
         "- predictiveValueEvaluated: false",
         "- note: collection quality only; no accuracy or win-rate claim",
         "",
-        "| Feature group | Captured | Verified | Coverage | Missing rate | Days |",
-        "|---|---:|---:|---:|---:|---:|",
     ]
+    if has_coverage_views:
+        lines.extend([
+            "| Feature group | Captured | Verified | Raw coverage | Mature coverage | Mature selected | Not due | Missing rate | Days |",
+            "|---|---:|---:|---:|---:|---:|---:|---:|---:|",
+        ])
+    else:
+        lines.extend([
+            "| Feature group | Captured | Verified | Coverage | Missing rate | Days |",
+            "|---|---:|---:|---:|---:|---:|",
+        ])
     for group in FEATURE_GROUPS:
         entry = quality[group]
         coverage = "UNKNOWN" if entry["coverage"] is None else f"{entry['coverage']:.3f}"
         missing = "UNKNOWN" if entry["missingRate"] is None else f"{entry['missingRate']:.3f}"
-        lines.append(f"| {group} | {entry['capturedRaceCount']} | {entry['verifiedPreDeadlineCount']} | {coverage} | {missing} | {entry['consecutiveCollectionDays']} |")
+        if has_coverage_views:
+            raw_coverage = entry.get("rawCaptureCoverage")
+            mature_coverage = entry.get("matureCaptureCoverage")
+            raw_text = "UNKNOWN" if raw_coverage is None else f"{raw_coverage:.3f}"
+            mature_text = "UNKNOWN" if mature_coverage is None else f"{mature_coverage:.3f}"
+            lines.append(
+                f"| {group} | {entry['capturedRaceCount']} | {entry['verifiedPreDeadlineCount']} | "
+                f"{raw_text} | {mature_text} | {entry.get('matureSelectedRaceCount')} | "
+                f"{entry.get('captureWindowNotDueRaceCount')} | {missing} | "
+                f"{entry['consecutiveCollectionDays']} |"
+            )
+        else:
+            lines.append(f"| {group} | {entry['capturedRaceCount']} | {entry['verifiedPreDeadlineCount']} | {coverage} | {missing} | {entry['consecutiveCollectionDays']} |")
     return "\n".join(lines) + "\n"
+
+
+def write_collection_quality_reports(
+    *,
+    report_root: Path,
+    as_of_date: str,
+    quality: dict[str, dict],
+) -> None:
+    """Refresh collection-only reports without running target-based evaluation."""
+    _write_daily_csv(report_root / "feature_quality_daily.csv", _quality_rows(as_of_date, quality))
+    _write(report_root / "feature_quality_latest.md", _quality_markdown(as_of_date, quality))
+    _write(report_root / "feature_collection_priority.md", build_priority_markdown(quality))
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -232,28 +324,41 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--as-of-date", required=True)
     parser.add_argument("--settled-races", type=int, default=0)
     parser.add_argument("--settlement-manifest", type=Path)
+    parser.add_argument("--lifecycle-report", type=Path)
     parser.add_argument("--schedule", type=Path)
+    parser.add_argument("--target-group", action="append", dest="target_groups")
     args = parser.parse_args(argv)
 
     _validate_report_root(args.report_root)
     records = load_records_read_only(args.store)
     schedule = validate_schedule_manifest(json.loads(args.schedule.read_text(encoding="utf-8")), args.schedule.parent) if args.schedule and args.schedule.is_file() else None
     quality = build_collection_quality(records, scheduled_races=schedule)
+    lifecycle_evidence = _load_lifecycle_evidence(args.lifecycle_report) if args.lifecycle_report else None
+    if lifecycle_evidence is not None and schedule is None:
+        for entry in quality.values():
+            if entry["capturedRaceCount"]:
+                entry["scheduledRaceCount"] = lifecycle_evidence["selectedRaceCount"]
+                entry["coverage"] = lifecycle_evidence["selectedScopeCoverage"]
+                entry["coverageBasis"] = "selected_scope_from_verified_lifecycle_report"
     if args.settlement_manifest and args.settlement_manifest.is_file():
         from src.feature_forward_v1.value_evaluation import validate_settlement_manifest
         settled_keys = validate_settlement_manifest(json.loads(args.settlement_manifest.read_text(encoding="utf-8")), args.settlement_manifest.parent)
         group_keys = [complete_verified_race_keys(records, group) for group in FEATURE_GROUPS]
         common_feature_keys = set.intersection(*group_keys) if group_keys else set()
         settled_races = len(settled_keys & {canonical_race_key(key) for key in common_feature_keys})
+    elif lifecycle_evidence is not None:
+        settled_races = int(lifecycle_evidence["featureSettledRaceCount"])
     elif args.settled_races:
         raise ValueError("settlement_evidence_required")
     else:
         settled_races = 0
-    gate = predictive_value_gate(quality, settled_races)
+    gate = predictive_value_gate(quality, settled_races, target_groups=args.target_groups)
     report_root = args.report_root
-    _write_daily_csv(report_root / "feature_quality_daily.csv", _quality_rows(args.as_of_date, quality))
-    _write(report_root / "feature_quality_latest.md", _quality_markdown(args.as_of_date, quality))
-    _write(report_root / "feature_collection_priority.md", build_priority_markdown(quality))
+    write_collection_quality_reports(
+        report_root=report_root,
+        as_of_date=args.as_of_date,
+        quality=quality,
+    )
     _write_contract(report_root / "feature_value_contract.json")
     _json(report_root / "predictive_value_status.json", gate)
     evidence = [

@@ -6,6 +6,7 @@ import importlib
 import pandas as pd
 
 batch_mod = importlib.import_module("src.evaluation.run_batch_evaluation_v2")
+day_eval_mod = importlib.import_module("src.evaluation.run_day_evaluation_v2")
 from src.evaluation.run_day_evaluation_v2 import evaluate_shadow_day_v2
 from src.ingest.v2 import load_historical_tables
 
@@ -79,6 +80,49 @@ def test_target_day_with_compare_possible_has_no_unknown_failure(tmp_path: Path)
     assert summary["failure_reasons"] == []
     assert diff["failure_reasons"] == []
     assert warnings
+
+
+def test_target_evaluation_uses_reason_taxonomy_odds_keyword(
+    monkeypatch: object,
+    tmp_path: Path,
+) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_build_failure_reasons(**kwargs: object) -> list[str]:
+        captured.update(kwargs)
+        return []
+
+    monkeypatch.setattr(day_eval_mod, "build_failure_reasons", fake_build_failure_reasons)
+
+    races = pd.DataFrame({"race_id": ["20260403-01-01"], "date": ["20260403"]})
+    entries = pd.DataFrame({"race_id": ["20260403-01-01"], "date": ["20260403"]})
+    results = pd.DataFrame(
+        {"race_id": ["20260403-01-01"], "date": ["20260403"], "status": ["available"]}
+    )
+    odds = pd.DataFrame(
+        {"race_id": ["20260403-01-01"], "date": ["20260403"], "odds": [12.3]}
+    )
+    candidates = pd.DataFrame(
+        {"date": ["2026-04-03"], "race_key": ["d20260403-c01-r01"], "approx_prob": [0.1]}
+    )
+
+    day_eval_mod.evaluate_shadow_day_v2(
+        date_str="20260403",
+        compare_status="TARGET",
+        db_path=tmp_path / "shadow.duckdb",
+        fallback_tables={
+            "races": races,
+            "entries": entries,
+            "results": results,
+            "odds_snapshots": odds,
+        },
+        raw_candidates=candidates,
+        calibrated_candidates=candidates,
+        v1_compare_path=tmp_path / "missing.json",
+    )
+
+    assert captured["odds_available_races"] == 1
+    assert "odds_covered_races" not in captured
 
 
 def test_batch_success_counts_target_only_and_excludes_hold(monkeypatch: object, tmp_path: Path) -> None:
