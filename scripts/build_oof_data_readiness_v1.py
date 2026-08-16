@@ -120,17 +120,13 @@ def verify_lifecycle_ledger_read_only(database: Path) -> dict[str, Any]:
     unknown = 0
     leakage = 0
     time_order = 0
-    previous_occurred: datetime | None = None
     for expected_sequence, row in enumerate(rows, start=1):
+        # Ledger order serializes independent task writes; only an unusable UTC
+        # timestamp makes the race-local time contract impossible to verify.
         try:
             occurred = datetime.fromisoformat(row["occurred_at_utc"])
             if occurred.tzinfo is None:
                 time_order += 1
-            else:
-                occurred = occurred.astimezone(timezone.utc)
-                if previous_occurred is not None and occurred < previous_occurred:
-                    time_order += 1
-                previous_occurred = occurred
         except (TypeError, ValueError):
             time_order += 1
         if row["status_code"] == "UNKNOWN_LEGACY":

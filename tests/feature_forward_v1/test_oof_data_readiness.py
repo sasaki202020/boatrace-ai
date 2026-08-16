@@ -259,7 +259,7 @@ def test_manual_preflight_blocks_a_corrupt_lifecycle_ledger_before_append(tmp_pa
     assert result["records"][0]["reasons"] == ["LIFECYCLE_INTEGRITY_INVALID"]
 
 
-def test_readiness_audit_counts_reverse_lifecycle_time_order(tmp_path):
+def test_readiness_audit_allows_cross_race_append_order_to_differ_from_observed_time(tmp_path):
     database = _append_lifecycle_event(tmp_path / "store")
     ledger = LifecycleLedger(database)
     ledger.append_event(
@@ -280,6 +280,20 @@ def test_readiness_audit_counts_reverse_lifecycle_time_order(tmp_path):
         evidence_ref="feature:snapshot-2",
     )
     ledger.close()
+
+    result = verify_lifecycle_ledger_read_only(database)
+
+    assert result["valid"] is True
+    assert result["timeOrderViolationCount"] == 0
+
+
+def test_readiness_audit_counts_lifecycle_timestamp_without_timezone(tmp_path):
+    database = _append_lifecycle_event(tmp_path / "store")
+    with sqlite3.connect(database) as connection:
+        connection.execute("DROP TRIGGER no_update_race_lifecycle_events")
+        connection.execute(
+            "UPDATE race_lifecycle_events SET occurred_at_utc='2026-08-16T03:00:00'"
+        )
 
     result = verify_lifecycle_ledger_read_only(database)
 

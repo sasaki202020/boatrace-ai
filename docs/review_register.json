@@ -571,7 +571,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "canonical_config",
-      "sha256": "69cb45747012ad70b4464f38b6ffe1c01195c58441c2511e871206d5a8e7454b"
+      "sha256": "25ffac289924ec3c21bc82f9dbe6e0568b9ed55bb29416517cef5256725eb558"
     },
     {
       "path": "config/feature_forward_v1/source_approval.json",
@@ -691,7 +691,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "implementation",
-      "sha256": "576a9d70b43d07ced4c9d051fff1ba23541cbe8741e678f09eaba60f29ab5e6f"
+      "sha256": "b135851480aecdf48e5843e83450bae89afb40e66cc4b19f4d797fd2af7eac74"
     },
     {
       "path": "scripts/run_feature_forward_collector_v1.py",
@@ -741,7 +741,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "test",
-      "sha256": "be4fdbb256260be0b15971720747b09f290f61da57a885a7a27d897289e21b3b"
+      "sha256": "6ad6e6e424c8c87095a5967a2eb416002d5be5c61007277756f6705e39abe5fc"
     },
     {
       "path": "config/feature_sets/win_baseline_core.json",

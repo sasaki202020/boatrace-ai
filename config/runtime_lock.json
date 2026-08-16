@@ -44,7 +44,7 @@
     },
     {
       "path": "scripts/build_oof_data_readiness_v1.py",
-      "sha256": "576a9d70b43d07ced4c9d051fff1ba23541cbe8741e678f09eaba60f29ab5e6f",
+      "sha256": "b135851480aecdf48e5843e83450bae89afb40e66cc4b19f4d797fd2af7eac74",
       "sourceRepository": "sasaki202020/boatrace-ai",
       "sourceCommit": "84b636a45ee09ec12c221a14dd76c8ff563066af",
       "adoptedAtUtc": "2026-08-16T12:24:40Z",
