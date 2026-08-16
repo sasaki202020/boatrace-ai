@@ -88,10 +88,79 @@ def _classify_source_state(*, target_date: date, venues_payload: dict[str, objec
     return "unknown"
 
 
+ODDS_EVALUATION_STEP_LABELS = frozenset(
+    {
+        "fetch_today_odds",
+        "evaluate_ev_and_skip",
+        "build_exacta_mode_predictions",
+        "analyze_gate_health",
+    }
+)
+
+
+def build_pre_race_step_specs(
+    target_date: date,
+    *,
+    delay: float,
+    py_cmd: str,
+    odds_fetch_timeout: int,
+    defer_odds_evaluation: bool = False,
+) -> list[tuple[str, list[str], bool, int | None]]:
+    """Build the standalone pre-race steps, optionally deferring odds work to refresh."""
+    step_specs = [
+        ("fetch_entries", [py_cmd, "src/data_fetch/fetch_official.py", "--type", "entries", "--date", target_date.isoformat(), "--delay", str(delay)], False, None),
+        ("parse_fixed_width", [py_cmd, "src/data/parse_fixed_width.py", "--target-date", target_date.isoformat()], False, None),
+        ("build_features", [py_cmd, "-m", "src.features.build_features"], False, None),
+        ("train_model", [py_cmd, "-m", "src.models.train_win_model"], False, None),
+        ("train_calibrator", [py_cmd, "-m", "src.eval.train_probability_calibrator"], True, None),
+        ("predict_win_proba", [py_cmd, "-m", "src.models.predict_win_proba"], False, None),
+        ("generate_trifecta_candidates", [py_cmd, "-m", "src.strategy.generate_trifecta_candidates"], False, None),
+        (
+            "fetch_today_odds",
+            [
+                py_cmd,
+                "-m",
+                "src.odds.fetch_daily_trifecta_odds",
+                "--date",
+                target_date.isoformat(),
+                "--timeout",
+                "15",
+                "--retries",
+                "2",
+                "--retry-sleep",
+                "1.5",
+                "--settle-retry-rounds",
+                "0",
+                "--settle-retry-sleep",
+                "0",
+                "--pending-retry-rounds",
+                "0",
+                "--unpublished-retry-rounds",
+                "0",
+                "--request-interval",
+                str(delay),
+            ],
+            True,
+            odds_fetch_timeout,
+        ),
+        ("evaluate_ev_and_skip", [py_cmd, "-m", "src.strategy.evaluate_ev_and_skip"], False, None),
+        ("build_exacta_mode_predictions", [py_cmd, "-m", "src.strategy.build_exacta_mode_predictions"], True, None),
+        ("analyze_gate_health", [py_cmd, "-m", "src.eval.analyze_gate_health"], True, None),
+    ]
+    if not defer_odds_evaluation:
+        return step_specs
+    return [spec for spec in step_specs if spec[0] not in ODDS_EVALUATION_STEP_LABELS]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the daily pre-race pipeline.")
     parser.add_argument("--date", help="Target date (YYYY-MM-DD). Defaults to today.")
     parser.add_argument("--delay", type=float, default=1.0)
+    parser.add_argument(
+        "--defer-odds-evaluation",
+        action="store_true",
+        help="Prepare predictions only; let run_daily_odds_refresh fetch odds and evaluate decisions.",
+    )
     args = parser.parse_args()
 
     target_date = parse_date(args.date, default=date.today())
@@ -247,46 +316,18 @@ def main() -> None:
     odds_date_key = target_date.strftime("%Y%m%d")
     py_cmd = sys.executable
     odds_fetch_timeout = int(os.environ.get("BOATRACE_ODDS_FETCH_TIMEOUT_SEC", "180"))
-    step_specs = [
-        ("fetch_entries", [py_cmd, "src/data_fetch/fetch_official.py", "--type", "entries", "--date", target_date.isoformat(), "--delay", str(args.delay)], False, None),
-        ("parse_fixed_width", [py_cmd, "src/data/parse_fixed_width.py", "--target-date", target_date.isoformat()], False, None),
-        ("build_features", [py_cmd, "-m", "src.features.build_features"], False, None),
-        ("train_model", [py_cmd, "-m", "src.models.train_win_model"], False, None),
-        ("train_calibrator", [py_cmd, "-m", "src.eval.train_probability_calibrator"], True, None),
-        ("predict_win_proba", [py_cmd, "-m", "src.models.predict_win_proba"], False, None),
-        ("generate_trifecta_candidates", [py_cmd, "-m", "src.strategy.generate_trifecta_candidates"], False, None),
-        (
-            "fetch_today_odds",
-            [
-                py_cmd,
-                "-m",
-                "src.odds.fetch_daily_trifecta_odds",
-                "--date",
-                target_date.isoformat(),
-                "--timeout",
-                "15",
-                "--retries",
-                "2",
-                "--retry-sleep",
-                "1.5",
-                "--settle-retry-rounds",
-                "0",
-                "--settle-retry-sleep",
-                "0",
-                "--pending-retry-rounds",
-                "0",
-                "--unpublished-retry-rounds",
-                "0",
-                "--request-interval",
-                str(args.delay),
-            ],
-            True,
-            odds_fetch_timeout,
-        ),
-        ("evaluate_ev_and_skip", [py_cmd, "-m", "src.strategy.evaluate_ev_and_skip"], False, None),
-        ("build_exacta_mode_predictions", [py_cmd, "-m", "src.strategy.build_exacta_mode_predictions"], True, None),
-        ("analyze_gate_health", [py_cmd, "-m", "src.eval.analyze_gate_health"], True, None),
-    ]
+    step_specs = build_pre_race_step_specs(
+        target_date,
+        delay=float(args.delay),
+        py_cmd=py_cmd,
+        odds_fetch_timeout=odds_fetch_timeout,
+        defer_odds_evaluation=bool(args.defer_odds_evaluation),
+    )
+    if args.defer_odds_evaluation:
+        append_log(
+            log_path,
+            "[mode] deferred odds fetch and decision evaluation to run_daily_odds_refresh",
+        )
 
     total_steps = len(step_specs)
     for index, (label, cmd, allow_failure, timeout) in enumerate(step_specs, start=1):
@@ -318,16 +359,21 @@ def main() -> None:
             "today_features": ROOT / "data/features/today_features.csv",
             "today_win_proba": ROOT / "data/model_outputs/today_win_proba.csv",
             "trifecta_candidates": ROOT / "data/strategy_outputs/trifecta_candidates.csv",
-            "today_odds": ROOT / "data/odds/today_trifecta_odds.csv",
-            "today_odds_report": ROOT / "data/odds" / odds_date_key / "fetch_report.json",
-            "today_odds_race_status": ROOT / "data/odds" / odds_date_key / "race_status.csv",
-            "today_odds_targets": ROOT / "data/odds" / odds_date_key / "race_targets.csv",
-            "today_odds_failures": ROOT / "data/odds" / odds_date_key / "failed_races.csv",
-            "skip_decisions": ROOT / "data/strategy_outputs/skip_decisions.csv",
-            "skip_decisions_exacta_mode": ROOT / "data/strategy_outputs/skip_decisions_exacta_mode.csv",
-            "ev_analysis": ROOT / "data/strategy_outputs/ev_analysis.csv",
-            "gate_health_summary": ROOT / "reports/gate_health/gate_health_summary.json",
         }
+        if not args.defer_odds_evaluation:
+            artifact_map.update(
+                {
+                    "today_odds": ROOT / "data/odds/today_trifecta_odds.csv",
+                    "today_odds_report": ROOT / "data/odds" / odds_date_key / "fetch_report.json",
+                    "today_odds_race_status": ROOT / "data/odds" / odds_date_key / "race_status.csv",
+                    "today_odds_targets": ROOT / "data/odds" / odds_date_key / "race_targets.csv",
+                    "today_odds_failures": ROOT / "data/odds" / odds_date_key / "failed_races.csv",
+                    "skip_decisions": ROOT / "data/strategy_outputs/skip_decisions.csv",
+                    "skip_decisions_exacta_mode": ROOT / "data/strategy_outputs/skip_decisions_exacta_mode.csv",
+                    "ev_analysis": ROOT / "data/strategy_outputs/ev_analysis.csv",
+                    "gate_health_summary": ROOT / "reports/gate_health/gate_health_summary.json",
+                }
+            )
         for key, src in artifact_map.items():
             copied = copy_artifact(src, report_dir)
             if copied:
@@ -342,6 +388,8 @@ def main() -> None:
         "log_path": str(log_path),
         "steps": steps,
         "artifacts": artifacts,
+        "deferredOddsEvaluation": bool(args.defer_odds_evaluation),
+        "deferredStepLabels": sorted(ODDS_EVALUATION_STEP_LABELS) if args.defer_odds_evaluation else [],
         "model_backups": model_backups,
         "odds_refresh_policy": policy_selection,
         "active_phase": policy_selection.get("active_phase", "final"),

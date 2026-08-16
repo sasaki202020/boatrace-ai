@@ -64,8 +64,8 @@ if /I "!PRE_RACE_STATUS!"=="ok" (
   call :mark_step pre_race skipped_existing
 ) else (
   echo [CMD] run_daily_pre_race>>"!LOG_FILE!"
-  echo [CMD] !PYTHON_EXE! -m src.pipeline.run_daily_pre_race --date !RUN_DATE_ISO!
-  !PYTHON_EXE! -m src.pipeline.run_daily_pre_race --date !RUN_DATE_ISO!>>"!LOG_FILE!" 2>&1
+  echo [CMD] !PYTHON_EXE! -m src.pipeline.run_daily_pre_race --date !RUN_DATE_ISO! --defer-odds-evaluation
+  !PYTHON_EXE! -m src.pipeline.run_daily_pre_race --date !RUN_DATE_ISO! --defer-odds-evaluation>>"!LOG_FILE!" 2>&1
   set "EXIT_CODE=!ERRORLEVEL!"
   echo [EXIT] run_daily_pre_race=!EXIT_CODE!>>"!LOG_FILE!"
   if exist "reports\daily\!RUN_DATE_ISO!\pre_race_run.json" (
@@ -80,10 +80,10 @@ if /I "!ODDS_REFRESH_STATUS!"=="ok" (
   echo [SKIP] odds_refresh already exists>>"!LOG_FILE!"
   call :mark_step odds_refresh skipped_existing
 ) else (
-  echo [CMD] run_odds_refresh>>"!LOG_FILE!"
-  call "%SCRIPT_DIR%run_odds_refresh.bat" !RUN_DATE_ISO! >>"!LOG_FILE!" 2>&1
+  echo [CMD] run_daily_odds_refresh>>"!LOG_FILE!"
+  !PYTHON_EXE! -m src.pipeline.run_daily_odds_refresh --date !RUN_DATE_ISO! --phase final --refresh --pending-only>>"!LOG_FILE!" 2>&1
   set "EXIT_CODE=!ERRORLEVEL!"
-  echo [EXIT] run_odds_refresh=!EXIT_CODE!>>"!LOG_FILE!"
+  echo [EXIT] run_daily_odds_refresh=!EXIT_CODE!>>"!LOG_FILE!"
   if exist "reports\daily\!RUN_DATE_ISO!\odds_refresh_run.json" (
     call :mark_step odds_refresh done
   ) else (
