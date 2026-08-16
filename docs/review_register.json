@@ -651,7 +651,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "ci",
-      "sha256": "575025dae7d5e8797b9f56ddd5951a8134a017bd5c3c9baeab960f1b39ffbd04"
+      "sha256": "74b5db88d6fae80e92aee60af87fbd2239cef35400e5db3d4508f9556d077724"
     },
     {
       "path": "tests/test_release_verifiers.py",
