@@ -10,9 +10,9 @@ The source approval manifest is disabled until documentary permission and a sour
 
 ## Runtime paths
 
-- Inbox: C:\Users\goo10\競艇\boatrace-ai-mvp\data\research\feature_forward_v1\inbox
-- Store: C:\Users\goo10\競艇\boatrace-ai-mvp\data\research\feature_forward_v1\store
-- Status: C:\Users\goo10\競艇\boatrace-ai-mvp\reports\feature_forward_v1\latest_status.json
+- Inbox: `data/research/feature_forward_v1/inbox`
+- Store: `data/research/feature_forward_v1/store`
+- Status: `reports/feature_forward_v1/latest_status.json`
 
 ## Contract
 

@@ -17,8 +17,8 @@ from src.commercialization_v2.ledger import ShadowLedgerV2
 from src.ingest.parsers.official_k_result_parser import parse_official_k_result_file
 
 
-DEFAULT_B_ROOT = Path(r"C:\Users\goo10\競艇\boatrace-ai-mvp\data\raw\official\entries")
-DEFAULT_K_ROOT = Path(r"C:\Users\goo10\競艇\boatrace-ai-mvp\data\raw\official\results")
+DEFAULT_B_ROOT = ROOT / "data/raw/official/entries"
+DEFAULT_K_ROOT = ROOT / "data/raw/official/results"
 RUNTIME = ROOT / "data/commercialization_v2/autopilot"
 EXPECTED_APPROVAL_SHA256 = "2087100a6ff5d1939d3e10711551485b0e038c3545c78a48614cb00b287d80fc"
 

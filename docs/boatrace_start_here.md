@@ -26,7 +26,7 @@ py src/ingest/inspect_raw_columns.py
 ```cmd
 py master_run.py
 ```
-または、作成した [run_master.bat](file:///c:/Users/goo10/競艇/boatrace-ai-mvp/run_master.bat) をダブルクリックして実行し、ログを確認してください。
+または、リポジトリルートの [run_master.bat](../run_master.bat) を実行し、ログを確認してください。
 
 ## 🔍 優先的に疑うべき箇所（トラブルシューティング）
 モデルの精度を疑う前に、まず以下の3点を確認してください。
@@ -36,4 +36,4 @@ py master_run.py
 
 ---
 **勝利への航海を開始しましょう。**
-詳細な実行順序は [docs/RUN_ORDER.md] または [walkthrough.md] を参照してください。
+現在の入口と安全条件は [00_MASTER_INDEX.md](00_MASTER_INDEX.md) と [FINAL_PRODUCT_SPEC.md](FINAL_PRODUCT_SPEC.md) を参照してください。

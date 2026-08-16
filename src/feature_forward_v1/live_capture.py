@@ -8,9 +8,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from urllib.error import HTTPError
 from urllib.parse import parse_qs, urlsplit
-from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 import requests
@@ -86,6 +84,14 @@ class RequestLedger:
             "SELECT requested_at_utc FROM requests ORDER BY requested_at_utc DESC LIMIT 1"
         ).fetchone()
         return datetime.fromisoformat(row[0]) if row else None
+
+    def request_count_for_jst_date(self, race_date: str) -> int:
+        row = self.connection.execute(
+            "SELECT COUNT(*) FROM requests "
+            "WHERE date(requested_at_utc, '+9 hours')=?",
+            (race_date,),
+        ).fetchone()
+        return int(row[0])
 
     def selected_venue(self, race_date: str) -> str | None:
         row = self.connection.execute(
@@ -351,7 +357,7 @@ def _run_capture_cycle_unlocked(
     b_file: Path,
     store_root: Path,
     now: datetime | None = None,
-    opener=None,
+    requests_per_day: int,
 ) -> dict:
     now = now or datetime.now(timezone.utc)
     now_jst = now.astimezone(JST)
@@ -402,6 +408,8 @@ def _run_capture_cycle_unlocked(
             "selectedVenues": selected_venues,
             "venueLimit": venue_limit,
         }
+    if ledger.request_count_for_jst_date(race_date) >= requests_per_day:
+        return {"status": "DAILY_BUDGET_EXHAUSTED", "networkRequests": 0}
     previous = ledger.last_requested_at()
     if previous is not None and (now - previous).total_seconds() < 60:
         return {
@@ -411,28 +419,17 @@ def _run_capture_cycle_unlocked(
             "venueLimit": venue_limit,
         }
     target = due[0]
-    requested_at = datetime.now(timezone.utc)
-    request = Request(target.url, headers={"User-Agent": "boatrace-ai-mvp/1.0"})
+    requested_at = now
     try:
-        if opener is None:
-            response = requests.get(
-                target.url,
-                timeout=30,
-                allow_redirects=True,
-                headers={"User-Agent": "boatrace-ai-mvp/1.0"},
-            )
-            status_code = int(response.status_code)
-            raw = response.content
-            final_url = response.url
-        else:
-            with opener(request, timeout=30) as response:
-                status_code = int(response.status)
-                raw = response.read()
-                final_url = response.geturl()
-    except HTTPError as exc:
-        status_code = int(exc.code)
-        raw = exc.read()
-        final_url = target.url
+        response = requests.get(
+            target.url,
+            timeout=30,
+            allow_redirects=False,
+            headers={"User-Agent": "boatrace-ai-mvp/1.0"},
+        )
+        status_code = int(response.status_code)
+        raw = response.content
+        final_url = response.url
     except (requests.RequestException, OSError, TimeoutError) as exc:
         ledger.append(
             target=target,
@@ -507,12 +504,15 @@ def run_capture_cycle(
     b_file: Path,
     store_root: Path,
     now: datetime | None = None,
-    opener=None,
+    requests_per_day: int,
 ) -> dict:
     try:
         with _cycle_lock(store_root):
             return _run_capture_cycle_unlocked(
-                b_file=b_file, store_root=store_root, now=now, opener=opener
+                b_file=b_file,
+                store_root=store_root,
+                now=now,
+                requests_per_day=requests_per_day,
             )
     except OSError:
         return {"status": "COLLECTOR_LOCKED", "networkRequests": 0}

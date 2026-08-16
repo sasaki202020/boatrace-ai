@@ -68,7 +68,12 @@ def test_historical_input_audit_reports_missing_reason(tmp_path, monkeypatch) ->
     monkeypatch.setattr(backfill_predictions, "UI_ROOT", tmp_path / "data" / "ui")
     monkeypatch.setattr(backfill_predictions, "RAW_OFFICIAL_ROOT", tmp_path / "data" / "raw" / "official")
     monkeypatch.setattr(backfill_predictions, "BACKFILL_ROOT", tmp_path / "data" / "predictions_backfill")
+    monkeypatch.setattr(
+        backfill_predictions,
+        "discover_venues_for_date",
+        lambda date8: {"date": date8, "venues": ["24"], "warnings": []},
+    )
 
     result = audit_historical_inputs.audit_historical_inputs(start_date="2026-04-20", end_date="2026-04-20", jcd="24")
     row = result["rows"][0]
-    assert row["missingReason"] == "no_input_files"
+    assert row["missingReason"] == "date_not_collected"

@@ -115,9 +115,9 @@ def test_settle_today_all_unresolved_has_null_roi(tmp_path, monkeypatch) -> None
     assert summary["missCount"] == 0
 
 
-def test_settle_today_uses_official_txt_k_results(tmp_path, monkeypatch) -> None:
+def test_settle_today_uses_official_txt_k_results(tmp_path, monkeypatch, official_k_file) -> None:
     _setup_paths(tmp_path, monkeypatch)
-    k_file = Path(__file__).resolve().parents[1] / "data" / "raw" / "official" / "results" / "K260404.TXT"
+    k_file = official_k_file
     k_payload = parse_official_k_result_file(k_file)["races"][0]
     combo = str(k_payload["trifectaCombo"])
 

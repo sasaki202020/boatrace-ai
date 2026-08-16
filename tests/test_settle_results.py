@@ -32,15 +32,19 @@ def test_build_backtest_summary_aggregates_metrics() -> None:
             "jcd": "24",
             "raceCount": 1,
             "buyCount": 2,
+            "settledBetCount": 2,
             "hitCount": 1,
             "stakeAmount": 200.0,
+            "settledStakeAmount": 200.0,
             "payoutAmount": 590.0,
             "resultsStatus": "available",
             "settlements": [
                 {
                     "buyCount": 2,
+                    "settledBetCount": 2,
                     "hitCount": 1,
                     "stakeAmount": 200.0,
+                    "settledStakeAmount": 200.0,
                     "payoutAmount": 590.0,
                 }
             ],

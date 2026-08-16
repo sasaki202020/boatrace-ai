@@ -1,11 +1,23 @@
 #!/usr/bin/env node
 const assert = require('node:assert/strict');
-const { spawn } = require('node:child_process');
+const { spawn, spawnSync } = require('node:child_process');
 const { createServer } = require('node:http');
 const { copyFile, mkdir, readFile, writeFile } = require('node:fs/promises');
 const path = require('node:path');
 
-const { chromium } = require('C:/Users/goo10/AppData/Roaming/npm/node_modules/playwright');
+function loadPlaywright() {
+  const moduleName = String(process.env.PLAYWRIGHT_MODULE || 'playwright').trim();
+  try {
+    return require(moduleName);
+  } catch (err) {
+    throw new Error(
+      `Playwright could not be loaded from ${moduleName}. Install it in this repository or set PLAYWRIGHT_MODULE.`,
+      { cause: err },
+    );
+  }
+}
+
+const { chromium } = loadPlaywright();
 
 const ROOT = path.resolve(__dirname, '..');
 const OUTPUT_DIR = path.join(ROOT, 'output', 'playwright');
@@ -13,7 +25,7 @@ const STATIC_DIR = path.join(ROOT, 'src', 'web', 'static');
 const HOST = process.env.DASHBOARD_HOST || '127.0.0.1';
 const PORT = Number(process.env.DASHBOARD_PORT || 8090);
 const BASE_URL = process.env.DASHBOARD_URL || `http://${HOST}:${PORT}`;
-const PYTHON = process.env.PYTHON || 'C:/Users/goo10/AppData/Local/Programs/Python/Python312/python.exe';
+const PYTHON = String(process.env.PYTHON || (process.platform === 'win32' ? 'py' : 'python3')).trim();
 const WORKFLOW_USE_MOCK = String(process.env.WORKFLOW_USE_MOCK || '').toLowerCase() === '1';
 const WORKFLOW_ALLOW_MOCK_FALLBACK = ['1', 'true', 'yes'].includes(String(process.env.WORKFLOW_FALLBACK_TO_MOCK || '').toLowerCase());
 const WORKFLOW_ALLOW_API_ONLY = ['1', 'true', 'yes'].includes(String(process.env.WORKFLOW_API_ONLY || '').toLowerCase());
@@ -691,6 +703,11 @@ async function startMockServer() {
 }
 
 function spawnDashboardServer() {
+  const pythonCheck = spawnSync(PYTHON, ['--version'], { cwd: ROOT, encoding: 'utf8' });
+  if (pythonCheck.error || pythonCheck.status !== 0) {
+    const detail = pythonCheck.error?.message || pythonCheck.stderr?.trim() || `exit ${pythonCheck.status}`;
+    throw new Error(`Python executable is unavailable (${PYTHON}): ${detail}. Set PYTHON to an executable path.`);
+  }
   const proc = spawn(PYTHON, ['-m', 'src.web.app', '--host', HOST, '--port', String(PORT)], {
     cwd: ROOT,
     stdio: ['ignore', 'pipe', 'pipe'],

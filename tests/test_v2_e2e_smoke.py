@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
 from pandas.errors import EmptyDataError
 
 
@@ -15,6 +16,16 @@ def _load_json(path: Path) -> dict:
 
 
 def test_v2_smoke_outputs_for_two_success_days() -> None:
+    required_paths = [
+        REPO_ROOT / "reports" / "v2" / "shadow_summary_20260403.json",
+        REPO_ROOT / "reports" / "v2" / "shadow_summary_20260404.json",
+        REPO_ROOT / "reports" / "v2" / "batch_summary.json",
+        REPO_ROOT / "reports" / "v2" / "batch_results.csv",
+        REPO_ROOT / "reports" / "v2" / "batch_failures.csv",
+    ]
+    if not all(path.is_file() for path in required_paths):
+        pytest.skip("non-versioned v2 shadow evidence unavailable")
+
     summary_0403 = _load_json(REPO_ROOT / "reports" / "v2" / "shadow_summary_20260403.json")
     summary_0404 = _load_json(REPO_ROOT / "reports" / "v2" / "shadow_summary_20260404.json")
     batch_summary = _load_json(REPO_ROOT / "reports" / "v2" / "batch_summary.json")

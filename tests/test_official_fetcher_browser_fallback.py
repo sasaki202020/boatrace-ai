@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 
 from src.ingest import official_fetcher
@@ -24,9 +25,15 @@ def _beforeinfo_html() -> str:
     """
 
 
-def test_fetch_beforeinfo_html_uses_browser_when_today_cache_is_partial(monkeypatch):
-    tmp_path = Path("tests") / "_tmp_official_fetcher_browser_fallback_beforeinfo"
+class _FixedDatetime(datetime):
+    @classmethod
+    def now(cls, tz=None):
+        return cls(2026, 4, 25, tzinfo=tz)
+
+
+def test_fetch_beforeinfo_html_uses_browser_when_today_cache_is_partial(tmp_path, monkeypatch):
     monkeypatch.setattr(official_fetcher, "RAW_ROOT", tmp_path)
+    monkeypatch.setattr(official_fetcher, "datetime", _FixedDatetime)
     monkeypatch.setattr(
         official_fetcher,
         "parse_beforeinfo_html",
@@ -62,14 +69,14 @@ def test_fetch_beforeinfo_html_uses_browser_when_today_cache_is_partial(monkeypa
     assert result["beforeinfoFallbackUsed"] is True
 
 
-def test_fetch_odds3t_html_uses_browser_when_today_cache_is_partial(monkeypatch):
-    tmp_path = Path("tests") / "_tmp_official_fetcher_browser_fallback_odds"
+def test_fetch_odds3t_html_uses_browser_when_today_cache_is_partial(tmp_path, monkeypatch, odds3t_html):
     monkeypatch.setattr(official_fetcher, "RAW_ROOT", tmp_path)
+    monkeypatch.setattr(official_fetcher, "datetime", _FixedDatetime)
     cache_path = tmp_path / "20260425" / "01" / "odds3t_01.html"
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     cache_path.write_text("<html><body>発売前</body></html>", encoding="utf-8")
 
-    browser_html = Path("data/odds/20260419/odds_pages/20260419-02-04.html").read_text(encoding="utf-8")
+    browser_html = odds3t_html
 
     def fake_browser(url: str, *, timeout: float, output_path: Path | None = None):
         if output_path is not None:

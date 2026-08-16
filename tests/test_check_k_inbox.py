@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import uuid
 import zipfile
 from pathlib import Path
 
 from src.pipeline.check_k_inbox import check_k_inbox
 
 
-def test_check_k_inbox_handles_empty_dir(monkeypatch) -> None:
-    tmp_root = Path.home() / ".codex" / "memories" / "k_result_tests" / f"check_empty_{uuid.uuid4().hex}"
+def test_check_k_inbox_handles_empty_dir(tmp_path, monkeypatch) -> None:
+    tmp_root = tmp_path / "check_empty"
     inbox = tmp_root / "inbox"
     inbox.mkdir(parents=True, exist_ok=True)
     target = tmp_root / "raw" / "official" / "results"
@@ -30,19 +29,18 @@ def test_check_k_inbox_handles_empty_dir(monkeypatch) -> None:
     assert summary["recommendedNextAction"] == "place_missing_k_files_in_inbox"
 
 
-def test_check_k_inbox_detects_txt_zip_invalid_and_existing(monkeypatch) -> None:
-    tmp_root = Path.home() / ".codex" / "memories" / "k_result_tests" / f"check_mixed_{uuid.uuid4().hex}"
+def test_check_k_inbox_detects_txt_zip_invalid_and_existing(tmp_path, monkeypatch, official_k_file) -> None:
+    tmp_root = tmp_path / "check_mixed"
     inbox = tmp_root / "inbox"
     inbox.mkdir(parents=True, exist_ok=True)
     target = tmp_root / "raw" / "official" / "results"
     target.mkdir(parents=True, exist_ok=True)
 
-    real_txt = Path(__file__).resolve().parents[1] / "data" / "raw" / "official" / "results" / "K260404.TXT"
-    (inbox / "K260406.TXT").write_bytes(real_txt.read_bytes())
+    (inbox / "K260406.TXT").write_bytes(official_k_file.read_bytes())
     (inbox / "badname.txt").write_text("bad", encoding="utf-8")
     with zipfile.ZipFile(inbox / "bundle.zip", "w") as zf:
-        zf.writestr("K260407.TXT", real_txt.read_bytes())
-    (target / "K260406.TXT").write_bytes(real_txt.read_bytes())
+        zf.writestr("K260407.TXT", official_k_file.read_bytes())
+    (target / "K260406.TXT").write_bytes(official_k_file.read_bytes())
 
     monkeypatch.setattr("src.pipeline.check_k_inbox.REPORT_ROOT", tmp_root / "reports" / "backtest")
     monkeypatch.setattr("src.pipeline.check_k_inbox.DEFAULT_TARGET_DIR", target)

@@ -9,7 +9,11 @@ param(
 $ErrorActionPreference = "Stop"
 
 $repoRoot = Split-Path -Parent $PSScriptRoot
-$py = 'C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe'
+$py = (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+if ([string]::IsNullOrWhiteSpace($py)) {
+    throw 'PYTHON_NOT_FOUND'
+}
+Set-Location $repoRoot
 
 if (-not $Date) {
     $Date = (Get-Date).ToString('yyyy-MM-dd')

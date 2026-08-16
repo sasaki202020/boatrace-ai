@@ -1,14 +1,13 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 from src.ingest.parsers.odds3t_parser import parse_odds3t_document, parse_odds3t_html
 from src.pipeline import debug_odds3t
 
 
-def test_odds3t_parser_extracts_many_combos_from_fixture() -> None:
-    html = Path("data/odds/20260419/odds_pages/20260419-02-04.html").read_text(encoding="utf-8")
+def test_odds3t_parser_extracts_many_combos_from_fixture(odds3t_html) -> None:
+    html = odds3t_html
     parsed = parse_odds3t_document(html, "20260419-02-04")
     odds = parse_odds3t_html(html, "20260419-02-04")
     assert parsed["dataStatus"] == "available"

@@ -88,6 +88,8 @@ class ResponseClassification:
 def classify_response(status_code: int, body: str) -> ResponseClassification:
     text = str(body).casefold()
     refusal_markers = ("captcha", "私はロボットではありません", "access denied", "利用を拒否")
+    if 300 <= status_code < 400:
+        return ResponseClassification(True, f"HTTP_{status_code}_REDIRECT")
     if status_code in {403, 429}:
         return ResponseClassification(True, f"HTTP_{status_code}")
     if any(marker.casefold() in text for marker in refusal_markers):
@@ -184,6 +186,40 @@ def load_policy_manifest(
         policy = policy_from_manifest(payload)
     except (KeyError, TypeError, ValueError) as exc:
         raise PolicyGateError("policy_schema_invalid") from exc
+    if policy.automated_fetch_allowed:
+        prefixes = payload.get("allowedSourceLocationPrefixes")
+        if (
+            payload.get("rightsStatus") != "INTERNAL_RESEARCH_APPROVED"
+            or payload.get("writtenConfirmation") is not True
+            or payload.get("numericStorageAllowed") is not True
+            or payload.get("rawStorageAllowed") is not True
+            or policy.requests_per_day != 12
+            or not isinstance(prefixes, list)
+            or not prefixes
+            or any(not isinstance(value, str) or not value for value in prefixes)
+        ):
+            raise PolicyGateError("automated_fetch_attestation_incomplete")
+        evidence_value = payload.get("evidencePath")
+        evidence_sha256 = payload.get("evidenceSha256")
+        if not isinstance(evidence_value, str) or not evidence_value:
+            raise PolicyGateError("automated_fetch_evidence_missing")
+        evidence_path = Path(evidence_value)
+        if not evidence_path.is_absolute():
+            evidence_path = path.parent / evidence_path
+        if not evidence_path.is_file():
+            raise PolicyGateError("automated_fetch_evidence_missing")
+        if (
+            not isinstance(evidence_sha256, str)
+            or len(evidence_sha256) != 64
+            or any(char not in "0123456789abcdef" for char in evidence_sha256)
+        ):
+            raise PolicyGateError("automated_fetch_evidence_sha256_invalid")
+        try:
+            actual_evidence_sha256 = hashlib.sha256(evidence_path.read_bytes()).hexdigest()
+        except OSError as exc:
+            raise PolicyGateError("automated_fetch_evidence_unreadable") from exc
+        if actual_evidence_sha256 != evidence_sha256:
+            raise PolicyGateError("automated_fetch_evidence_sha256_mismatch")
     if require_automated_fetch and not policy.automated_fetch_allowed:
         raise PolicyGateError("automated_fetch_not_allowed")
     return policy, {

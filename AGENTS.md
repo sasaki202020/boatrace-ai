@@ -1,9 +1,19 @@
 # AGENTS.md
 
-新 `C:\Users\goo10\競艇\boatrace-ai-mvp` は今後の正本であり、Codex IDEで進める本命。
-旧 `C:\Users\goo10\OneDrive\ドキュメント\New project\boat_race_ai` は別プロジェクト / legacy reference であり、直接作業しない。
+このGitリポジトリのルートは今後の正本であり、Codex IDEで進める本命。
+旧プロジェクトは legacy reference であり、直接作業しない。
 `PROJECT_HANDOFF` / `NEXT_ACTIONS` / `PHASE_HISTORY` 相当は `docs/CODEX_HANDOFF.md` / `docs/CODEX_TASKS.md` / `docs/CURRENT_STATUS.md` / `docs/operation_phase.md` を読む。
 次回は `AGENTS.md` を読んで `docs/CODEX_TASKS.md` の次タスクから進める。
+
+## 文書の権威順位
+- `docs/FINAL_PRODUCT_SPEC.md`（製品仕様の唯一の正本）
+- `AGENTS.md`（実行ルール）
+- `docs/CODEX_TASKS.md`（作業キュー）
+- `docs/CODEX_CONTEXT.md` / `docs/CODEX_HANDOFF.md`（履歴コンテキスト）
+- `reports/**`（状態を示す証拠）
+
+文書の権威順位は `FINAL_PRODUCT_SPEC > AGENTS execution rules > CODEX_TASKS > CONTEXT/HANDOFF historical context > reports evidence` とする。
+この `AGENTS.md` は作業方法と安全な実行境界を定めるものであり、製品仕様の正本を上書きしない。矛盾を見つけた場合は作業を止め、正本との整合を確認する。
 
 ## 基本ルール
 - 変更前に対象ファイルを確認する
@@ -13,15 +23,15 @@
 - 変更後は最小限の確認だけを実行する
 
 ## 最初に読む順
-1. `AGENTS.md`
-2. `docs/CODEX_HANDOFF.md`
+1. `docs/FINAL_PRODUCT_SPEC.md`
+2. `AGENTS.md`
 3. `docs/CODEX_TASKS.md`
-4. `docs/CURRENT_STATUS.md`
-5. `docs/operation_phase.md`
+4. `docs/CODEX_CONTEXT.md` / `docs/CODEX_HANDOFF.md`
+5. `docs/CURRENT_STATUS.md`
+6. `docs/operation_phase.md`
 
 ## 作業フォルダー
-- `C:\Users\goo10\競艇\boatrace-ai-mvp`
-- この配下を正本として扱う
+- このGitリポジトリのルートを正本として扱う
 - `node_modules/`, `build/`, `dist/`, `venv/`, `logs/`, `backups/` は原則触らない
 - `data/` は原則触らないが、`data/frozen_bets/` は生成先 / 運用対象として扱う
 - 必要な場合だけ最小限を確認する
@@ -34,8 +44,10 @@
 - BUY ルール変更はまだしない
 - `liveSettledBetCount >= 100` かつ `liveSettlementCoverage >= 0.5` が揃うまで tuning は保留
 
-## source of truth
-- 既存実体: `src/`, `scripts/`, `docs/CODEX_HANDOFF.md`, `docs/CODEX_TASKS.md`, `docs/CURRENT_STATUS.md`, `docs/operation_phase.md`
+## 実装・運用資産の所在
+- 製品仕様の唯一の正本: `docs/FINAL_PRODUCT_SPEC.md`
+- 既存実体: `src/`, `scripts/`, `docs/CODEX_TASKS.md`, `docs/CURRENT_STATUS.md`, `docs/operation_phase.md`
+- 履歴コンテキスト: `docs/CODEX_CONTEXT.md`, `docs/CODEX_HANDOFF.md`（正本ではない）
 - 生成先 / 運用対象: `data/frozen_bets/YYYYMMDD/frozen_bets_all.json`（未存在または生成前なら既存実体ではなくここを運用対象として扱う）, `reports/daily/YYYY-MM-DD/`, `reports/monitoring/`, `data/ui/YYYYMMDD/`, `reports/predictions/YYYY-MM-DD/`
 
 ## 絶対禁止事項
@@ -84,6 +96,6 @@
 
 ## Completion Specification
 - The canonical integrated design, operational boundary, and evidence gates are
-  defined in `docs/FINAL_PRODUCT_SPEC.md`.
-- Read it before selecting a new task. Its conflict rule does not weaken any
-  safety restriction in this file.
+  defined only in `docs/FINAL_PRODUCT_SPEC.md`.
+- Read it before selecting a new task. This file provides execution rules and
+  does not override the product specification.

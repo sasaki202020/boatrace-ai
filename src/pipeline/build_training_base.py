@@ -196,14 +196,15 @@ def _file_mtime_iso(path: Path) -> str:
 
 
 def _relative_path(path: Path) -> str:
+    # Keep provenance stable when a test or temporary workspace is nested under the repo.
+    parts = path.parts
+    for anchor in ("data", "raw"):
+        if anchor in parts:
+            idx = parts.index(anchor)
+            return Path(*parts[idx:]).as_posix()
     try:
         return str(path.relative_to(ROOT))
     except Exception:
-        parts = path.parts
-        for anchor in ("data", "raw"):
-            if anchor in parts:
-                idx = parts.index(anchor)
-                return Path(*parts[idx:]).as_posix()
         return path.as_posix()
 
 

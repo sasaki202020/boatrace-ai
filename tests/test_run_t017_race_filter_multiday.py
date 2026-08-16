@@ -100,15 +100,17 @@ def test_main_skips_missing_official_results(tmp_path, monkeypatch) -> None:
 
     available = runner.SnapshotSource(
         date_label="2026-04-25",
-        daily_dir=daily_root / "2026-04-25",
+        source_dir=daily_root / "2026-04-25",
         snapshot_dir=tmp_root / "20260425_eval",
+        source_type="daily",
         source_status="available",
         missing_items=[],
     )
     missing_results = runner.SnapshotSource(
         date_label="2026-04-26",
-        daily_dir=daily_root / "2026-04-26",
+        source_dir=daily_root / "2026-04-26",
         snapshot_dir=tmp_root / "20260426_eval",
+        source_type="daily",
         source_status="available",
         missing_items=[],
     )
@@ -119,7 +121,7 @@ def test_main_skips_missing_official_results(tmp_path, monkeypatch) -> None:
         if source.date_label == "2026-04-26":
             raise FileNotFoundError(
                 "missing official results file for 2026-04-26: "
-                "C:\\Users\\goo10\\競艇\\boatrace-ai-mvp\\data\\raw\\official\\results\\K260426.TXT"
+                "missing-results-fixture/K260426.TXT"
             )
         return {"date": "20260425"}
 

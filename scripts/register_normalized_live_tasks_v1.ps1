@@ -1,7 +1,10 @@
 $ErrorActionPreference = "Stop"
 $repo = Split-Path -Parent $PSScriptRoot
-$python = "C:\Users\goo10\AppData\Local\Programs\Python\Python313\python.exe"
-$runtime = "C:\Users\goo10\競艇\boatrace-ai-mvp"
+$python = (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+$runtime = $repo
+if ([string]::IsNullOrWhiteSpace($python) -or -not (Test-Path -LiteralPath $python -PathType Leaf)) {
+  throw "PYTHON_NOT_FOUND"
+}
 
 $featureArgs = @(
   "scripts\run_live_feature_capture_v1.py"

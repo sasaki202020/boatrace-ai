@@ -41,7 +41,7 @@
 ## ローカル起動
 
 ```powershell
-cd C:\Users\goo10\競艇\boatrace-ai-mvp
+Set-Location <repository-root>
 py -m src.web.app --host 127.0.0.1 --port 5000
 ```
 

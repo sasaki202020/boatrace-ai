@@ -291,7 +291,7 @@ def test_backtest_range_prediction_source_outputs_are_separated(tmp_path, monkey
     assert "live" in seen_sources and "backfill" in seen_sources and "ui_recovered" in seen_sources
 
 
-def test_backtest_range_uses_official_txt_k_results(tmp_path, monkeypatch) -> None:
+def test_backtest_range_uses_official_txt_k_results(tmp_path, monkeypatch, official_k_file) -> None:
     monkeypatch.setattr(backtest_range, "REPORT_ROOT", tmp_path / "reports" / "backtest")
     monkeypatch.setattr(settle_results, "ROOT", tmp_path)
     monkeypatch.setattr(settle_results, "PRED_ROOT", tmp_path / "data" / "predictions")
@@ -304,7 +304,7 @@ def test_backtest_range_uses_official_txt_k_results(tmp_path, monkeypatch) -> No
         lambda **kwargs: {"date": kwargs.get("date_key", kwargs.get("date")), "jcd": kwargs.get("jcd", "22"), "source": "frozen", "frozenState": "present", "uiState": "missing", "legacyState": "missing", "hasFrozenBets": True, "hasUiJson": False, "hasAiPredictions": True, "warnings": []},
     )
 
-    k_file = Path(__file__).resolve().parents[1] / "data" / "raw" / "official" / "results" / "K260404.TXT"
+    k_file = official_k_file
     k_payload = parse_official_k_result_file(k_file)["races"][0]
     combo = str(k_payload["trifectaCombo"])
 

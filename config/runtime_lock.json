@@ -1,0 +1,324 @@
+{
+  "schemaVersion": 1,
+  "canonicalCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+  "sourceRoots": [
+    "scripts/run_live_feature_capture_v1.py",
+    "src/feature_forward_v1",
+    "src/commercialization_v2",
+    "config/feature_forward_v1"
+  ],
+  "entries": [
+    {
+      "path": "config/feature_forward_v1/oof_evaluation_spec.json",
+      "sha256": "aa50c8a4529472b53cc8bb833cfc87f251b46474bd983a5b4882d9f6e992809b",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "config/feature_forward_v1/parallel_shadow_config.json",
+      "sha256": "8577a9bb63b49c215cec7984c72fef1c37d8d4edaab4ee2622569565a6a98756",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "config/feature_forward_v1/runtime_gate.json",
+      "sha256": "834dc3318665c2a7ad0a2e2a112a2a837675ce783ecbe9ce92cf5ff32ab1d7f3",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "config/feature_forward_v1/source_approval.json",
+      "sha256": "859fa6f0b5065a4d0f21384f071fc2b09f6e48ce9b76001fc68d99a658f0cd3d",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "scripts/run_live_feature_capture_v1.py",
+      "sha256": "27859f9fc5862f95615da00b67522c4751beef035fe1b9ee65b9e421c0efae85",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/__init__.py",
+      "sha256": "e9ccca63d1255d079ac523f2bd6c8db382d7973e2702fb2a7d56f6a38843ac0e",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/activation.py",
+      "sha256": "fe7470a62af0fbb5dd1fa896996fdb1631e2c24fd8fd79787a8871a9f475f89b",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/anchor_provider.py",
+      "sha256": "c0350da5af4841cd5593c2396a1910ba18ce02e31b4787b7d202be3731577d94",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/autopilot.py",
+      "sha256": "ff27359e3d3ca564ebf4eb79b7af9937d3d45065bb572c7bd0b51a89636177c7",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/canonical_package.py",
+      "sha256": "ebd781d1efb1a63975cbbd7ea74fa75efe89064d96eac246e148d488ba0517d1",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/commitment.py",
+      "sha256": "a3f2c7712813d66a9d81323a65b84712d93e07b67603c3c5f64606c3de55f218",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/day1_readiness.py",
+      "sha256": "84eacd8d692305e7f900a058db5de1ce1b74ff301413e84105314888761eb6fb",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/day1_runner.py",
+      "sha256": "8d0a2086a8fcf9d93a95d1a33aaa4f46919d942aa82b8c98abcb5e69af15fe3a",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/gates.py",
+      "sha256": "f4ffa21757fc671163c93e757fd2fb4be772f60f93542e2c7f5bee1d2e32ca00",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/github_contents_anchor.py",
+      "sha256": "d586d15287df8dd23553a23f6c6c32b47f1d3251cf184c813cfe6b67057e482d",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/input_guard.py",
+      "sha256": "47ff34b24049d5663046cc554c444c56b936da00e92006322a8aaab7039914bc",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/ledger.py",
+      "sha256": "e22038e5f493c530e1acd852fb828f57a30616196d426672abcde2735e29e50b",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/prospective_anchor.py",
+      "sha256": "ca5621ee6d963a8e3f3b4ceb01d98f663b76b10e4805eeeb42b560e1f308ab8d",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/scorecard.py",
+      "sha256": "5424eb2e962d0821fbb9cb533c931568f0fcaca1d0f7d93179e8c115516ae26e",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/commercialization_v2/synthetic_anchor_ledger.py",
+      "sha256": "9c80187c615f6b734c6df05e0409b06588c18f84ce00aa2577b735d182c22e7a",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/__init__.py",
+      "sha256": "bca7a662efae298f5d1183e87691257d8ded97c6ae430c4ce54c6c218f7aef51",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/collector.py",
+      "sha256": "5f3a640f934ca95ffb51f2ecd8bd8ca399897d630ff703a740e839b13bfca3f9",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/course_start_challenger.py",
+      "sha256": "2fd1432a5cb6198b3d7e3d78ace0fb89247d8c170273ec7fec99ecac7a41111d",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/course_start_contract.py",
+      "sha256": "68a66285c476705db873be3722139a67346e13329d88cce8e56fdadecfa92094",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/date_contract.py",
+      "sha256": "c104589a05adfdd48de6cd7a7a92447653873a0590a7717f4eeb31e2a8d7ec90",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/lifecycle_audit.py",
+      "sha256": "099404d1e9aa31a470d809fa8de8692757ae8b883b7bb3b2a287c6bf55c27f40",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/lifecycle_ledger.py",
+      "sha256": "93d988de5b959058c73a36b6affcb2f6812d2cff469c9ac3954f49003946912b",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/live_capture.py",
+      "sha256": "d4c32618dc03f572e1c6fc93dce6922690fd40eaad04454faf6f2269e64f314d",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/local_pipeline.py",
+      "sha256": "314554836be50c09706fea4b29c1384e92846fe699232be0d452e46520e57177",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/manifest.py",
+      "sha256": "ffe1f65bf176fc68518d08a1bde1353199ee0626daeef70d0b11c813612ad0be",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/oof_readiness.py",
+      "sha256": "2de59176caf74d5f7d02645616a6fc3f5f445f65c1b43ae7fc9896f8a0de8d9e",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/parallel_shadow.py",
+      "sha256": "cf37c08708655a1cde7a690654e5e568d4fc318dacfb5d22669bfc0f83272b73",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/quality.py",
+      "sha256": "170231ff0c4af76f143f762c1195c4975d9df91cfda3588886aa3ba3c911978f",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/runtime_lifecycle.py",
+      "sha256": "7418ecbacc53517f64da240ffa03cd3dc96745aca427a75ccb8e244c8e77d5d6",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/runtime_provenance.py",
+      "sha256": "2741d228f5bf55b697365133cb80485c7979794f7789a43777148b984315b8f7",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/runtime_sync.py",
+      "sha256": "eb2c3d439ae6df2adb89e4e7d0bf2a737d0edd929f4b1d5d1c2d7eb1930a65c6",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/source_policy.py",
+      "sha256": "232edf729978f080a79609c82de1430f62c99d75113d2e70bcf0080c5ad8b6d2",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/store.py",
+      "sha256": "96bc096fa382472d472f2211f3280bba334a656111c106aff1f6a407d7fab676",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/value_evaluation.py",
+      "sha256": "810109387df606ef4864e576a7a09a3cc2ee821be440c62304c7609bc3ca25b6",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+      "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    }
+  ]
+}

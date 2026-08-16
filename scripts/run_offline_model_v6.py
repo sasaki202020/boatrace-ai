@@ -234,7 +234,7 @@ def feature_contract() -> pd.DataFrame:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Evaluate bounded offline Top-pick selector research")
-    parser.add_argument("--source-root", type=Path, default=Path(r"C:\Users\goo10\競艇-recovery\boatrace-ai-clean"))
+    parser.add_argument("--source-root", type=Path, required=True, help="Repository root containing the fixed offline artifacts")
     parser.add_argument("--bootstrap-iterations", type=int, default=2000)
     args = parser.parse_args()
     source = args.source_root.resolve()

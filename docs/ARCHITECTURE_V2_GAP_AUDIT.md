@@ -1,6 +1,6 @@
 # Architecture V2 Gap Audit
 
-対象リポジトリ: `C:\Users\goo10\競艇\boatrace-ai-mvp`
+対象リポジトリ: このリポジトリのルート
 
 目的:
 - 現在の実装を v2 のレイヤー構造に対応づける

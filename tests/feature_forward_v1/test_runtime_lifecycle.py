@@ -36,6 +36,7 @@ def _gate(tmp_path: Path) -> RuntimeGateContext:
         config_hash="b" * 64,
         code_commit="c" * 40,
         settlement_grace_minutes=30,
+        requests_per_day=12,
     )
 
 
@@ -102,9 +103,29 @@ def test_runtime_gate_passes_and_rejects_policy_or_config_tampering(tmp_path, mo
     root = tmp_path
     (root / "config/feature_forward_v1").mkdir(parents=True)
     (root / "reports/feature_forward").mkdir(parents=True)
-    (root / "config/feature_forward_v1/source_approval.json").write_bytes(policy.read_bytes())
+    evidence = root / "rights-evidence.txt"
+    evidence.write_text("approved for internal research", encoding="utf-8")
+    policy_payload = json.loads(policy.read_text(encoding="utf-8"))
+    policy_payload.update(
+        {
+            "automatedNetworkFetchAllowed": True,
+            "automatedCollectionAllowed": True,
+            "rightsStatus": "INTERNAL_RESEARCH_APPROVED",
+            "writtenConfirmation": True,
+            "evidencePath": str(evidence),
+            "evidenceSha256": hashlib.sha256(evidence.read_bytes()).hexdigest(),
+            "numericStorageAllowed": True,
+            "rawStorageAllowed": True,
+        }
+    )
+    _write_json(
+        root / "config/feature_forward_v1/source_approval.json",
+        policy_payload,
+    )
     (root / "reports/feature_forward/feature_value_contract.json").write_bytes(config.read_bytes())
-    policy_hash = hashlib.sha256(policy.read_bytes()).hexdigest()
+    policy_hash = hashlib.sha256(
+        (root / "config/feature_forward_v1/source_approval.json").read_bytes()
+    ).hexdigest()
     config_hash = hashlib.sha256(config.read_bytes()).hexdigest()
     gate_path = root / "config/feature_forward_v1/runtime_gate.json"
     _write_json(
@@ -123,10 +144,29 @@ def test_runtime_gate_passes_and_rejects_policy_or_config_tampering(tmp_path, mo
     context = load_runtime_gate(root, gate_config_path=gate_path)
     assert context.policy_hash == policy_hash
     assert context.config_hash == config_hash
+    assert context.requests_per_day == 12
 
     gate_path.write_text(gate_path.read_text(encoding="utf-8").replace(policy_hash, "e" * 64), encoding="utf-8")
     with pytest.raises(RuntimeGateError, match="source_policy_hash_mismatch"):
         load_runtime_gate(root, gate_config_path=gate_path)
+
+
+def test_default_runtime_gate_blocks_automated_fetch_without_rights_evidence():
+    root = Path(__file__).parents[2]
+    approval = json.loads(
+        (root / "config/feature_forward_v1/source_approval.json").read_text(
+            encoding="utf-8"
+        )
+    )
+
+    assert approval["manualIngestAllowed"] is True
+    assert approval["automatedNetworkFetchAllowed"] is False
+    assert approval["automatedCollectionAllowed"] is False
+    with pytest.raises(
+        RuntimeGateError,
+        match="source_policy_automated_fetch_not_allowed",
+    ):
+        load_runtime_gate(root)
 
 
 def test_active_collector_stops_before_store_or_network_on_gate_failure(tmp_path, monkeypatch):
@@ -156,6 +196,68 @@ def test_active_collector_stops_before_store_or_network_on_gate_failure(tmp_path
     assert payload["networkRequests"] == 0
     assert payload["productionWrites"] == 0
     assert not store.exists()
+
+
+def test_active_collector_passes_attested_daily_budget_to_capture(
+    tmp_path, monkeypatch
+):
+    from scripts import run_live_feature_capture_v1
+
+    b_file = tmp_path / "B260816.TXT"
+    b_file.write_bytes(b"schedule")
+    status = tmp_path / "status.json"
+    captured_kwargs = {}
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "run_live_feature_capture_v1.py",
+            "--b-file",
+            str(b_file),
+            "--store",
+            str(tmp_path / "store"),
+            "--status",
+            str(status),
+        ],
+    )
+    monkeypatch.setattr(
+        run_live_feature_capture_v1,
+        "build_runtime_provenance",
+        lambda *args, **kwargs: {"provenance": {}, "sourceFiles": []},
+    )
+    monkeypatch.setattr(
+        run_live_feature_capture_v1,
+        "write_append_only_json",
+        lambda *args, **kwargs: True,
+    )
+    monkeypatch.setattr(
+        run_live_feature_capture_v1,
+        "load_runtime_gate",
+        lambda *args, **kwargs: _gate(tmp_path),
+    )
+
+    def fake_capture_cycle(**kwargs):
+        captured_kwargs.update(kwargs)
+        return {"status": "WAITING_FOR_CAPTURE_WINDOW", "networkRequests": 0}
+
+    monkeypatch.setattr(
+        run_live_feature_capture_v1,
+        "run_capture_cycle",
+        fake_capture_cycle,
+    )
+    monkeypatch.setattr(
+        run_live_feature_capture_v1,
+        "append_capture_lifecycle",
+        lambda **kwargs: {},
+    )
+    monkeypatch.setattr(
+        run_live_feature_capture_v1,
+        "_cumulative_capture_status",
+        lambda store: {},
+    )
+
+    assert run_live_feature_capture_v1.main() == 0
+    assert captured_kwargs["requests_per_day"] == 12
 
 
 def test_capture_lifecycle_is_complete_and_idempotent(tmp_path, monkeypatch):
