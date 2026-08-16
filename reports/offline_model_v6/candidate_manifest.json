@@ -1,0 +1,10 @@
+{
+  "candidate": null,
+  "probabilityModel": "tree_15",
+  "probabilityVectorChanged": false,
+  "productionAdoptionAllowed": false,
+  "prospectiveConnected": false,
+  "resultReason": "FIXED_EIGHT_SETTINGS_FAILED_COVERAGE_OR_PROMOTION_CONTRACT",
+  "sourceCodeSha256": "cd2beb3fe46d0dfa6c694c7ba6d7b41afb85332780171aab4f1a92bc31c62542",
+  "status": "NO_TOP_PICK_SELECTOR_FOUND"
+}

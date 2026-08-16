@@ -30,7 +30,8 @@ scripts\run_paper_validation_refresh.bat 2026-05-12
 ## If You Resume Here
 
 1. `AGENTS.md` を読む
-2. `docs/CODEX_CONTEXT.md` を読む
-3. `docs/CODEX_HANDOFF.md` を読む
-4. `reports/repo_audit/final_goal_progress.json` と `reports/repo_audit/paper_validation_next_dates.json` を見る
-5. 直近の壊れ方があるなら、まずその 1 点だけ直す
+2. `docs/FINAL_PRODUCT_SPEC.md` を読む
+3. `docs/CODEX_CONTEXT.md` を読む
+4. `docs/CODEX_HANDOFF.md` を読む
+5. `reports/repo_audit/final_goal_progress.json` と `reports/repo_audit/paper_validation_next_dates.json` を見る
+6. 直近の壊れ方があるなら、まずその 1 点だけ直す

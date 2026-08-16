@@ -11,7 +11,7 @@ from src.ingest.official_fetcher import JCD_TO_VENUE
 
 _BLOCK_BEGIN_RE = re.compile(r"^(\d{2})KBGN$")
 _BLOCK_END_RE = re.compile(r"^(\d{2})KEND$")
-_RACE_HEADER_RE = re.compile(r"^\s*(\d{1,2})R\s+(.+?)\s+H1800m\s+(.*)$")
+_RACE_HEADER_RE = re.compile(r"^\s*(\d{1,2})R\s+(.+?)\s+H\d{4}m\s+(.*)$")
 _TRIFECTA_RE = re.compile(r"(?:3|３)連単\s+([1-6][\-\=→＝\s]{1,8}[1-6][\-\=→＝\s]{1,8}[1-6])\s+([¥￥]?\s*[\d,]+)\s*(?:円)?(?:\s*人気\s*(\d+))?")
 _REFUND_MARKERS = ("返還",)
 _CANCEL_MARKERS = ("中止", "開催中止")
@@ -416,4 +416,3 @@ def parse_official_k_result_file(path: str | Path, *, date8: str = "") -> dict[s
             yy = int(m.group(1)[:2])
             inferred_date = f"20{yy:02d}{m.group(1)[2:]}"
     return parse_official_k_result_text(text=text, source_path=str(file_path), date8=inferred_date)
-

@@ -79,3 +79,13 @@ def test_live_operation_summary_aggregates_multiple_days(tmp_path, monkeypatch) 
     assert Path(result["files"]["json"]).exists()
     assert Path(result["files"]["csv"]).exists()
 
+
+def test_load_daily_payload_prefers_canonical_daily_summary(tmp_path, monkeypatch) -> None:
+    monkeypatch.setattr(live_operation_summary_mod, "REPORT_DAILY_ROOT", tmp_path / "reports" / "daily")
+    canonical = {"date": "20260425", "liveBetCount": 3, "liveSettledBetCount": 2}
+    _write_json(
+        tmp_path / "reports" / "daily" / "2026-04-25" / "daily_summary.json",
+        canonical,
+    )
+
+    assert live_operation_summary_mod._load_daily_payload("20260425") == canonical

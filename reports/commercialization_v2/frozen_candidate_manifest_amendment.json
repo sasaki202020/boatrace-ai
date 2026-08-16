@@ -1,0 +1,26 @@
+{
+  "candidateId": "tree_15",
+  "coverageGaps": [
+    {
+      "end": "2023-12-31",
+      "start": "2020-03-01"
+    }
+  ],
+  "currentManifestSha256": "1d5c18676619062aa0af6938f1228b37caa8a981cbe84def246123bb33ad6c7a",
+  "featureSchemaSha256": "a3853bdbdb75d13d4a596928c13eaa034307b14a5a8c534d31fca9acdab623dd",
+  "modelSha256": "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0",
+  "originalManifestPath": "reports/commercialization_v1/frozen_candidate_manifest.json",
+  "originalManifestSha256": "1d5c18676619062aa0af6938f1228b37caa8a981cbe84def246123bb33ad6c7a",
+  "productionAdoptionAllowed": false,
+  "schemaVersion": 1,
+  "trainingIntervals": [
+    {
+      "end": "2020-02-29",
+      "start": "2020-02-01"
+    },
+    {
+      "end": "2026-07-16",
+      "start": "2024-01-01"
+    }
+  ]
+}

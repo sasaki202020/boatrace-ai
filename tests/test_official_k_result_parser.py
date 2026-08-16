@@ -49,3 +49,27 @@ def test_official_k_result_parser_normalizes_fullwidth_and_statuses() -> None:
     assert "finish_order_missing" in parsed["races"][0]["parseWarnings"]
     assert parsed["races"][1]["raceStatus"] == "refund"
     assert parsed["races"][2]["raceStatus"] == "no_contest"
+
+
+def test_official_k_result_parser_keeps_shortened_race_separate() -> None:
+    text = "\n".join(
+        [
+            "02KBGN",
+            "11R 戸田特選 H1800m 晴 風 東 7m 波 5cm",
+            "３連単 １－２－６ 1,750 4人気",
+            "12R 記者選抜戦 H1200m 晴 風 東 9m 波 6cm",
+            "３連単 ５－４－６ 10,260 37人気",
+            "02KEND",
+        ]
+    )
+
+    parsed = parse_official_k_result_text(
+        text=text,
+        source_path="synthetic/K260725.TXT",
+        date8="20260725",
+    )
+
+    assert parsed["raceCount"] == 2
+    assert [race["raceNo"] for race in parsed["races"]] == [11, 12]
+    assert parsed["races"][0]["trifectaCombo"] == "1-2-6"
+    assert parsed["races"][1]["trifectaCombo"] == "5-4-6"

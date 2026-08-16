@@ -61,7 +61,9 @@ def test_daily_report_reads_settlement_and_zero_stake(tmp_path, monkeypatch) -> 
     assert report["hitRate"] == 0.6667
     assert report["resultsStatus"] == "ok"
     assert "high_buy_count" in report["warnings"]
-    assert (tmp_path / "reports" / "daily" / "20260425_summary.json").exists()
+    canonical_dir = tmp_path / "reports" / "daily" / "2026-04-25"
+    assert (canonical_dir / "daily_report.json").exists()
+    assert (canonical_dir / "daily_summary.json").exists()
 
 
 def test_daily_report_handles_zero_stake(tmp_path, monkeypatch) -> None:

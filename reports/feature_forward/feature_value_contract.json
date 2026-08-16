@@ -1,0 +1,97 @@
+{
+  "aggregationRule": "one feature group at a time; race rows remain grouped",
+  "chronologicalFolds": {
+    "foldCount": 5,
+    "method": "expanding_window",
+    "randomSplit": false
+  },
+  "comparisonBaseline": "frozen tree_15 probabilities",
+  "comparisonBaselineModelSha256": "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0",
+  "contractSha256": "1c0e622d6769475579c53bbbe2b17a4859f07917dcf569a236808059a7ec4068",
+  "cutoffRule": "fetchedAtJst < raceDeadlineJst and capture timestamp verified",
+  "dtypes": {
+    "airTemp": "number",
+    "boatRecentRate": "number",
+    "bodyWeight": "number",
+    "courseEntry": "integer",
+    "exhibitionTime": "number",
+    "motorRecentRate": "number",
+    "racerRecentAvgSt": "number",
+    "racerRecentStarts": "integer",
+    "sampleCount": "integer",
+    "startExhibition": "number",
+    "tilt": "number",
+    "waterTemp": "number",
+    "waveHeight": "number",
+    "weather": "string",
+    "windDirection": "string",
+    "windSpeed": "number"
+  },
+  "evaluationMode": "chronological_oof_only",
+  "featureGroups": {
+    "course_and_start_exhibition": [
+      "courseEntry",
+      "startExhibition",
+      "tilt",
+      "bodyWeight"
+    ],
+    "exhibition_time": [
+      "exhibitionTime"
+    ],
+    "motor_boat_recent_condition": [
+      "motorRecentRate",
+      "boatRecentRate",
+      "sampleCount"
+    ],
+    "racer_recent_condition": [
+      "racerRecentStarts",
+      "racerRecentAvgSt"
+    ],
+    "weather_and_water": [
+      "weather",
+      "airTemp",
+      "waterTemp",
+      "windDirection",
+      "windSpeed",
+      "waveHeight"
+    ]
+  },
+  "minimumCoverage": 0.8,
+  "minimumForwardDays": 30,
+  "minimumSettledRaces": 1500,
+  "missingRule": "preserve missing with explicit reason; never impute after result",
+  "primaryMetrics": [
+    "race_log_loss_difference",
+    "top1_accuracy_difference"
+  ],
+  "productionAdoptionAllowed": false,
+  "promotionConditions": [
+    "log_loss_improves_in_at_least_4_of_5_folds",
+    "top1_does_not_degrade",
+    "95_percent_ci_has_no_material_degradation",
+    "coverage_at_least_80_percent",
+    "not_dependent_on_single_venue_month_or_lane",
+    "leakage_audit_pass",
+    "deterministic_rerun_pass",
+    "timestamp_and_provenance_pass"
+  ],
+  "rejectionConditions": [
+    "in_sample_only",
+    "post_deadline_record_present",
+    "target_column_present",
+    "coverage_below_80_percent",
+    "fewer_than_1500_settled_races",
+    "fewer_than_30_forward_days"
+  ],
+  "schemaVersion": 1,
+  "secondaryMetrics": [
+    "brier",
+    "ece",
+    "fold_stability",
+    "venue_stability",
+    "lane_stability"
+  ],
+  "sources": [
+    "approved_forward_pre_race_snapshot"
+  ]
+}

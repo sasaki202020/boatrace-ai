@@ -19,6 +19,13 @@ UI_ROOT = ROOT / "data" / "ui"
 PRED_ROOT = ROOT / "data" / "predictions"
 ERRORS_ROOT = ROOT / "reports" / "errors"
 FINAL_GOAL_PROGRESS_JSON = ROOT / "reports" / "repo_audit" / "final_goal_progress.json"
+TASK_LAST_RUN_NAMES = {
+    "dailyFreezeLastRun": ("Boatrace_PaperOps_Morning", "Boatrace_DailyFreeze"),
+    "eveningSettleLastRun": ("Boatrace_PaperOps_Evening", "Boatrace_EveningSettle"),
+    "dailyReportLastRun": ("Boatrace_PaperOps_Monitor", "Boatrace_DailyReport"),
+    "healthCheckLastRun": ("Boatrace_PaperOps_Monitor", "Boatrace_HealthCheck"),
+}
+PRE_RACE_TASK_NAMES = {"Boatrace_PaperOps_Preflight", "Boatrace_PaperOps_Morning"}
 
 
 def _normalize_date(value: str) -> str:
@@ -48,6 +55,31 @@ def _truthy(value: Any) -> bool:
         return False
     text = str(value).strip().lower()
     return text in {"1", "true", "yes", "y", "ok", "done", "available", "ready", "complete_ops"}
+
+
+def _task_last_run(tasks: Any, task_names: tuple[str, ...]) -> str | None:
+    if not isinstance(tasks, list):
+        return None
+    for task_name in task_names:
+        for task in tasks:
+            if not isinstance(task, dict) or task.get("taskName") != task_name:
+                continue
+            last_run = task.get("lastRunTime")
+            if last_run:
+                return str(last_run)
+    return None
+
+
+def _task_names_with_status(tasks: Any, statuses: set[str]) -> list[str]:
+    if not isinstance(tasks, list):
+        return []
+    return [
+        str(task["taskName"])
+        for task in tasks
+        if isinstance(task, dict)
+        and str(task.get("taskName") or "")
+        and str(task.get("status") or "").lower() in statuses
+    ]
 
 
 def _load_errors(date_key: str) -> list[dict[str, Any]]:
@@ -149,6 +181,11 @@ def health_check(*, target_date: str) -> dict[str, Any]:
             "tasks": [],
             "latestTaskLogs": {},
         }
+    failed_scheduled_tasks = _task_names_with_status(
+        task_scheduler_summary.get("tasks"),
+        {"failed", "missing", "warning"},
+    )
+    pre_race_scheduler_failed = bool(PRE_RACE_TASK_NAMES.intersection(failed_scheduled_tasks))
     ui_files = sorted(ui_dir.glob("raceyosou_*.json")) if ui_dir.exists() else []
     ui_loaded = 0
     ui_invalid = 0
@@ -216,6 +253,8 @@ def health_check(*, target_date: str) -> dict[str, Any]:
         warnings.append("error_log_present")
     if str(task_scheduler_summary.get("status") or "").lower() not in {"", "ok", "unsupported_platform"}:
         warnings.append("task_scheduler_warning")
+    if pre_race_scheduler_failed:
+        warnings.append("pre_race_scheduler_failure")
     if not has_today_venues or not has_frozen_bets or not has_daily_report:
         status = "warning"
     if ui_invalid > 0:
@@ -233,7 +272,9 @@ def health_check(*, target_date: str) -> dict[str, Any]:
     )
     post_race_status = str((post_race_run or {}).get("status") or "")
     summary_results_status = str(daily_summary.get("results_status") or "").lower()
-    if preflight_classification and preflight_classification != "ready":
+    if pre_race_scheduler_failed:
+        daily_issue_classification = "pre_race_scheduler_failure"
+    elif preflight_classification and preflight_classification != "ready":
         daily_issue_classification = preflight_classification
     elif pre_race_status == "source_not_ready":
         daily_issue_classification = pre_race_source_classification or "pre_race_source_unavailable"
@@ -325,14 +366,18 @@ def health_check(*, target_date: str) -> dict[str, Any]:
         "warnings": sorted(dict.fromkeys(warnings)),
         "predictionHashPresent": frozen_prediction_hash,
         "taskSchedulerStatus": task_scheduler_summary,
+        "failedScheduledTasks": failed_scheduled_tasks,
+        "preRaceSchedulerFailed": pre_race_scheduler_failed,
         "latestTaskLogs": task_scheduler_summary.get("latestTaskLogs") or {},
-        "dailyFreezeLastRun": next((task.get("lastRunTime") for task in task_scheduler_summary.get("tasks", []) if task.get("taskName") == "Boatrace_DailyFreeze"), None),
-        "eveningSettleLastRun": next((task.get("lastRunTime") for task in task_scheduler_summary.get("tasks", []) if task.get("taskName") == "Boatrace_EveningSettle"), None),
-        "dailyReportLastRun": next((task.get("lastRunTime") for task in task_scheduler_summary.get("tasks", []) if task.get("taskName") == "Boatrace_DailyReport"), None),
-        "healthCheckLastRun": next((task.get("lastRunTime") for task in task_scheduler_summary.get("tasks", []) if task.get("taskName") == "Boatrace_HealthCheck"), None),
+        "dailyFreezeLastRun": _task_last_run(task_scheduler_summary.get("tasks"), TASK_LAST_RUN_NAMES["dailyFreezeLastRun"]),
+        "eveningSettleLastRun": _task_last_run(task_scheduler_summary.get("tasks"), TASK_LAST_RUN_NAMES["eveningSettleLastRun"]),
+        "dailyReportLastRun": _task_last_run(task_scheduler_summary.get("tasks"), TASK_LAST_RUN_NAMES["dailyReportLastRun"]),
+        "healthCheckLastRun": _task_last_run(task_scheduler_summary.get("tasks"), TASK_LAST_RUN_NAMES["healthCheckLastRun"]),
         "generatedAt": datetime.now().isoformat(timespec="seconds"),
     }
-    if not has_today_venues:
+    if pre_race_scheduler_failed:
+        report["recommendedNextAction"] = "wait_for_next_scheduled_pre_race"
+    elif not has_today_venues:
         report["recommendedNextAction"] = "run_discover_today"
     elif not has_frozen_bets:
         report["recommendedNextAction"] = "run_daily_freeze"
@@ -383,6 +428,8 @@ def health_check(*, target_date: str) -> dict[str, Any]:
         f"- canTuneWithLiveOnly: {report['canTuneWithLiveOnly']}",
         f"- canTuneWithBackfill: {report['canTuneWithBackfill']}",
         f"- taskSchedulerStatus: {task_scheduler_summary.get('status')}",
+        f"- failedScheduledTasks: {', '.join(report['failedScheduledTasks'])}",
+        f"- preRaceSchedulerFailed: {report['preRaceSchedulerFailed']}",
         f"- dailyFreezeLastRun: {report['dailyFreezeLastRun'] or ''}",
         f"- eveningSettleLastRun: {report['eveningSettleLastRun'] or ''}",
         f"- dailyReportLastRun: {report['dailyReportLastRun'] or ''}",

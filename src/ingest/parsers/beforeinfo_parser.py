@@ -85,14 +85,14 @@ def _parse_weather(soup: BeautifulSoup, text: str) -> dict[str, Any] | None:
             data = _to_text(unit.select_one(".weather1_bodyUnitLabelData").get_text(" ", strip=True) if unit.select_one(".weather1_bodyUnitLabelData") else None)
             klass = " ".join(unit.get("class", []))
             if "is-direction" in klass:
-                if data:
-                    weather["sky"] = data
                 img = unit.select_one(".weather1_bodyUnitImage")
                 if img:
                     cls = " ".join(img.get("class", []))
                     m = re.search(r"is-direction(\d+)", cls)
                     if m:
                         weather["windDirection"] = m.group(1)
+            elif "is-weather" in klass:
+                weather["sky"] = title or data
             elif title == "気温":
                 weather["temperature"] = _to_float(data)
             elif title == "風速":
@@ -101,7 +101,7 @@ def _parse_weather(soup: BeautifulSoup, text: str) -> dict[str, Any] | None:
                 img = unit.select_one(".weather1_bodyUnitImage")
                 if img:
                     cls = " ".join(img.get("class", []))
-                    m = re.search(r"is-windDirection(\d+)", cls)
+                    m = re.search(r"(?:is-windDirection|is-wind)(\d+)", cls)
                     if m:
                         weather["windDirection"] = m.group(1)
             elif title == "水温":
@@ -161,6 +161,7 @@ def _parse_start_exhibition(soup: BeautifulSoup, boats: dict[int, BoatStats], te
             continue
 
         rows = tbl.find_all("tr")
+        course_index = 0
         for row in rows:
             cells = [cell.get_text(" ", strip=True) for cell in row.find_all(["td", "th"])]
             if not cells:
@@ -173,9 +174,10 @@ def _parse_start_exhibition(soup: BeautifulSoup, boats: dict[int, BoatStats], te
             no = _to_int(no_match.group(1)) if no_match else None
             if no is None:
                 continue
+            course_index += 1
 
             course_match = re.search(r"(?:コース|進入)\D*([1-6])", joined)
-            course = _to_int(course_match.group(1)) if course_match else None
+            course = _to_int(course_match.group(1)) if course_match else course_index
 
             st_match = re.search(r"([FL]?\d?\.\d{2}|[FL]\.\d{2}|0\.\d{2}|0\.0|--|-)", joined)
             st = _parse_st_token(st_match.group(1) if st_match else None)
@@ -262,6 +264,38 @@ def _boat_row(no: int, boat: BoatStats | None, parse_warnings: list[str]) -> dic
     }
 
 
+def _parse_exhibition_table(soup: BeautifulSoup) -> dict[int, dict[str, Any]]:
+    output: dict[int, dict[str, Any]] = {}
+    for table in soup.find_all("table"):
+        headers = table.get_text(" ", strip=True)
+        if ("展示 タイム" not in headers and "展示タイム" not in headers) or "チルト" not in headers or "体重" not in headers:
+            continue
+        for body in table.find_all("tbody", recursive=False):
+            rows = body.find_all("tr", recursive=False)
+            if not rows:
+                continue
+            first = rows[0].find_all("td", recursive=False)
+            if len(first) < 6:
+                continue
+            boat_no = _to_int(first[0].get_text(" ", strip=True))
+            if boat_no not in range(1, 7):
+                continue
+            adjustment = None
+            if len(rows) >= 3:
+                third = rows[2].find_all("td", recursive=False)
+                adjustment = _to_float(third[0].get_text(" ", strip=True)) if third else None
+            output[boat_no] = {
+                "racer_name": _to_text(first[2].get_text(" ", strip=True)),
+                "bodyWeight": _to_float(first[3].get_text(" ", strip=True).replace("kg", "")),
+                "exhibitionTime": _to_float(first[4].get_text(" ", strip=True)),
+                "tilt": _to_float(first[5].get_text(" ", strip=True)),
+                "weightAdjustment": adjustment,
+            }
+        if output:
+            break
+    return output
+
+
 def parse_beforeinfo_html(html: str, target_date: str, jcd: str, race_no: int) -> dict[str, Any]:
     parse_warnings: list[str] = []
     missing_reason: list[str] = []
@@ -313,6 +347,13 @@ def parse_beforeinfo_html(html: str, target_date: str, jcd: str, race_no: int) -
         parse_warnings.append("beforeinfo_parse_zero_count")
 
     boat_rows = [_boat_row(no, detail_boats.get(no), parse_warnings) for no in range(1, 7)]
+    exhibition_table = _parse_exhibition_table(soup)
+    for row in boat_rows:
+        values = exhibition_table.get(row["boat_no"])
+        if values:
+            row.update(values)
+    if exhibition_table:
+        parse_warnings = [warning for warning in parse_warnings if not warning.endswith(("_exhibition_time_missing", "_tilt_missing"))]
 
     for no, boat in detail_boats.items():
         if boat.exhibition_time is not None and boat.exhibition_time == 0:

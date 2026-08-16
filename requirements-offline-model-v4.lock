@@ -1,0 +1,7 @@
+# Offline model v4 research environment (Python 3.13.5)
+numpy==1.26.4
+pandas==3.0.3
+scikit-learn==1.6.1
+scipy==1.15.3
+catboost==1.2.8
+joblib==1.5.1

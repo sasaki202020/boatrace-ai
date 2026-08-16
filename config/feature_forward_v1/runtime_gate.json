@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "policyPath": "config/feature_forward_v1/source_approval.json",
+  "expectedPolicySha256": "1090008b58459d0f12c5b93b4044d10921663865a8f6bb78bc42e096b332ac66",
+  "configPath": "reports/feature_forward/feature_value_contract.json",
+  "expectedConfigSha256": "c64e13447b420fc676117c02419d1c0ddda64b6d6836c3a6540cff62eb4d48ec",
+  "settlementGraceMinutes": 30
+}

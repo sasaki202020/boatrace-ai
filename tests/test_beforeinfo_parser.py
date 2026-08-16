@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from src.ingest.parsers import beforeinfo_parser
 from src.pipeline.boatrace_official_pipeline import BoatStats
 
@@ -54,3 +56,12 @@ def test_parse_beforeinfo_html_treats_zero_exhibition_time_as_missing(monkeypatc
     parsed = beforeinfo_parser.parse_beforeinfo_html(HTML, "20260425", "01", 1)
 
     assert parsed["startExhibition"][0]["time"] is None
+
+
+def test_real_fixture_parses_exhibition_table_values():
+    fixture = Path(__file__).parent / "fixtures" / "real_pages" / "20260610_01_1" / "beforeinfo.html"
+    parsed = beforeinfo_parser.parse_beforeinfo_html(fixture.read_text(encoding="utf-8"), "20260610", "01", 1)
+    assert [boat["exhibitionTime"] for boat in parsed["boats"]] == [6.78, 6.77, 6.80, 6.67, 6.82, 6.74]
+    assert all(boat["tilt"] is not None for boat in parsed["boats"])
+    assert [row["course"] for row in parsed["startExhibition"]] == [1, 2, 3, 4, 5, 6]
+    assert parsed["weather"]["sky"] in {"晴", "曇り", "雨"}

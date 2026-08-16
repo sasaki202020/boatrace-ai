@@ -15,7 +15,7 @@ class BoatRaceParser:
     BOAT RACE 公式テキストファイル (固定長) を解析して CSV に変換する。
     バイトベースの解析により、全角文字による位置ずれを防止する。
     """
-    
+
     VENUE_MAP = {
         "桐生": "01", "戸田": "02", "江戸川": "03", "平和島": "04", "多摩川": "05",
         "浜名湖": "06", "蒲郡": "07", "常滑": "08", "津": "09", "三国": "10",
@@ -41,7 +41,7 @@ class BoatRaceParser:
         current_date = BoatRaceParser._get_date_from_filename(file_path)
         with p.open("rb") as f:
             lines = f.read().splitlines()
-        
+
         current_venue = None
         current_jcd = None
         current_race_no = None
@@ -61,19 +61,19 @@ class BoatRaceParser:
                 if m_r:
                     try: current_race_no = int(m_r.group(1).decode("cp932"))
                     except: pass
-            
+
             m_row = re_row.search(line)
             if m_row and len(line) >= 60:
                 try:
                     if not (current_date and current_jcd and current_race_no): continue
-                    
+
                     finish_pos = m_row.group(1).decode("cp932")
                     lane = m_row.group(2).decode("cp932")
                     racer_id = m_row.group(3).decode("cp932")
-                    
+
                     st_val = line[56:61].decode("cp932", errors="replace").strip()
                     exhibit = line[48:52].decode("cp932", errors="replace").strip()
-                    
+
                     union_key = f"{current_date.replace('-', '')}_{current_jcd}_{current_race_no:02d}"
                     results.append({
                         "date": current_date, "jcd": current_jcd, "venue": current_venue, "race_no": current_race_no,
@@ -95,24 +95,33 @@ class BoatRaceParser:
         current_jcd = None
         current_venue = None
         current_race_no = None
-        venue_bytes = [(v_name.encode("cp932"), v_name, v_code) for v_name, v_code in BoatRaceParser.VENUE_MAP.items()]
+        current_deadline = None
+        venue_by_jcd = {code: name for name, code in BoatRaceParser.VENUE_MAP.items()}
         re_row = re.compile(br"^(\d)\s+(\d{4})")
+        fullwidth_trans = str.maketrans("０１２３４５６７８９Ｒ：　", "0123456789R: ")
 
         for line in lines:
             if not line.strip(): continue
-            for b_name, v_name, v_code in venue_bytes:
-                if b_name in line:
-                    current_venue = v_name
-                    current_jcd = v_code
-                    break
-            if b"\x82\x71" in line: # 'Ｒ'
-                m_r = re.search(br"([\x30-\x39\x82\x4f-\x82\x58]{1,2})\x82\x71", line)
-                if m_r:
-                    raw_num = m_r.group(1).decode("cp932")
-                    num_str = raw_num.translate(str.maketrans('１２３４５６７８９０', '1234567890'))
-                    try: current_race_no = int(num_str)
-                    except: pass
-            
+            section_match = re.match(br"^(\d{2})BBGN\s*$", line.strip())
+            if section_match:
+                current_jcd = section_match.group(1).decode("ascii")
+                current_venue = venue_by_jcd.get(current_jcd)
+                current_race_no = None
+                current_deadline = None
+                continue
+
+            normalized = line.decode("cp932", errors="replace").translate(fullwidth_trans)
+            race_match = re.match(r"^\s*(\d{1,2})R(?:\s|$)", normalized)
+            if race_match:
+                current_race_no = int(race_match.group(1))
+                deadline_match = re.search(r"電話投票締切予定(\d{1,2}):(\d{2})", normalized)
+                current_deadline = (
+                    f"{int(deadline_match.group(1)):02d}:{int(deadline_match.group(2)):02d}"
+                    if deadline_match
+                    else None
+                )
+                continue
+
             m_row = re_row.search(line)
             if m_row and len(line) >= 70:
                 try:
@@ -125,7 +134,15 @@ class BoatRaceParser:
                     racer_id = m_row.group(2).decode("cp932")
                     union_key = f"{current_date.replace('-', '')}_{current_jcd}_{current_race_no:02d}"
                     entries.append({
-                        "union_key": union_key, "lane": lane, "racer_id": racer_id,
+                        "union_key": union_key,
+                        "race_id": f"{current_date.replace('-', '')}-{current_jcd}-{current_race_no:02d}",
+                        "date": current_date,
+                        "jcd": current_jcd,
+                        "venue": current_venue,
+                        "race_no": current_race_no,
+                        "deadline": current_deadline,
+                        "source_file": p.name,
+                        "lane": lane, "racer_id": racer_id,
                         "racer_class": line[22:24].decode("cp932").strip(),
                         "national_win_rate": safe_float(line[25:30]), "national_2ren_rate": safe_float(line[30:36]),
                         "local_win_rate": safe_float(line[36:41]), "local_2ren_rate": safe_float(line[41:47]),
@@ -154,7 +171,7 @@ class BoatRaceParser:
             df_ent = pd.concat(all_entries, ignore_index=True)
             df_res["lane"] = df_res["lane"].astype(str)
             df_ent["lane"] = df_ent["lane"].astype(str)
-            merge_cols = ["union_key", "lane", "racer_class", "national_win_rate", "national_2ren_rate", 
+            merge_cols = ["union_key", "lane", "racer_class", "national_win_rate", "national_2ren_rate",
                           "local_win_rate", "local_2ren_rate", "motor_2ren_rate", "boat_2ren_rate"]
             df_hist = df_res.merge(df_ent[merge_cols], on=["union_key", "lane"], how="left")
             df_hist.to_csv(historical_out, index=False)

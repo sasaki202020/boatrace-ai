@@ -1,0 +1,22 @@
+{
+  "approvedAt": "2026-07-18T23:00:00+09:00",
+  "approvedBy": "sasaki202020",
+  "humanApproved": true,
+  "owner": "sasaki202020",
+  "realPredictionPublishApproved": false,
+  "repository": "boatrace-prediction-anchors",
+  "repositoryAllowlist": [
+    "sasaki202020/boatrace-prediction-anchors"
+  ],
+  "transportMode": "branch_path_commit",
+  "branch": "main",
+  "allowedPathPrefix": "anchors/synthetic/",
+  "allowedRecordTypes": [
+    "synthetic_anchor"
+  ],
+  "credentialEnvironmentVariable": "BOATRACE_ANCHOR_GITHUB_TOKEN",
+  "transportModeIssue": false,
+  "schemaVersion": 2,
+  "syntheticPublishApproved": true,
+  "visibility": "public"
+}

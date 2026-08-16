@@ -81,3 +81,9 @@
 - EV は表示・検証用。閾値変更や式の変更は禁止
 - 投票・購入の自動実行、本番送信、代行送信は禁止
 - 外部予想は BUY 判定に混ぜない
+
+## Completion Specification
+- The canonical integrated design, operational boundary, and evidence gates are
+  defined in `docs/FINAL_PRODUCT_SPEC.md`.
+- Read it before selecting a new task. Its conflict rule does not weaken any
+  safety restriction in this file.

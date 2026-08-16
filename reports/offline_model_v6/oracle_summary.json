@@ -1,0 +1,11 @@
+{
+  "raceCount": 38010,
+  "top1Accuracy": 0.5580636674559326,
+  "top2OracleGain": 0.1838989739542226,
+  "top3OracleGain": 0.30123651670613005,
+  "treeWrongWinnerRank2": 6990,
+  "treeWrongWinnerRank3": 4460,
+  "treeWrongWinnerRank4Plus": 5348,
+  "winnerInTop2": 0.7419626414101552,
+  "winnerInTop3": 0.8593001841620627
+}
