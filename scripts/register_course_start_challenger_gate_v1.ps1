@@ -2,12 +2,8 @@ $ErrorActionPreference = "Stop"
 
 $taskName = "BOATRACE-CourseStart-Challenger-Gate-V1"
 $repo = Split-Path -Parent $PSScriptRoot
-$python = "C:\Users\goo10\AppData\Local\Programs\Python\Python313\python.exe"
 $runner = Join-Path $repo "scripts\run_course_start_challenger_gate_v1.ps1"
 
-if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
-    throw "PYTHON_NOT_FOUND"
-}
 if (-not (Test-Path -LiteralPath $runner -PathType Leaf)) {
     throw "RUNNER_NOT_FOUND"
 }

@@ -173,7 +173,7 @@ def test_collect_historical_inputs_skips_existing_raw_via_cache(tmp_path, monkey
     assert result["details"]
 
 
-def test_collect_historical_inputs_result_txt_loads_k_results(tmp_path, monkeypatch) -> None:
+def test_collect_historical_inputs_result_txt_loads_k_results(tmp_path, monkeypatch, official_k_file) -> None:
     monkeypatch.setattr(collect_historical_inputs, "ROOT", tmp_path)
     monkeypatch.setattr(collect_historical_inputs, "NORMALIZED_ROOT", tmp_path / "data" / "normalized")
     monkeypatch.setattr(collect_historical_inputs, "RAW_ROOT", tmp_path / "data" / "raw" / "official")
@@ -185,10 +185,9 @@ def test_collect_historical_inputs_result_txt_loads_k_results(tmp_path, monkeypa
     monkeypatch.setattr(official_k_loader, "NORM_ROOT", tmp_path / "data" / "normalized")
     monkeypatch.setattr(official_k_loader, "REPORT_ROOT", tmp_path / "reports" / "backtest")
 
-    src = Path(__file__).resolve().parents[1] / "data" / "raw" / "official" / "results" / "K260404.TXT"
     dst_dir = tmp_path / "data" / "raw" / "official" / "txt"
     dst_dir.mkdir(parents=True, exist_ok=True)
-    copyfile(src, dst_dir / "K260404.TXT")
+    copyfile(official_k_file, dst_dir / "K260404.TXT")
 
     result = collect_historical_inputs.collect_historical_inputs(
         start_date="2026-04-04",

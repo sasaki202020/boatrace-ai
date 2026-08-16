@@ -1,18 +1,13 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from src.ingest.parsers.official_k_result_parser import parse_official_k_result_file, parse_official_k_result_text
 
 
-K_FILE = Path(__file__).resolve().parents[1] / "data" / "raw" / "official" / "results" / "K260404.TXT"
-
-
-def test_official_k_result_parser_reads_real_file() -> None:
-    parsed = parse_official_k_result_file(K_FILE)
+def test_official_k_result_parser_reads_fixture_file(official_k_file) -> None:
+    parsed = parse_official_k_result_file(official_k_file)
     assert parsed["sourceType"] == "official_txt_k"
     assert parsed["resultSource"] == "official_txt_k"
-    assert parsed["raceCount"] >= 90
+    assert parsed["raceCount"] == 1
 
     first = parsed["races"][0]
     assert first["date"] == "20260404"

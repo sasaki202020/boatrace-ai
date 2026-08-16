@@ -1,8 +1,11 @@
 $ErrorActionPreference = 'Stop'
 
 $repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$script = 'C:\Users\goo10\dl\download_boatrace_data.py'
-$python = Join-Path $env:LOCALAPPDATA 'Programs\Python\Python313\python.exe'
+$script = Join-Path $repo 'download_boatrace_data.py'
+$python = (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+if ([string]::IsNullOrWhiteSpace($python)) {
+  throw 'PYTHON_NOT_FOUND'
+}
 $logDir = Join-Path $repo 'logs'
 New-Item -ItemType Directory -Force $logDir | Out-Null
 

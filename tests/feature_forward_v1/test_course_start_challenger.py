@@ -470,11 +470,14 @@ def test_evaluation_artifact_binds_to_cohort_spec_and_deterministic_result():
         "schemaVersion": 1,
         "artifactType": "OOF_REPRODUCIBILITY_MANIFEST",
         "gitHead": "e" * 40,
-        "gitStatusPorcelain": [" M src/feature_forward_v1/course_start_challenger.py"],
+        "gitStatusPorcelain": [" M reports/feature_forward/readiness.json"],
         "dirtyWorktree": True,
+        "sourceRoots": ["src", "scripts", "config"],
+        "sourceStatusPorcelain": [],
+        "sourceWorktreeClean": True,
         "trackedDiffPath": "reports/feature_forward/oof_reproducibility.patch",
         "trackedDiffSha256": "a" * 64,
-        "untrackedFiles": ["src/feature_forward_v1/oof_readiness.py"],
+        "untrackedFiles": ["reports/feature_forward/generated.json"],
         "untrackedManifestSha256": "b" * 64,
         "configPath": "config/feature_forward_v1/oof_evaluation_spec.json",
         "configSha256": spec_hash,
@@ -501,6 +504,8 @@ def test_evaluation_artifact_binds_to_cohort_spec_and_deterministic_result():
     )
 
     assert artifact["personalAdoptionAllowed"] is False
+    assert artifact["realPredictionPublishApproved"] is False
+    assert artifact["prospectiveRaces"] == 0
     assert artifact["reproducibilityManifest"] == reproducibility_manifest
     assert cli._evaluation_artifact_is_current(
         artifact,
@@ -546,6 +551,17 @@ def test_evaluation_artifact_binds_to_cohort_spec_and_deterministic_result():
             reproducibility_manifest={
                 **reproducibility_manifest,
                 "oofSpecSha256": "f" * 64,
+            },
+        )
+
+    with pytest.raises(ValueError, match="evaluation_reproducibility_manifest_invalid"):
+        cli.build_evaluation_artifact(
+            evaluation,
+            cohort_digest=cohort_digest,
+            spec_hash=spec_hash,
+            reproducibility_manifest={
+                **reproducibility_manifest,
+                "gitStatusPorcelain": ["?? src/untracked_oof_logic.py"],
             },
         )
 

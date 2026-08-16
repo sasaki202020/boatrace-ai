@@ -22,6 +22,12 @@ def personal_valid(approval):
  except (TypeError,ValueError):
   return None
  return policy,gates
+def configured_manual_inbox(approval_path,raw):
+ path=Path(raw)
+ if path.is_absolute():return path.resolve()
+ try:repository_root=approval_path.resolve().parents[2]
+ except IndexError:repository_root=approval_path.resolve().parent
+ return (repository_root/path).resolve()
 def main(argv=None):
  p=argparse.ArgumentParser();p.add_argument("--approval",type=Path,required=True);p.add_argument("--inbox",type=Path,required=True);p.add_argument("--store",type=Path,required=True);p.add_argument("--status",type=Path,required=True);p.add_argument("--log",type=Path);p.add_argument("--dry-run",action="store_true");p.add_argument("--max-files",type=int,default=24);p.add_argument("--max-scan",type=int,default=240);args=p.parse_args(argv)
  approval=json.loads(args.approval.read_text(encoding="utf-8")) if args.approval.exists() else {};base={"runAtUtc":datetime.now(timezone.utc).isoformat(),"networkRequests":0,"productionWrites":0,"prospectiveWrites":0,"featureStoreWrites":0,"processedFiles":0,"capturedFiles":0,"rejectedFiles":0,"externalTimestampVerified":False,"commercialUseAllowed":False}
@@ -32,7 +38,7 @@ def main(argv=None):
   payload={**base,"status":"DRY_RUN","discoveredFiles":len(files)};print(json.dumps(payload));return 0
  legacy_allowed=approval.get("schemaVersion")==1 and rights_valid(approval,args.approval)
  configured_inbox=approval.get("manualInboxPath")
- inbox_matches=isinstance(configured_inbox,str) and Path(configured_inbox).resolve()==args.inbox.resolve()
+ inbox_matches=isinstance(configured_inbox,str) and configured_manual_inbox(args.approval,configured_inbox)==args.inbox.resolve()
  personal_allowed=personal is not None and approval.get("manualIngestAllowed") is True and inbox_matches
  if not basic or not (legacy_allowed or personal_allowed):
   payload={**base,"executionStatus":"BLOCKED","authorizationGateBlocks":1,"runtimeAttempts":0,"runtimeFailures":0,"status":"FEATURE_COLLECTION_BLOCKED_SOURCE","reason":"source_approval_missing_invalid_or_disabled"};write_json(args.status,payload);append_log(args.log or args.status.with_name("operations_log.jsonl"),payload);print(json.dumps(payload));return 0

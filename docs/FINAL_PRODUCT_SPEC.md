@@ -2,8 +2,10 @@
 
 ## 1. Status and Authority
 
-This is the single product specification for the canonical repository
-C:\Users\goo10\競艇\boatrace-ai-mvp.
+This is the single product specification for the Git repository containing
+this file.
+
+It is the sole normative source of truth for the product specification.
 
 It combines the durable rules needed to operate, evaluate, and improve the
 system. It is not a generated status report and must not be used to claim that
@@ -11,11 +13,17 @@ the evidence gates have passed.
 
 When documents disagree, use this precedence:
 
-1. AGENTS.md safety restrictions and this specification
-2. Explicit feature, data, model, and inference contracts in section 12
-3. Executable code and its tests
-4. Generated reports for current status only
-5. Historical, navigation, or exploratory documents
+1. docs/FINAL_PRODUCT_SPEC.md as the sole product specification
+2. AGENTS.md execution rules
+3. docs/CODEX_TASKS.md task queue
+4. docs/CODEX_CONTEXT.md and docs/CODEX_HANDOFF.md as historical context
+5. Generated reports as current-state evidence only
+
+In short: `FINAL_PRODUCT_SPEC > AGENTS execution rules > CODEX_TASKS > CONTEXT/HANDOFF historical context > reports evidence`.
+
+AGENTS.md defines execution rules and does not override this specification.
+Section 12 contracts, executable code, and tests are implementation evidence
+and review inputs; they must remain consistent with the precedence above.
 
 No generated report, backtest, paper result, or UI state can override a safety
 restriction or authorize production adoption.
@@ -243,13 +251,13 @@ source hash, source-file manifest hash, lifecycle ledger integrity, and output
 tree hash. A run with invalid integrity, time-order violation, terminal
 conflict, or an unapproved source is blocked.
 
-The current collector manifest resolves its policy and feature-value contract
-from C:\Users\goo10\競艇-recovery\boatrace-feature-forward-v1, while writing
-evidence under the canonical repository. This is an explicit runtime
-provenance dependency. It is acceptable only while every run records the
-commit and hashes; before any adoption decision, the runtime source must be
-anchored to the canonical repository or to an explicitly approved immutable
-release.
+The runtime source is versioned in this repository.
+src/feature_forward_v1/runtime_provenance.py resolves SOURCE_ROOTS from the
+current Git root. Runtime identity is verified by the repository verifier
+against config/runtime_lock.json; a missing lock, source-root mismatch, commit
+mismatch, or hash mismatch blocks the run. This specification does not claim
+that verification passed. No external recovery clone is a runtime source or a
+migration prerequisite.
 
 ## 9. Definition of Done
 
@@ -348,12 +356,12 @@ the relevant group is not automatically in scope.
 - docs/LIVE_SHADOW_EVIDENCE_GATE.md
 - docs/boatrace_official_pipeline.md
 - docs/source_registry.md (historical source catalog)
-- docs/OFFICIAL_ODDS_AUTHORIZATION_RECORD.md
-- docs/superpowers/specs/2026-07-17-prediction-edge-v1-design.md
-- docs/superpowers/specs/2026-07-17-t10-forward-data-v1-design.md
-- docs/superpowers/specs/2026-07-18-official-tansho-pilot-v1-design.md
-- docs/T10_FORWARD_DATA_V1_RUNBOOK.md
-- docs/OFFICIAL_TANSHO_PILOT_RUNBOOK.md
+- docs/commercialization_v2/SOURCE_RIGHTS_EVIDENCE_REGISTRATION.md
+- docs/FEATURE_FORWARD_COLLECTION_V1.md
+- docs/feature_forward_v1/OOF_DECISION_PROTOCOL.md
+- docs/feature_forward_v1/OOF_PROTOCOL_FREEZE.json
+- docs/feature_forward_v1/PARALLEL_SHADOW_RUNBOOK.md
+- docs/LIVE_EVIDENCE_BURN_IN.md
 
 ### Executable implementation anchors
 
@@ -376,15 +384,16 @@ the relevant group is not automatically in scope.
 
 ### Feature-forward runtime anchors
 
-The active runtime copies are versioned in
-C:\Users\goo10\競艇-recovery\boatrace-feature-forward-v1:
+The runtime source is versioned in this repository. The repository verifier
+checks the repo-local runtime source against config/runtime_lock.json; missing
+or mismatched verification input is blocking. The review inputs are:
 
-- config/feature_forward_v1/source_approval.json
-- config/feature_forward_v1/runtime_gate.json
-- config/feature_forward_v1/oof_evaluation_spec.json
-- config/feature_forward_v1/parallel_shadow_config.json
-- reports/feature_forward/feature_value_contract.json
+- config/runtime_lock.json (required runtime identity lock)
+- config/feature_forward_v1/
+- reports/feature_forward/feature_value_contract.json (runtime config input;
+  never hand-edit)
 - scripts/run_live_feature_capture_v1.py
+- src/feature_forward_v1/runtime_provenance.py
 - src/feature_forward_v1/
 - src/commercialization_v2/
 

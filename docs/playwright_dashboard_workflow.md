@@ -4,7 +4,7 @@
 
 ## スクリプト
 
-- [scripts/dashboard_workflow.js](/C:/Users/goo10/競艇/boatrace-ai-mvp/scripts/dashboard_workflow.js)
+- [scripts/dashboard_workflow.js](../scripts/dashboard_workflow.js)
 
 ## 既定動作
 
@@ -21,7 +21,7 @@
 PowerShell から:
 
 ```powershell
-cd C:\Users\goo10\競艇\boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 node scripts\dashboard_workflow.js
 ```
 

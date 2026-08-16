@@ -26,8 +26,6 @@ MODEL_SHA256 = "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0
 FEATURE_SCHEMA_SHA256 = "a3853bdbdb75d13d4a596928c13eaa034307b14a5a8c534d31fca9acdab623dd"
 DEFAULT_REPORT_ROOT = ROOT / "reports" / "research_memory_v1"
 DEFAULT_REGISTRY = ROOT / "data" / "research" / "research_memory_v1" / "experiment_registry.sqlite3"
-DEFAULT_MODEL = Path(r"C:\Users\goo10\競艇-recovery\boatrace-day1\data\commercialization_v1\frozen_candidate\tree_15.joblib")
-DEFAULT_FEATURE_ORDER = Path(r"C:\Users\goo10\競艇-recovery\boatrace-day1\data\commercialization_v1\frozen_candidate\feature_order.json")
 DEFAULT_READINESS = ROOT / "reports" / "feature_forward" / "course_start_challenger_readiness.json"
 
 
@@ -226,8 +224,8 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Refresh research-only memory without touching prediction or settlement stores.")
     parser.add_argument("--report-root", type=Path, default=DEFAULT_REPORT_ROOT)
     parser.add_argument("--registry", type=Path, default=DEFAULT_REGISTRY)
-    parser.add_argument("--model", type=Path, default=DEFAULT_MODEL)
-    parser.add_argument("--feature-order", type=Path, default=DEFAULT_FEATURE_ORDER)
+    parser.add_argument("--model", type=Path, required=True, help="Path to the frozen tree_15 artifact")
+    parser.add_argument("--feature-order", type=Path, required=True, help="Path to the matching feature_order.json")
     parser.add_argument("--readiness", type=Path, default=DEFAULT_READINESS)
     args = parser.parse_args(argv)
     report_root = args.report_root.resolve()

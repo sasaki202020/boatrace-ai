@@ -7,7 +7,7 @@
 
 ## 前提
 
-- プロジェクトルート: `C:/Users/goo10/競艇/boatrace-ai-mvp`
+- プロジェクトルート: このリポジトリのルート（`git rev-parse --show-toplevel` で確認）
 - Windows PowerShell では `py` を優先
 - 日付引数は `YYYY-MM-DD` を前提
 
@@ -24,19 +24,19 @@
 
 ### 1-1. pre-race 実行
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py -m src.pipeline.run_daily_pre_race --date 2026-04-11
 ```
 
 ### 1-2. 朝の一括運用
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\run_daily_operations.py --date 2026-04-11 --phase morning
 ```
 
 ### 1-3. ダッシュボード確認
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 streamlit run app/dashboard.py
 ```
 
@@ -80,19 +80,19 @@ streamlit run app/dashboard.py
 
 ### 2-1. odds refresh 実行
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py -m src.pipeline.run_daily_odds_refresh --date 2026-04-11
 ```
 
 ### 2-2. late odds refresh 実行
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py -m src.pipeline.run_daily_odds_refresh_late --date 2026-04-11 --wait-minutes 30
 ```
 
 ### 2-3. 昼だけ回すなら
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\run_daily_operations.py --date 2026-04-11 --phase late --wait-minutes 30
 ```
 
@@ -131,25 +131,25 @@ py .\scripts\run_daily_operations.py --date 2026-04-11 --phase late --wait-minut
 
 ### 3-1. post-race 実行
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py -m src.pipeline.run_daily_post_race --date 2026-04-11
 ```
 
 ### 3-2. 夜だけ回すなら
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\run_daily_operations.py --date 2026-04-11 --phase night
 ```
 
 ### 3-3. シミュレータ実行
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\run_simulator_for_date.py --date 2026-04-11
 ```
 
 ### 3-4. raw vs calibrated 比較
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\compare_raw_vs_calibrated.py --date 2026-04-11 --input-path data/strategy_outputs/skip_decisions_with_calibrated_prob.csv --buy-min-ev 0.1 --buy-min-prob 0.0 --max-buy-count 3 --stake 100
 ```
 
@@ -190,25 +190,25 @@ py .\scripts\compare_raw_vs_calibrated.py --date 2026-04-11 --input-path data/st
 
 ### 4-1. approx_prob 校正
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\calibrate_approx_prob.py --dates 2026-04-04,2026-04-05,2026-04-06
 ```
 
 ### 4-2. 校正済み確率を付与
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\attach_calibrated_prob.py --source-path data/strategy_outputs/skip_decisions.csv --calibrated-rows-path reports/calibration/approx_prob_calibrated_rows_latest.csv --output-path data/strategy_outputs/skip_decisions_with_calibrated_prob.csv
 ```
 
 ### 4-3. raw / calibrated 再判定
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\run_buy_judgement_calibrated.py --input-path data/strategy_outputs/skip_decisions_with_calibrated_prob.csv --output-path data/strategy_outputs/skip_decisions_rejudged_calibrated.csv --buy-min-ev 0.1 --buy-min-prob 0.0 --max-buy-count 3 --prob-source calibrated
 ```
 
 ### 4-4. raw vs calibrated 比較
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\compare_raw_vs_calibrated.py --date 2026-04-11 --input-path data/strategy_outputs/skip_decisions_with_calibrated_prob.csv --buy-min-ev 0.1 --buy-min-prob 0.0 --max-buy-count 3 --stake 100
 ```
 
@@ -216,7 +216,7 @@ py .\scripts\compare_raw_vs_calibrated.py --date 2026-04-11 --input-path data/st
 
 ### 4-5. TARGET日だけのバッチ比較
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\run_batch_simulation.py --target-dates 2026-04-04,2026-04-05,2026-04-06
 ```
 
@@ -267,7 +267,7 @@ py .\scripts\run_batch_simulation.py --target-dates 2026-04-04,2026-04-05,2026-0
 今の段階で必要なのは、新しい仕組みではない。  
 毎日同じ順番で回して、保留日に結論を出さないことです。
 
-実験内容の記録は [EXPERIMENT_LOG.md](C:/Users/goo10/競艇/boatrace-ai-mvp/EXPERIMENT_LOG.md)、比較対象日の判定は [COMPARISON_TARGET_DAYS.md](C:/Users/goo10/競艇/boatrace-ai-mvp/COMPARISON_TARGET_DAYS.md) に寄せる。
+実験内容の記録は [EXPERIMENT_LOG.md](./EXPERIMENT_LOG.md)、比較対象日の判定は [COMPARISON_TARGET_DAYS.md](./COMPARISON_TARGET_DAYS.md) に寄せる。
 
 そこが固まれば、次にやる価値があるのは
 - 比較対象日の自動管理

@@ -1,23 +1,13 @@
 $ErrorActionPreference = "Stop"
 
 $repo = Split-Path -Parent $PSScriptRoot
-$python = "C:\Users\goo10\AppData\Local\Programs\Python\Python313\python.exe"
-$runtimeParent = Get-ChildItem -LiteralPath "C:\Users\goo10" -Directory |
-    Where-Object {
-        Test-Path -LiteralPath (Join-Path $_.FullName "boatrace-ai-mvp\data\research\feature_forward_v1\store")
-    } |
-    Select-Object -First 1
-if (-not $runtimeParent) {
-    throw "RUNTIME_ROOT_NOT_FOUND"
-}
-$runtime = Join-Path $runtimeParent.FullName "boatrace-ai-mvp"
-# The task runs with the feature-forward worktree as its working directory.
-# Keep this argument ASCII-relative so PowerShell does not corrupt the Japanese parent path.
-$model = "..\boatrace-day1\data\commercialization_v1\frozen_candidate\tree_15.joblib"
+$python = (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+$runtime = $repo
+$model = Join-Path $repo "data\commercialization_v1\frozen_candidate\tree_15.joblib"
 $runner = Join-Path $repo "scripts\run_course_start_challenger_v1.py"
 $reportRoot = Join-Path $repo "reports\feature_forward"
 
-if (-not (Test-Path -LiteralPath $python -PathType Leaf)) {
+if ([string]::IsNullOrWhiteSpace($python) -or -not (Test-Path -LiteralPath $python -PathType Leaf)) {
     throw "PYTHON_NOT_FOUND"
 }
 

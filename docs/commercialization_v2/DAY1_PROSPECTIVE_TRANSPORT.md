@@ -16,7 +16,7 @@ are not evidence.
 Run after the next eligible B file is placed locally:
 
 ```powershell
-py -3.13 scripts\run_day1_prospective_v2.py --b-root "C:\Users\goo10\競艇\boatrace-ai-mvp\data\raw\official\entries"
+py -3.13 scripts\run_day1_prospective_v2.py --b-root data\raw\official\entries
 ```
 
 The runner is limited to one venue, twelve races, one package, one external

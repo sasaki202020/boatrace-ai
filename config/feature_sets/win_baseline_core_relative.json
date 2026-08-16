@@ -1,7 +1,7 @@
 {
   "feature_set_name": "win_baseline_core_relative",
   "source_feature_set": "win_baseline_core",
-  "source_dataset": "C:\\Users\\goo10\\競艇\\boatrace-ai-mvp\\data\\processed\\trainable_win_training_data.csv",
+  "source_dataset": "data/processed/trainable_win_training_data.csv",
   "base_feature_set_name": "win_baseline_core",
   "relative_feature_set_name": "core_relative",
   "features": [

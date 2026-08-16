@@ -28,7 +28,7 @@ EXPECTED = {
     "dataset": "bc2294f85e482ac1c1e7458236be509afd5d3adc9aa7afd4ec53fc4658e54f23",
     "asof": "c1ede746393c906e7197d9a461a32fcacb34e508387b6d189d57da20089f3bcb",
 }
-DEFAULT_B_ROOT = Path(r"C:\Users\goo10\競艇\boatrace-ai-mvp\data\raw\official\entries")
+DEFAULT_B_ROOT = ROOT / "data/raw/official/entries"
 
 
 def _sha256_rows(frame: pd.DataFrame) -> str:

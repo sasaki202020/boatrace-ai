@@ -207,7 +207,11 @@ def main() -> int:
         return 0
 
     now_utc = datetime.now(timezone.utc)
-    result = run_capture_cycle(b_file=b_file, store_root=args.store)
+    result = run_capture_cycle(
+        b_file=b_file,
+        store_root=args.store,
+        requests_per_day=gate.requests_per_day,
+    )
     result.update(
         {
             **gate.as_dict(),

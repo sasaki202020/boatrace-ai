@@ -63,3 +63,19 @@ def test_personal_manual_collection_rejects_unconfigured_inbox(tmp_path):
  result=subprocess.run([sys.executable,str(SCRIPT),"--approval",str(approval),"--inbox",str(other),"--store",str(tmp_path/"store"),"--status",str(tmp_path/"status.json")],cwd=ROOT,text=True,capture_output=True)
  assert json.loads(result.stdout)["status"]=="FEATURE_COLLECTION_BLOCKED_SOURCE"
  assert not (tmp_path/"store").exists()
+
+
+def test_personal_manual_collection_accepts_repo_relative_inbox(tmp_path):
+ inbox=tmp_path/"data"/"research"/"feature_forward_v1"/"inbox";inbox.mkdir(parents=True)
+ approval=tmp_path/"config"/"feature_forward_v1"/"approval.json";approval.parent.mkdir(parents=True)
+ approval.write_text(json.dumps({
+  "schemaVersion":2,"usageMode":"PERSONAL_RESEARCH_ONLY","personalResearchAllowed":True,
+  "localStorageAllowed":True,"localAnalysisAllowed":True,"personalModelTrainingAllowed":True,
+  "personalPredictionUseAllowed":True,"manualIngestAllowed":True,"manualInboxPath":"data/research/feature_forward_v1/inbox",
+  "automatedNetworkFetchAllowed":False,"networkSafetyIntegrated":False,"allowedHttpsHosts":[],
+  "commercialUseAllowed":False,"redistributionAllowed":False,"publicReleaseAllowed":False,
+  "paidServiceAllowed":False,"allowedSourceTypes":["LOCAL_PERSONAL_SNAPSHOT"],
+  "allowedSourceLocationPrefixes":["file:///personal-inbox"],"minimumRequestIntervalSeconds":60,
+  "requestsPerRace":1,"requestsPerDay":24,"retriesPerRace":0}),encoding="utf-8")
+ result=subprocess.run([sys.executable,str(SCRIPT),"--approval",str(approval),"--inbox",str(inbox),"--store",str(tmp_path/"store"),"--status",str(tmp_path/"status.json")],cwd=ROOT,text=True,capture_output=True)
+ assert json.loads(result.stdout)["status"]=="WAITING_FOR_APPROVED_INPUT"

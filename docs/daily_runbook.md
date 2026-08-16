@@ -28,16 +28,16 @@ py -m src.pipeline.run_daily_pre_race --date 2026-04-05
 10. gate health 診断
 
 ### 主な入力
-- [historical_races.csv](/C:/Users/goo10/競艇/boatrace-ai-mvp/data/processed/historical_races.csv)
-- [today_races.csv](/C:/Users/goo10/競艇/boatrace-ai-mvp/data/processed/today_races.csv)
+- [historical_races.csv](../data/processed/historical_races.csv)
+- [today_races.csv](../data/processed/today_races.csv)
 
 ### 主な出力
-- [today_features.csv](/C:/Users/goo10/競艇/boatrace-ai-mvp/data/features/today_features.csv)
-- [today_win_proba.csv](/C:/Users/goo10/競艇/boatrace-ai-mvp/data/model_outputs/today_win_proba.csv)
-- [trifecta_candidates.csv](/C:/Users/goo10/競艇/boatrace-ai-mvp/data/strategy_outputs/trifecta_candidates.csv)
-- [today_trifecta_odds.csv](/C:/Users/goo10/競艇/boatrace-ai-mvp/data/odds/today_trifecta_odds.csv)
-- [skip_decisions.csv](/C:/Users/goo10/競艇/boatrace-ai-mvp/data/strategy_outputs/skip_decisions.csv)
-- [pre_race_run.json](/C:/Users/goo10/競艇/boatrace-ai-mvp/reports/daily/2026-04-05/pre_race_run.json)
+- [today_features.csv](../data/features/today_features.csv)
+- [today_win_proba.csv](../data/model_outputs/today_win_proba.csv)
+- [trifecta_candidates.csv](../data/strategy_outputs/trifecta_candidates.csv)
+- [today_trifecta_odds.csv](../data/odds/today_trifecta_odds.csv)
+- [skip_decisions.csv](../data/strategy_outputs/skip_decisions.csv)
+- [pre_race_run.json](../reports/daily/2026-04-05/pre_race_run.json)
 
 ### オッズ取得の診断
 - 日別保存先: `data/odds/YYYYMMDD/`
@@ -73,21 +73,21 @@ powershell -ExecutionPolicy Bypass -File scripts/run_nightly_pipeline.ps1 -Date 
 ```
 
 ### 主な出力
-- [daily_evaluation.json](/C:/Users/goo10/競艇/boatrace-ai-mvp/reports/daily/2026-04-05/daily_evaluation.json)
-- [daily_summary.json](/C:/Users/goo10/競艇/boatrace-ai-mvp/reports/daily/2026-04-05/daily_summary.json)
-- [improvement_report.json](/C:/Users/goo10/競艇/boatrace-ai-mvp/reports/daily/2026-04-05/improvement_report.json)
-- [daily_evaluation.md](/C:/Users/goo10/競艇/boatrace-ai-mvp/reports/daily/2026-04-05/daily_evaluation.md)
-- [rolling_summary.json](/C:/Users/goo10/競艇/boatrace-ai-mvp/reports/daily/rolling_summary.json)
-- [daily_summary_history.csv](/C:/Users/goo10/競艇/boatrace-ai-mvp/reports/daily/daily_summary_history.csv)
-- [post_race_run.json](/C:/Users/goo10/競艇/boatrace-ai-mvp/reports/daily/2026-04-05/post_race_run.json)
+- [daily_evaluation.json](../reports/daily/2026-04-05/daily_evaluation.json)
+- [daily_summary.json](../reports/daily/2026-04-05/daily_summary.json)
+- [improvement_report.json](../reports/daily/2026-04-05/improvement_report.json)
+- [daily_evaluation.md](../reports/daily/2026-04-05/daily_evaluation.md)
+- [rolling_summary.json](../reports/daily/rolling_summary.json)
+- [daily_summary_history.csv](../reports/daily/daily_summary_history.csv)
+- [post_race_run.json](../reports/daily/2026-04-05/post_race_run.json)
 
 ## 3. ログの見方
 
 PowerShell ラッパーを使う場合は、日付ごとのログが残ります。
 
-- 朝: [logs/pre_race](/C:/Users/goo10/競艇/boatrace-ai-mvp/logs/pre_race)
-- 夜: [logs/nightly](/C:/Users/goo10/競艇/boatrace-ai-mvp/logs/nightly)
-- post-race 単体ログ: [logs/post_race](/C:/Users/goo10/競艇/boatrace-ai-mvp/logs/post_race)
+- 朝: [logs/pre_race](../logs/pre_race)
+- 夜: [logs/nightly](../logs/nightly)
+- post-race 単体ログ: [logs/post_race](../logs/post_race)
 
 各ログには以下が残ります。
 - step名

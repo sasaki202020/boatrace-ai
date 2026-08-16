@@ -1,6 +1,6 @@
 $ErrorActionPreference = 'Stop'
 
-$repo = 'C:\Users\goo10\競艇\boatrace-ai-mvp'
+$repo = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $script = Join-Path $repo 'download_boatrace_data.py'
 $logDir = Join-Path $repo 'logs'
 New-Item -ItemType Directory -Force $logDir | Out-Null

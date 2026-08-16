@@ -115,7 +115,7 @@ class ProspectiveAnchorCommitService:
             return {
                 "status": "IDEMPOTENT", "path": path, "contentSha256": hashlib.sha256(raw).hexdigest(),
                 "objectSha": str(existing.get("sha", "")), "commitSha": "",
-                "serverCreatedAt": "", "externalWriteCount": 0,
+                "serverCreatedAt": "", "externalWriteCount": 0, "prospectiveRaces": 0,
             }
         try:
             created = self.transport.create_content(APPROVED_OWNER, APPROVED_REPOSITORY, APPROVED_BRANCH, path, raw)
@@ -127,6 +127,7 @@ class ProspectiveAnchorCommitService:
                 "status": "EXTERNAL_WRITE_UNVERIFIED", "path": path,
                 "contentSha256": hashlib.sha256(raw).hexdigest(), "objectSha": str(recovered.get("sha", "")),
                 "commitSha": "", "serverCreatedAt": "", "externalWriteCount": 1,
+                "prospectiveRaces": 0,
             }
         server_date_raw = str(created.get("_http_date", ""))
         try:
@@ -156,4 +157,5 @@ class ProspectiveAnchorCommitService:
             "contentSha256": hashlib.sha256(raw).hexdigest(),
             "objectSha": object_sha, "commitSha": commit_sha,
             "serverCreatedAt": server_date.isoformat() if server_date else "", "externalWriteCount": 1,
+            "prospectiveRaces": int(payload["raceCount"]) if status == "CREATED" else 0,
         }

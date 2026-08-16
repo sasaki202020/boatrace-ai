@@ -23,13 +23,14 @@ $LogFile = Join-Path $LogDir "$Date.log"
 # Discovery Python
 $PythonCandidates = @(
     "$ProjectRoot\.venv\Scripts\python.exe",
-    "$ProjectRoot\venv\Scripts\python.exe",
-    "C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe",
-    "C:\Users\goo10\AppData\Local\Programs\Python\Python313\python.exe"
+    "$ProjectRoot\venv\Scripts\python.exe"
 )
 $PythonExe = $PythonCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
 if ([string]::IsNullOrWhiteSpace($PythonExe)) {
-    $PythonExe = "python"
+    $PythonExe = (Get-Command python.exe -ErrorAction SilentlyContinue).Source
+}
+if ([string]::IsNullOrWhiteSpace($PythonExe)) {
+    throw "PYTHON_NOT_FOUND"
 }
 
 Set-Location $ProjectRoot

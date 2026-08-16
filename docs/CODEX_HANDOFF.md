@@ -1,5 +1,11 @@
 # Codex Handoff
 
+> **NON-NORMATIVE / HISTORICAL CONTEXT**
+>
+> この文書は履歴コンテキストであり、製品仕様の唯一の正本である [FINAL_PRODUCT_SPEC.md](FINAL_PRODUCT_SPEC.md) を上書きしない。
+
+文書の権威順位は `FINAL_PRODUCT_SPEC > AGENTS execution rules > CODEX_TASKS > CONTEXT/HANDOFF historical context > reports evidence` とする。
+
 ## Last Known State
 
 - ローカル Web は `src/web.app` で起動する

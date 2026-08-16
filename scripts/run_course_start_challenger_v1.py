@@ -468,6 +468,18 @@ def _write_json(path: Path, payload: Any) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
+def _git_status_has_source_change(status_lines: list[str]) -> bool:
+    for line in status_lines:
+        paths = line[3:].replace("\\", "/").split(" -> ")
+        if any(
+            path == root or path.startswith(f"{root}/")
+            for path in paths
+            for root in ("src", "scripts", "config")
+        ):
+            return True
+    return False
+
+
 def _reproducibility_manifest_is_valid(
     manifest: Any, *, spec_hash: str,
 ) -> bool:
@@ -477,6 +489,9 @@ def _reproducibility_manifest_is_valid(
         "gitHead",
         "gitStatusPorcelain",
         "dirtyWorktree",
+        "sourceRoots",
+        "sourceStatusPorcelain",
+        "sourceWorktreeClean",
         "trackedDiffPath",
         "trackedDiffSha256",
         "untrackedFiles",
@@ -497,7 +512,11 @@ def _reproducibility_manifest_is_valid(
         and bool(manifest.get("gitHead"))
         and isinstance(manifest.get("gitStatusPorcelain"), list)
         and all(isinstance(value, str) for value in manifest["gitStatusPorcelain"])
+        and not _git_status_has_source_change(manifest["gitStatusPorcelain"])
         and isinstance(manifest.get("dirtyWorktree"), bool)
+        and manifest.get("sourceRoots") == ["src", "scripts", "config"]
+        and manifest.get("sourceStatusPorcelain") == []
+        and manifest.get("sourceWorktreeClean") is True
         and all(
             isinstance(manifest.get(key), str) and bool(manifest[key])
             for key in (
@@ -548,6 +567,8 @@ def build_evaluation_artifact(
         "cohortDigest": cohort_digest,
         "specHash": spec_hash,
         "personalAdoptionAllowed": False,
+        "realPredictionPublishApproved": False,
+        "prospectiveRaces": 0,
         "candidatePredictionDigest": candidate_prediction_digest(evaluation),
         "reproducibilityManifest": reproducibility_manifest,
         "reproducibilityManifestSha256": stable_hash(reproducibility_manifest),
@@ -568,6 +589,8 @@ def _evaluation_artifact_is_current(
         "deterministicRerunPassed",
         "productionAdoptionAllowed",
         "personalAdoptionAllowed",
+        "realPredictionPublishApproved",
+        "prospectiveRaces",
         "cohortDigest",
         "specHash",
         "modelSha256",
@@ -595,6 +618,8 @@ def _evaluation_artifact_is_current(
         and payload.get("deterministicRerunPassed") is True
         and payload.get("productionAdoptionAllowed") is False
         and payload.get("personalAdoptionAllowed") is False
+        and payload.get("realPredictionPublishApproved") is False
+        and payload.get("prospectiveRaces") == 0
     )
 
 
@@ -944,6 +969,8 @@ def main(argv: list[str] | None = None) -> int:
         "tree15Changed": False,
         "productionWrites": 0,
         "prospectiveWrites": 0,
+        "prospectiveRaces": 0,
+        "realPredictionPublishApproved": False,
         "coverageScope": coverage_metadata["scope"],
         "coverageEvidenceStatus": coverage_metadata["status"],
         "coverageDenominatorRaceCount": coverage_metadata["matureScheduledRaceCount"],

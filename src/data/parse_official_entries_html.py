@@ -19,7 +19,7 @@ from src.utils.race_id import canonical_race_id
 
 _FULLWIDTH_DIGITS = str.maketrans("１２３４５６７８９０", "1234567890")
 _RACE_NO_RE = re.compile(r"(?:^|\D)(\d{1,2})R(?:\D|$)")
-_BOAT_START_RE = re.compile(r"^[1-6]$")
+_BOAT_START_RE = re.compile(r"^[1-6](?:\s+Image)?$", re.IGNORECASE)
 _RACER_ID_CLASS_RE = re.compile(r"(\d{4})\s*/\s*([AB]\d)")
 _AGE_WEIGHT_RE = re.compile(r"(\d{1,2})歳/(\d+(?:\.\d+)?)kg")
 _FLOAT_RE = re.compile(r"[-+]?(?:\d+\.\d+|\d+)")
@@ -104,7 +104,7 @@ def _row_from_block(
     boat_match = re.match(r"([1-6])\b", first_line)
     if not boat_match:
         return None
-    boat_no = int(boat_match.group(1))
+    lane_no = int(boat_match.group(1))
 
     joined = "\n".join(block)
     racer_match = _RACER_ID_CLASS_RE.search(joined)
@@ -178,7 +178,7 @@ def _row_from_block(
     local_2ren_rate = stats[4] if len(stats) > 4 else None
     motor_no = int(stats[6]) if len(stats) > 6 and stats[6] is not None else None
     motor_2ren_rate = stats[7] if len(stats) > 7 else None
-    boat_no = int(stats[9]) if len(stats) > 9 and stats[9] is not None else None
+    equipment_boat_no = int(stats[9]) if len(stats) > 9 and stats[9] is not None else None
     boat_2ren_rate = stats[10] if len(stats) > 10 else None
 
     if racer_id is None or racer_class is None:
@@ -191,8 +191,8 @@ def _row_from_block(
         "race_no": race_no,
         "race_id": race_id,
         "union_key": f"{target_date.replace('-', '')}_{jcd}_{race_no:02d}",
-        "lane": boat_no,
-        "boat_no": boat_no,
+        "lane": lane_no,
+        "boat_no": equipment_boat_no,
         "racer_id": racer_id,
         "racer_class": racer_class,
         "racer_name": name,

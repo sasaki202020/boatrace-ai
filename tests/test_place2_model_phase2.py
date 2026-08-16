@@ -3,14 +3,12 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import joblib
 import pandas as pd
+from sklearn.dummy import DummyClassifier
 
 from src.features.build_place2_context_features import build_place2_context_frame
-from src.models.place2_phase2_common import (
-    DEFAULT_PHASE1_MODEL_PATH,
-    evaluate_phase2_model,
-    train_phase2_model,
-)
+from src.models.place2_phase2_common import evaluate_phase2_model, train_phase2_model
 
 
 def _make_frame() -> pd.DataFrame:
@@ -45,11 +43,21 @@ def _make_frame() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _write_phase1_bundle(path: Path) -> None:
+    model = DummyClassifier(strategy="prior")
+    features = pd.DataFrame({"boat_no": [1, 2]})
+    model.fit(features, [0, 1])
+    path.parent.mkdir(parents=True, exist_ok=True)
+    joblib.dump({"model": model, "feature_columns": ["boat_no"]}, path)
+
+
 def test_phase2_context_build_and_training_roundtrip(tmp_path: Path) -> None:
     frame = _make_frame()
+    phase1_model_path = tmp_path / "models" / "phase1.joblib"
+    _write_phase1_bundle(phase1_model_path)
     context_frame, summary = build_place2_context_frame(
         frame,
-        phase1_bundle_path=DEFAULT_PHASE1_MODEL_PATH,
+        phase1_bundle_path=phase1_model_path,
         split_name="train",
     )
 
@@ -73,7 +81,7 @@ def test_phase2_context_build_and_training_roundtrip(tmp_path: Path) -> None:
 
     result = train_phase2_model(
         trainable_path=trainable_path,
-        phase1_model_path=DEFAULT_PHASE1_MODEL_PATH,
+        phase1_model_path=phase1_model_path,
         model_path=model_path,
         report_json=report_json,
         report_csv=report_csv,
@@ -119,7 +127,7 @@ def test_phase2_context_build_and_training_roundtrip(tmp_path: Path) -> None:
     eval_result = evaluate_phase2_model(
         model_path=model_path,
         trainable_path=trainable_path,
-        phase1_model_path=DEFAULT_PHASE1_MODEL_PATH,
+        phase1_model_path=phase1_model_path,
         report_json=report_json,
         report_csv=report_csv,
         split_manifest_path=split_manifest,

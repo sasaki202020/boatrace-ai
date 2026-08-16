@@ -3,7 +3,7 @@
 ## 1. Environment Setup
 
 ```powershell
-cd C:\Users\goo10\競艇\boatrace-ai-mvp
+Set-Location <repository-root>
 py -3.12 -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
@@ -12,7 +12,7 @@ pip install -r requirements.txt
 `py` launcher が使えない環境では Python 実体を直接指定:
 
 ```powershell
-& 'C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe' -m pip install -r requirements.txt
+py -3.12 -m pip install -r requirements.txt
 ```
 
 ## 2. Gate Mapping

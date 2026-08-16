@@ -182,7 +182,7 @@ def promotion_audit(results: pd.DataFrame, predictions: pd.DataFrame, determinis
 def main() -> int:
     import argparse
     parser = argparse.ArgumentParser(description="Run bounded offline v5 gated residual research")
-    parser.add_argument("--source-root", type=Path, default=Path(r"C:\Users\goo10\競艇-recovery\boatrace-ai-clean"))
+    parser.add_argument("--source-root", type=Path, required=True, help="Repository root containing the fixed offline artifacts")
     parser.add_argument("--bootstrap-iterations", type=int, default=1000)
     args = parser.parse_args()
     source = args.source_root.resolve()

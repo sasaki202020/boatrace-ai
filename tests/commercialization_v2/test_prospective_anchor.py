@@ -99,7 +99,9 @@ def test_create_idempotent_and_conflict():
     first = service(transport).publish(PAYLOAD, cutoff=cutoff, approval=APPROVAL)
     second = service(transport).publish(PAYLOAD, cutoff=cutoff, approval=APPROVAL)
     assert first["status"] == "CREATED"
+    assert first["prospectiveRaces"] == PAYLOAD["raceCount"]
     assert second["status"] == "IDEMPOTENT"
+    assert second["prospectiveRaces"] == 0
     assert transport.writes == 1
     transport.value = b"different"
     with pytest.raises(ValueError, match="existing_content_mismatch"):
@@ -110,7 +112,37 @@ def test_response_date_at_or_after_cutoff_is_rejected():
     transport = FakeTransport(date="Mon, 20 Jul 2026 00:00:00 GMT")
     result = service(transport).publish(PAYLOAD, cutoff=datetime(2026, 7, 20, tzinfo=timezone.utc), approval=APPROVAL)
     assert result["status"] == "LATE_COMMIT_REJECTED"
+    assert result["status"] != "PASS"
+    assert result["prospectiveRaces"] == 0
     assert transport.writes == 1
+
+
+def test_missing_server_time_is_unverified_and_does_not_count_races():
+    transport = FakeTransport(date="")
+
+    result = service(transport).publish(
+        PAYLOAD,
+        cutoff=datetime(2026, 7, 20, tzinfo=timezone.utc),
+        approval=APPROVAL,
+    )
+
+    assert result["status"] == "EXTERNAL_WRITE_UNVERIFIED"
+    assert result["status"] != "PASS"
+    assert result["prospectiveRaces"] == 0
+    assert transport.writes == 1
+
+
+def test_real_prediction_publish_not_approved_rejects_before_write():
+    transport = FakeTransport()
+
+    with pytest.raises(ValueError, match="real_publish_not_approved"):
+        service(transport).publish(
+            PAYLOAD,
+            cutoff=datetime(2026, 7, 20, tzinfo=timezone.utc),
+            approval={**APPROVAL, "realPredictionPublishApproved": False},
+        )
+
+    assert transport.writes == 0
 
 
 def test_client_cutoff_rejects_before_write():

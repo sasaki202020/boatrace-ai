@@ -15,10 +15,10 @@ This project uses two odds refresh passes per day.
 
 - `BoatraceAI_OddsRefresh_Morning_0710`
   - Daily `07:10`
-  - Command: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\goo10\競艇\boatrace-ai-mvp\scripts\run_odds_refresh_phase.ps1 -Phase morning -Delay 1.0`
+  - Command: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run_odds_refresh_phase.ps1 -Phase morning -Delay 1.0`（リポジトリルートから実行）
 - `BoatraceAI_OddsRefresh_Late_2230`
   - Daily `22:30`
-  - Command: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\Users\goo10\競艇\boatrace-ai-mvp\scripts\run_odds_refresh_phase.ps1 -Phase late -Delay 1.0 -Refresh -PendingOnly`
+  - Command: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\run_odds_refresh_phase.ps1 -Phase late -Delay 1.0 -Refresh -PendingOnly`（リポジトリルートから実行）
 
 ## Why this schedule
 
@@ -29,7 +29,7 @@ This project uses two odds refresh passes per day.
 ## Manual commands
 
 ```powershell
-cd C:\Users\goo10\競艇\boatrace-ai-mvp
+Set-Location <repository-root>
 ops_pipeline.bat odds-refresh
 ops_pipeline.bat odds-refresh-late
 ```
@@ -37,7 +37,7 @@ ops_pipeline.bat odds-refresh-late
 ## Scheduler registration
 
 ```powershell
-cd C:\Users\goo10\競艇\boatrace-ai-mvp
+Set-Location <repository-root>
 powershell -ExecutionPolicy Bypass -File .\scripts\register_odds_refresh_tasks.ps1
 ```
 

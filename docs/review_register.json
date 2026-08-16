@@ -1,0 +1,899 @@
+{
+  "schemaVersion": 1,
+  "canonicalRepository": "sasaki202020/boatrace-ai",
+  "canonicalCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
+  "entries": [
+    {
+      "path": "AGENTS.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "81c96fcd8c68f061e5451ee8a743923a3855d717c5ffb73f7cd55238ebec51ba"
+    },
+    {
+      "path": "docs/FINAL_PRODUCT_SPEC.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "05f2a4819e8b81ca92dd2595237b75baef913b8251907b363c9e9f909e9dd962"
+    },
+    {
+      "path": "docs/CODEX_CONTEXT.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "45010e7778c426e5ff1bc08f4e53c3f98725fe7e37c9be2135b9fd4b4e487918"
+    },
+    {
+      "path": "docs/CODEX_HANDOFF.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "2bed91315ee7ac09858c5dd00e84600d77f88f49c0a3d049988404a6f4b99bad"
+    },
+    {
+      "path": "docs/CODEX_TASKS.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "5474fb0ce7f54d4081c1a789f0301296a4e3f0c973e656d5e0a96461b338103c"
+    },
+    {
+      "path": "docs/CURRENT_STATUS.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "e4e70a0efb4101abe3a394ab1ccb390864532d11329afd2c8b0601d0b7fec53b"
+    },
+    {
+      "path": "docs/operation_phase.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "36d136a2405b1dfd5e5b1a52e6ab59a94fbc33205cf0e60d3286458d0b5435a1"
+    },
+    {
+      "path": "docs/00_MASTER_INDEX.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "2b4a21e2a0cf6d0e690b892ca9c1f3b8e50ac1c829d4c3041ee94d7a46277139"
+    },
+    {
+      "path": "docs/data_contract.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "ce842cb0b46d89698461c7704e94c95ef7a7fdc71fc8cb26f013733ba64b0e66"
+    },
+    {
+      "path": "docs/feature_contract.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "c073ae4620e886112a9d49b5edbb60a990e58b594a61ce0fc3437c4535c49768"
+    },
+    {
+      "path": "docs/feature_inventory.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "ede7eec8c9f077b86abff5aef1db15a99c840caa1572a8541207379946b60b83"
+    },
+    {
+      "path": "docs/feature_availability_matrix.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "f000c745df430fb7a3e85e618474bfb4044f1672041262756e632273c57861c3"
+    },
+    {
+      "path": "docs/feature_missing_policy.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "eacce650737927981c042e0ea58f3ec9bba83862914a37237037ecbbf5387315"
+    },
+    {
+      "path": "docs/feature_tiering.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "71722279d1be6dc3529650aa73ba982a875848ff7f1ebce1ec06e85f0627e4b1"
+    },
+    {
+      "path": "docs/leakage_rules_for_features.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "59441ab3df7e3c870efabf933783b812787a6f163f0766d14972da5eeb288d7c"
+    },
+    {
+      "path": "docs/model_contract.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "65a89ec0c9d06a439535581539768b4abf52c260eee286a078de29cea279c83d"
+    },
+    {
+      "path": "docs/inference_contract.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "0f880d98cabd37264c200ab5b11311f3b45b51ac4dc62cf3bb714106346d451b"
+    },
+    {
+      "path": "docs/time_split_policy.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "2abc13db7fbae1e27fae04c6dc6ea3c39782a8ba483aa67d5eb7cb5424443c23"
+    },
+    {
+      "path": "docs/calibration_policy.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "d6f96ac8ba6f076e8a16d7a337d8f6343ef04ac44a7ca6d0553486277ca9da73"
+    },
+    {
+      "path": "docs/candidate_generation_policy.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "1fa30cd5b1c0db3fb0d59caae15c07ad9a8db87372d8d40af85e95574ee04224"
+    },
+    {
+      "path": "docs/ev_policy.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "f64b9bbb2d74d8388d664e0d79beb55163142c56e5285aa1d57ea30aec5f3d51"
+    },
+    {
+      "path": "docs/MODEL_POLICY_SEPARATION_CONTRACT.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "88573e4693af7f4a493414c4a5906aaca06db90d100854532b448b96aff76945"
+    },
+    {
+      "path": "docs/CANDIDATE_TRACE_CONTRACT.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "b19d51cb433d7dee629da29ce67179725d342b322a81ad73a1b4bb391e625d11"
+    },
+    {
+      "path": "docs/ARCHITECTURE_V2_WALK_FORWARD.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "3835b70122227b08d4b957ab536fc5e78c14f27cbc612a42e49ba85fd61938e8"
+    },
+    {
+      "path": "docs/ARCHITECTURE_V2_GAP_AUDIT.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "15062a51d7e33fad2e98e9e530b1fc888ca6d81fdc6176e1b91fe32bc6e9af16"
+    },
+    {
+      "path": "docs/ARCHITECTURE_V2_COMPLETION.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "9bb10a5c524bc302bb54a2cbbc93175885c0875d5e76ddd9b40284776af9a43c"
+    },
+    {
+      "path": "docs/daily_runbook.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "4f48114a50f3e571121a9075f750c2bd5f5b4abf1ecce3dc7c033b75229ad88f"
+    },
+    {
+      "path": "docs/PAPER_PREDICTION_WEB_V1_OPERATIONS.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "5caf47565c5672d7e19740d4c2327492ba9647b0dee205770de72e8352466445"
+    },
+    {
+      "path": "docs/STRICT_EVIDENCE_DAILY_AUDIT.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "582e16949d818d36a4394398c5af53954886a34634e4b6d27e6e53362d865143"
+    },
+    {
+      "path": "docs/LIVE_EVIDENCE_OPERATION.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "ac70b383924826dae332ec54c5dc9fd4af7b23102b223e08d5a7459252940a79"
+    },
+    {
+      "path": "docs/LIVE_SHADOW_EVIDENCE_GATE.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "fa9f11c1e55dbb2e0bd624de864eb98f7b5f938860f8f87fc27fb138ce491755"
+    },
+    {
+      "path": "docs/boatrace_official_pipeline.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "1987e603e48e2e4dda240f7ad3762dbe2fa92aea85e93bd536b110773c54d2d9"
+    },
+    {
+      "path": "docs/source_registry.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "1e7eed994749846839331f4426b7d369a70fd619aa79fd16628d2bf9b661b00e"
+    },
+    {
+      "path": "docs/commercialization_v2/SOURCE_RIGHTS_EVIDENCE_REGISTRATION.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "1b4bd96369521decffa74e741d6c3a421ba456f3c8af038ff336a84b7eb1cee1"
+    },
+    {
+      "path": "docs/FEATURE_FORWARD_COLLECTION_V1.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "c9054a8c80ede2a6407f5c309944b8a6707ca4e72555f5a30407bb473374bb1f"
+    },
+    {
+      "path": "docs/feature_forward_v1/OOF_DECISION_PROTOCOL.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "6b686d6103278726aa128402f536fdc80f026b1e3d582fc2f339d8ae49cedcc7"
+    },
+    {
+      "path": "docs/feature_forward_v1/OOF_PROTOCOL_FREEZE.json",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "fff0fa814c631a20dfad26f299428109791f580cfc411363f30772dbeb15d689"
+    },
+    {
+      "path": "docs/feature_forward_v1/PARALLEL_SHADOW_RUNBOOK.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "d752f0032a8a63cecc18cdaa450d3bad265b0fc31d6e2da9b4461026301ec7c2"
+    },
+    {
+      "path": "docs/LIVE_EVIDENCE_BURN_IN.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "d1a0db76e4a6b31bb9e5288dda262ba31c1f926e2e7beac7166a909cf5d32983"
+    },
+    {
+      "path": "src/pipeline/run_daily_pre_race.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "b4324518c829cbdb76cf0d26c840d3a236b6519b400ec1855a2f421422b4a6b2"
+    },
+    {
+      "path": "src/pipeline/run_daily_odds_refresh.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "b535237caa38ebfdc7324616aec33c15c733e828bf37c0bbd667f6d28cffa212"
+    },
+    {
+      "path": "src/pipeline/run_daily_post_race.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "132e400d9d451a9a5bcda33988162a1fca215a054f52cd61cd6e3ea5d78bde7f"
+    },
+    {
+      "path": "src/pipeline/health_check.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "bf8c599441a11296893222eb225fa6bc741dd32a13f635d0ebbb38cd57431ebf"
+    },
+    {
+      "path": "src/pipeline/ops_goal_board.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "ecf5abe80ce711aefc67d2ed062ac125fd640589d31c2fc149319e913ba954c5"
+    },
+    {
+      "path": "src/pipeline/candidate_metadata.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "1cb11b9f5da14f038e82b3847ca94e47fee5262dfd3bbd35b5987294abeb18a5"
+    },
+    {
+      "path": "src/evaluation/run_day_evaluation_v2.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "b785bfe2402a6ff18c9c9f408d585dab70a4511dbfc861051b68840e2713e909"
+    },
+    {
+      "path": "src/evaluation/run_batch_evaluation_v2.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "0fb9b2098539e19b98e0c74a6252b59709e89a00a2f7f41c21da4ca7f448782b"
+    },
+    {
+      "path": "src/evaluation/live_operation_summary.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "650fbdf8f32d691e9026e722a4f7ee9191378c70b68b8d502ad6e1a54eff2b7e"
+    },
+    {
+      "path": "src/evaluation/tuning_gate.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "36bf8ac90987dff172395b115d352f59d98e078c9dceea041d99358909b73884"
+    },
+    {
+      "path": "scripts/run_paper_ops_preflight.bat",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "5aa4f1a6bf49e9ecbb1d17a7958eeda8d54d6c49ba1690b641cb526606d7b173"
+    },
+    {
+      "path": "scripts/run_paper_ops_morning.bat",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "714a509c63cce146aa4c7fba98d3bb131ac3f7338a300054e35b7354267d955e"
+    },
+    {
+      "path": "scripts/run_paper_ops_evening.bat",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "aae10dbe7a9c9160f1a6b22eec82057855239268c815b69fa293788aa5bb8fda"
+    },
+    {
+      "path": "scripts/run_paper_ops_monitor.bat",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "e861951a6cda8322a1f36eb077819224780a1c6fc4a9648a3162de5d9ecd1727"
+    },
+    {
+      "path": "scripts/build_candidate_trace_audit.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "2f75c6a36516a877fb03996eeb98d6308f5b651055d4a9ac7033d341f64e467f"
+    },
+    {
+      "path": "scripts/build_live_evidence_gate.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "a0a6950bf515a5697c9e33da705fd32a9d9f285b114223e80abf9289e9d25f66"
+    },
+    {
+      "path": "config/runtime_lock.json",
+      "kind": "file",
+      "required": true,
+      "owner": "runtime-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_config",
+      "sha256": "693d306a280911a9342707f46657512cbaa3676529757c5e8cdc67318151007e"
+    },
+    {
+      "path": "config/feature_forward_v1/source_approval.json",
+      "kind": "file",
+      "required": true,
+      "owner": "runtime-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_config",
+      "sha256": "859fa6f0b5065a4d0f21384f071fc2b09f6e48ce9b76001fc68d99a658f0cd3d"
+    },
+    {
+      "path": "config/feature_forward_v1/runtime_gate.json",
+      "kind": "file",
+      "required": true,
+      "owner": "runtime-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_config",
+      "sha256": "834dc3318665c2a7ad0a2e2a112a2a837675ce783ecbe9ce92cf5ff32ab1d7f3"
+    },
+    {
+      "path": "config/feature_forward_v1/oof_evaluation_spec.json",
+      "kind": "file",
+      "required": true,
+      "owner": "runtime-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_config",
+      "sha256": "aa50c8a4529472b53cc8bb833cfc87f251b46474bd983a5b4882d9f6e992809b"
+    },
+    {
+      "path": "config/feature_forward_v1/parallel_shadow_config.json",
+      "kind": "file",
+      "required": true,
+      "owner": "runtime-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_config",
+      "sha256": "8577a9bb63b49c215cec7984c72fef1c37d8d4edaab4ee2622569565a6a98756"
+    },
+    {
+      "path": "scripts/run_live_feature_capture_v1.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "27859f9fc5862f95615da00b67522c4751beef035fe1b9ee65b9e421c0efae85"
+    },
+    {
+      "path": "src/feature_forward_v1/runtime_provenance.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "2741d228f5bf55b697365133cb80485c7979794f7789a43777148b984315b8f7"
+    },
+    {
+      "path": "scripts/verify_review_register.py",
+      "kind": "file",
+      "required": true,
+      "owner": "release-readiness",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "release_verifier",
+      "sha256": "2931f7e0693eaf1e64fc01c315af239180a1bd19d90d9d004f902a57da3e10d9"
+    },
+    {
+      "path": "scripts/verify_release.py",
+      "kind": "file",
+      "required": true,
+      "owner": "release-readiness",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "release_verifier",
+      "sha256": "d6cfca4a977156fe44b6a3c6c2ab3379ce59e91646e4d292ff662aafa25a0c57"
+    },
+    {
+      "path": ".github/workflows/release-readiness.yml",
+      "kind": "file",
+      "required": true,
+      "owner": "release-readiness",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "ci",
+      "sha256": "575025dae7d5e8797b9f56ddd5951a8134a017bd5c3c9baeab960f1b39ffbd04"
+    },
+    {
+      "path": "tests/test_release_verifiers.py",
+      "kind": "file",
+      "required": true,
+      "owner": "release-readiness",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "test",
+      "sha256": "4112090e129ec892b1febf3b54dc9f07657a2dfa86410c06ca097e7ad15ea5b0"
+    },
+    {
+      "path": "scripts/run_feature_forward_collector_v1.py",
+      "kind": "file",
+      "required": true,
+      "owner": "pipeline",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "a70fc2820ad34e28e0abccd1da7d512cdfaca3dee4f8ba598260f08b8a33d8e1"
+    },
+    {
+      "path": "tests/feature_forward_v1/test_runner.py",
+      "kind": "file",
+      "required": true,
+      "owner": "release-readiness",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "test",
+      "sha256": "c52545e6347ddb247447ea1ed9b908ab89920cbdd8c40131fa361cc4af4858d4"
+    },
+    {
+      "path": "config/feature_sets/win_baseline_core.json",
+      "kind": "file",
+      "required": true,
+      "owner": "runtime-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_config",
+      "sha256": "8ddd54cc6cb4c636481aa4812c6f1a2622833100103067306d810b862a35f20c"
+    },
+    {
+      "path": "config/feature_sets/win_baseline_core_relative.json",
+      "kind": "file",
+      "required": true,
+      "owner": "runtime-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_config",
+      "sha256": "df09b50075d9b3afe4549952ba60d757c8b6b42795622feab395a100799c0c30"
+    },
+    {
+      "path": "config/feature_sets/win_baseline_extended.json",
+      "kind": "file",
+      "required": true,
+      "owner": "runtime-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_config",
+      "sha256": "6c51a5380de573c293d7616889dc8a04619af48568e1500bb8f23bf99eb94788"
+    },
+    {
+      "path": "docs/review_register.json",
+      "kind": "file",
+      "required": true,
+      "owner": "release-readiness",
+      "validation": "exists",
+      "hashPolicy": "none",
+      "sourceType": "canonical_manifest"
+    },
+    {
+      "path": "reports/repo_audit/final_goal_progress.json",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/monitoring/tuning_gate.json",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/monitoring/architecture_v2_completion.json",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/monitoring/live_shadow_evidence.json",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/monitoring/live_evidence_gate.json",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/model_eval/architecture_v2_walk_forward_validation.json",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/feature_forward_v1/latest_status.json",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/monitoring/*health_check.json",
+      "kind": "glob",
+      "required": false,
+      "expectedMinCount": 1,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/feature_forward_v1/run_manifests/*.json",
+      "kind": "glob",
+      "required": false,
+      "expectedMinCount": 1,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/prediction_edge_v1/final_report.md",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "exists",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence"
+    }
+  ]
+}

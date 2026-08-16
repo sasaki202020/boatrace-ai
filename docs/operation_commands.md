@@ -6,8 +6,8 @@ This is an offline / shadow evaluation only. Do not treat it as a production BUY
 
 ```powershell
 $env:PYTHONPATH='.'
-& 'C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe' -m src.eval.ablation_and_bottleneck
-& 'C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe' -m src.eval.write_t016_race_filter_decision
+py -3.12 -m src.eval.ablation_and_bottleneck
+py -3.12 -m src.eval.write_t016_race_filter_decision
 ```
 
 Outputs:
@@ -92,8 +92,8 @@ This is a shadow validation only. Do not fold it into the production BUY rule.
 
 ```powershell
 $env:PYTHONPATH='.'
-& 'C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe' -m src.eval.ablation_and_bottleneck
-& 'C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe' -m src.eval.run_t017_race_filter_multiday
+py -3.12 -m src.eval.ablation_and_bottleneck
+py -3.12 -m src.eval.run_t017_race_filter_multiday
 ```
 
 Outputs:
@@ -113,7 +113,7 @@ This is a gate definition step only. Even if a filter ever reports PASS, keep `a
 
 ```powershell
 $env:PYTHONPATH='.'
-& 'C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe' -m src.eval.run_t018_race_filter_promotion_gate
+py -3.12 -m src.eval.run_t018_race_filter_promotion_gate
 ```
 
 Inputs:
@@ -218,7 +218,7 @@ This is a shadow data-prep step only. Do not fold it into the production BUY rul
 
 ```powershell
 $env:PYTHONPATH='.'
-& 'C:\Users\goo10\AppData\Local\Programs\Python\Python312\python.exe' -m src.eval.run_t019_snapshot_coverage
+py -3.12 -m src.eval.run_t019_snapshot_coverage
 ```
 
 Inputs:

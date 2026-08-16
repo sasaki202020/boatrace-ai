@@ -1,24 +1,20 @@
 from __future__ import annotations
 
 import json
-import uuid
 import zipfile
 from pathlib import Path
 
 from src.pipeline.import_k_results import import_k_results
 
 
-REAL_K_FILE = Path(__file__).resolve().parents[1] / "data" / "raw" / "official" / "results" / "K260404.TXT"
-
-
-def test_import_k_results_detects_import_skip_replace_and_invalid_name(monkeypatch) -> None:
-    tmp_root = Path.home() / ".codex" / "memories" / "k_result_tests" / f"import_{uuid.uuid4().hex}"
+def test_import_k_results_detects_import_skip_replace_and_invalid_name(tmp_path, monkeypatch, official_k_file) -> None:
+    tmp_root = tmp_path / "import"
     inbox = tmp_root / "inbox"
     target = tmp_root / "raw" / "official" / "results"
     inbox.mkdir(parents=True, exist_ok=True)
     target.mkdir(parents=True, exist_ok=True)
 
-    k_bytes = REAL_K_FILE.read_bytes()
+    k_bytes = official_k_file.read_bytes()
     (inbox / "K260406.TXT").write_bytes(k_bytes)
     (inbox / "K260407.TXT").write_bytes(k_bytes)
     (inbox / "badname.txt").write_text("bad", encoding="utf-8")

@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from pathlib import Path
-
 from src.evaluation.audit_k_result_coverage import audit_k_result_coverage, k_date_from_filename, k_filename_for_date
 
 
@@ -12,9 +10,9 @@ def test_k_filename_date_roundtrip() -> None:
     assert k_date_from_filename("invalid.txt") is None
 
 
-def test_k_result_coverage_audit_writes_reports(tmp_path, monkeypatch) -> None:
+def test_k_result_coverage_audit_writes_reports(tmp_path, monkeypatch, official_k_file) -> None:
     monkeypatch.setattr("src.evaluation.audit_k_result_coverage.REPORT_ROOT", tmp_path / "reports" / "backtest")
-    input_dir = Path(__file__).resolve().parents[1] / "data" / "raw" / "official" / "results"
+    input_dir = official_k_file.parent
 
     result = audit_k_result_coverage(start_date="20260404", end_date="20260406", input_dir=str(input_dir))
     summary = result["summary"]

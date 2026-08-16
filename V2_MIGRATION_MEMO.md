@@ -15,14 +15,14 @@ Phase 1 の目的は、Markdown の記録ではなく、事実データを DuckD
 まず dry-run で読み込み確認をします。
 
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\migrate_to_v2.py --dry-run
 ```
 
 実際に DuckDB へ書き込むときは、依存を入れてから実行します。
 
 ```powershell
-cd C:/Users/goo10/競艇/boatrace-ai-mvp
+Set-Location -LiteralPath (git rev-parse --show-toplevel)
 py .\scripts\migrate_to_v2.py --db-path data/v2/boatrace_v2.duckdb
 ```
 

@@ -35,6 +35,7 @@ class RuntimeGateContext:
     config_hash: str
     code_commit: str
     settlement_grace_minutes: int
+    requests_per_day: int
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -113,7 +114,10 @@ def load_runtime_gate(
         raise RuntimeGateError("runtime_gate_hash_pin_invalid")
 
     try:
-        _, metadata = load_policy_manifest(policy_path, require_automated_fetch=True)
+        policy, metadata = load_policy_manifest(
+            policy_path,
+            require_automated_fetch=True,
+        )
     except PolicyGateError as exc:
         raise RuntimeGateError(f"source_policy_{exc}") from exc
     if metadata["policyHash"] != expected_policy:
@@ -135,6 +139,7 @@ def load_runtime_gate(
         config_hash=expected_config,
         code_commit=_git_commit(root),
         settlement_grace_minutes=grace,
+        requests_per_day=policy.requests_per_day,
     )
 
 

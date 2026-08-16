@@ -90,7 +90,7 @@ def segment_analysis(baseline: pd.DataFrame, candidate: pd.DataFrame) -> pd.Data
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Run bounded offline prediction-edge v4 research without network or production writes")
-    parser.add_argument("--source-root", type=Path, default=Path(r"C:\Users\goo10\競艇-recovery\boatrace-ai-clean"))
+    parser.add_argument("--source-root", type=Path, required=True, help="Repository root containing the fixed offline artifacts")
     parser.add_argument("--bootstrap-iterations", type=int, default=1000)
     parser.add_argument("--verify-determinism", action="store_true", help="Retained for compatibility; verification is always performed")
     args = parser.parse_args()

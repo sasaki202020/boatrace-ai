@@ -28,7 +28,7 @@ def policy(**overrides):
         "paid_service_allowed": False,
         "minimum_interval_seconds": 60,
         "requests_per_race": 1,
-        "requests_per_day": 24,
+        "requests_per_day": 12,
         "retries_per_race": 0,
     }
     values.update(overrides)
@@ -87,6 +87,13 @@ def test_request_limiter_rejects_non_https_or_unapproved_host(url):
 @pytest.mark.parametrize("status", [403, 429])
 def test_access_refusal_stops_collection(status):
     assert classify_response(status, "normal page").stop_collection is True
+
+
+@pytest.mark.parametrize("status", [300, 301, 302, 307, 308, 399])
+def test_redirect_response_stops_collection(status):
+    classification = classify_response(status, "normal page")
+    assert classification.stop_collection is True
+    assert classification.reason == f"HTTP_{status}_REDIRECT"
 
 
 @pytest.mark.parametrize("body", ["CAPTCHA", "私はロボットではありません", "access denied"])

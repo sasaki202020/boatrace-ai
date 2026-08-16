@@ -17,7 +17,7 @@
 自動実行が途中で止まった場合：
 1. ターミナルに表示されているエラー（PythonのTraceback）を確認します。
 2. 止まった段階（Gate名）を特定します。
-3. [docs/stabilization_log.md](file:///c:/Users/goo10/競艇/boatrace-ai-mvp/docs/stabilization_log.md) に記録し、修正を行ってください。
+3. [stabilization_log.md](stabilization_log.md) に記録し、修正を行ってください。
 
 ## 🛡️ 安全設計
 このスクリプトは **「再学習」をあえて含めていません。** 

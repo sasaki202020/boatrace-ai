@@ -12,6 +12,7 @@ REPORT_ROOT = ROOT / "reports" / "feature_forward"
 SPEC_PATH = ROOT / "config" / "feature_forward_v1" / "oof_evaluation_spec.json"
 PATCH_PATH = REPORT_ROOT / "oof_reproducibility.patch"
 MANIFEST_PATH = REPORT_ROOT / "oof_reproducibility_manifest.json"
+SOURCE_ROOTS = ("src", "scripts", "config")
 
 
 def _run(root: Path, *args: str) -> str:
@@ -38,12 +39,26 @@ def _relative_path(path: Path, root: Path) -> str:
         return str(path.resolve())
 
 
+def assert_oof_source_worktree_clean(root: Path) -> None:
+    source_status = _run(
+        root,
+        "status",
+        "--porcelain=v1",
+        "--untracked-files=all",
+        "--",
+        *SOURCE_ROOTS,
+    )
+    if source_status.strip():
+        raise ValueError("dirty_source_worktree")
+
+
 def build_reproducibility_manifest(
     *,
     root: Path,
     spec_path: Path,
     tracked_diff_path: str,
 ) -> tuple[dict[str, Any], bytes]:
+    assert_oof_source_worktree_clean(root)
     status = _run(root, "status", "--porcelain=v1")
     head = _run(root, "rev-parse", "HEAD").strip()
     tracked_diff = _run(root, "diff", "--binary")
@@ -58,6 +73,9 @@ def build_reproducibility_manifest(
         "gitHead": head,
         "gitStatusPorcelain": status.splitlines(),
         "dirtyWorktree": bool(status.strip()),
+        "sourceRoots": list(SOURCE_ROOTS),
+        "sourceStatusPorcelain": [],
+        "sourceWorktreeClean": True,
         "trackedDiffPath": tracked_diff_path,
         "trackedDiffSha256": _sha256_bytes(patch_bytes),
         "untrackedFiles": untracked_names,
@@ -71,7 +89,7 @@ def build_reproducibility_manifest(
         "oofSpecSha256": _sha256_bytes(config_bytes),
         "productionAdoptionAllowed": False,
         "oofExecuted": False,
-        "note": "Patch captures tracked dirty diff only; untracked content is represented by manifest names and hash.",
+        "note": "OOF rejects tracked or untracked changes under src/scripts/config; generated reports may remain dirty.",
     }
     return manifest, patch_bytes
 
@@ -82,7 +100,6 @@ def write_reproducibility_manifest(
     report_root: Path = REPORT_ROOT,
     spec_path: Path = SPEC_PATH,
 ) -> dict[str, Any]:
-    report_root.mkdir(parents=True, exist_ok=True)
     patch_path = report_root / "oof_reproducibility.patch"
     manifest_path = report_root / "oof_reproducibility_manifest.json"
     manifest, patch_bytes = build_reproducibility_manifest(
@@ -90,6 +107,7 @@ def write_reproducibility_manifest(
         spec_path=spec_path,
         tracked_diff_path=_relative_path(patch_path, root),
     )
+    report_root.mkdir(parents=True, exist_ok=True)
     patch_path.write_bytes(patch_bytes)
     manifest_path.write_text(
         json.dumps(manifest, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
@@ -104,6 +122,7 @@ def main() -> int:
         "status": "REPRODUCIBILITY_MANIFEST_WRITTEN",
         "gitHead": manifest["gitHead"],
         "dirtyWorktree": manifest["dirtyWorktree"],
+        "sourceWorktreeClean": manifest["sourceWorktreeClean"],
         "trackedDiffSha256": manifest["trackedDiffSha256"],
         "untrackedManifestSha256": manifest["untrackedManifestSha256"],
         "configSha256": manifest["configSha256"],
