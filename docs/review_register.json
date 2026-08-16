@@ -651,7 +651,17 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "ci",
-      "sha256": "d7af1698c137e0a4eacf446de8b2b5e16621ca575c2e20e5f9550e48e9e3c77e"
+      "sha256": "575025dae7d5e8797b9f56ddd5951a8134a017bd5c3c9baeab960f1b39ffbd04"
+    },
+    {
+      "path": "requirements.txt",
+      "kind": "file",
+      "required": true,
+      "owner": "release-readiness",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "dependency_lock",
+      "sha256": "f575539ca322a04145da9693fa7e82ce4913282bb233cf35d7bcde559da62121"
     },
     {
       "path": "tests/test_release_verifiers.py",
@@ -661,7 +671,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "test",
-      "sha256": "4112090e129ec892b1febf3b54dc9f07657a2dfa86410c06ca097e7ad15ea5b0"
+      "sha256": "8834df559e599132b26c6d47bfb518ff38c0682a45951fc2a051e571065a26b1"
     },
     {
       "path": "scripts/run_feature_forward_collector_v1.py",

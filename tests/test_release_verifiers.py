@@ -172,3 +172,24 @@ def test_release_status_preserves_blocked_instead_of_passing() -> None:
         "FAIL",
         1,
     )
+
+
+def test_clean_clone_ci_uses_only_pinned_repository_requirements() -> None:
+    repository_root = Path(__file__).resolve().parents[1]
+    requirements = (repository_root / "requirements.txt").read_text(encoding="utf-8")
+    workflow = (repository_root / ".github" / "workflows" / "release-readiness.yml").read_text(
+        encoding="utf-8"
+    )
+
+    for dependency in (
+        "pytest==9.1.1",
+        "catboost==1.2.10",
+        "PyYAML==6.0.3",
+        "Flask==3.1.3",
+        "xgboost==3.4.1",
+        "lxml==6.1.1",
+    ):
+        assert dependency in requirements
+
+    assert "python -m pip install -r requirements.txt" in workflow
+    assert "pytest catboost PyYAML Flask xgboost lxml" not in workflow
