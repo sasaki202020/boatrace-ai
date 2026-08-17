@@ -531,7 +531,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "implementation",
-      "sha256": "aae10dbe7a9c9160f1a6b22eec82057855239268c815b69fa293788aa5bb8fda"
+      "sha256": "d1b45241f6e71183b9bcba16bf862c1e39fb0380dbdf63e824bf786f44be3a1f"
     },
     {
       "path": "scripts/run_paper_ops_monitor.bat",

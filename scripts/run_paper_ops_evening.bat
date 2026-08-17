@@ -28,7 +28,8 @@ if /I not "!PREFLIGHT_CLASS!"=="ready" (
 )
 
 echo [CMD] check_k_inbox>>"!LOG_FILE!"
-call "%SCRIPT_DIR%check_k_inbox.bat" !RUN_DATE_ISO! >>"!LOG_FILE!" 2>&1
+echo [CMD] !PYTHON_EXE! -m src.pipeline.check_k_inbox --input-dir data/inbox/k_results --start-date !RUN_DATE_ISO! --end-date !RUN_DATE_ISO!>>"!LOG_FILE!"
+!PYTHON_EXE! -m src.pipeline.check_k_inbox --input-dir data/inbox/k_results --start-date !RUN_DATE_ISO! --end-date !RUN_DATE_ISO!>>"!LOG_FILE!" 2>&1
 set "EXIT_CODE=!ERRORLEVEL!"
 echo [EXIT] check_k_inbox=!EXIT_CODE!>>"!LOG_FILE!"
 if /I "!EXIT_CODE!"=="0" (
@@ -39,7 +40,8 @@ if /I "!EXIT_CODE!"=="0" (
 )
 
 echo [CMD] import_k_results>>"!LOG_FILE!"
-call "%SCRIPT_DIR%import_k_results.bat" !RUN_DATE_ISO! >>"!LOG_FILE!" 2>&1
+echo [CMD] !PYTHON_EXE! -m src.pipeline.import_k_results --input-dir data/inbox/k_results --target-dir data/raw/official/results>>"!LOG_FILE!"
+!PYTHON_EXE! -m src.pipeline.import_k_results --input-dir data/inbox/k_results --target-dir data/raw/official/results>>"!LOG_FILE!" 2>&1
 set "EXIT_CODE=!ERRORLEVEL!"
 echo [EXIT] import_k_results=!EXIT_CODE!>>"!LOG_FILE!"
 if /I "!EXIT_CODE!"=="0" (
@@ -54,7 +56,7 @@ if exist "reports\daily\!RUN_DATE_ISO!\daily_summary.json" (
   echo [SKIP] daily_summary already exists>>"!LOG_FILE!"
   call :mark_step evening_settle skipped_existing
 ) else (
-  call "%SCRIPT_DIR%run_evening_settle.bat" !RUN_DATE_ISO! >>"!LOG_FILE!" 2>&1
+  call :run_evening_settle_direct
   set "STEP_EXIT=!ERRORLEVEL!"
   echo [EXIT] run_evening_settle=!STEP_EXIT!>>"!LOG_FILE!"
   if exist "reports\daily\!RUN_DATE_ISO!\daily_summary.json" (
@@ -73,7 +75,7 @@ if exist "reports\daily\!RUN_DATE_ISO!\daily_report.json" (
   echo [SKIP] daily_report already exists>>"!LOG_FILE!"
   call :mark_step daily_report skipped_existing
 ) else (
-  call "%SCRIPT_DIR%run_daily_report.bat" !RUN_DATE_ISO! >>"!LOG_FILE!" 2>&1
+  call :run_daily_report_direct
   set "STEP_EXIT=!ERRORLEVEL!"
   echo [EXIT] run_daily_report=!STEP_EXIT!>>"!LOG_FILE!"
   if exist "reports\daily\!RUN_DATE_ISO!\daily_report.json" (
@@ -87,7 +89,7 @@ if exist "reports\daily\!RUN_DATE_ISO!\daily_report.json" (
 
 if not exist "reports\predictions\!RUN_DATE_ISO!\prediction_review.json" (
   echo [CMD] run_prediction_review>>"!LOG_FILE!"
-  call "%SCRIPT_DIR%run_prediction_review.bat" !RUN_DATE_ISO! >>"!LOG_FILE!" 2>&1
+  call :run_prediction_review_direct
   set "STEP_EXIT=!ERRORLEVEL!"
   echo [EXIT] run_prediction_review=!STEP_EXIT!>>"!LOG_FILE!"
   if exist "reports\predictions\!RUN_DATE_ISO!\prediction_review.json" (
@@ -116,3 +118,43 @@ if /I "%STEP_STATUS%"=="skipped_existing" > "!DAILY_LOG_DIR!\step_%STEP_NAME%.sk
 if /I "%STEP_STATUS%"=="failed" > "!DAILY_LOG_DIR!\step_%STEP_NAME%.failed" echo %STEP_STATUS%
 if /I "%STEP_STATUS%"=="result_data_missing" > "!DAILY_LOG_DIR!\step_%STEP_NAME%.result_data_missing" echo %STEP_STATUS%
 exit /b 0
+
+:run_evening_settle_direct
+echo [CMD] !PYTHON_EXE! -m src.pipeline.run_daily_post_race --date !RUN_DATE_ISO!>>"!LOG_FILE!"
+!PYTHON_EXE! -m src.pipeline.run_daily_post_race --date !RUN_DATE_ISO!>>"!LOG_FILE!" 2>&1
+set "STEP_EXIT=!ERRORLEVEL!"
+echo [EXIT] run_daily_post_race=!STEP_EXIT!>>"!LOG_FILE!"
+if not "!STEP_EXIT!"=="0" exit /b !STEP_EXIT!
+
+echo [CMD] !PYTHON_EXE! -m src.pipeline.settle_today --date !RUN_DATE_ISO! --jcd all --stake 100>>"!LOG_FILE!"
+!PYTHON_EXE! -m src.pipeline.settle_today --date !RUN_DATE_ISO! --jcd all --stake 100>>"!LOG_FILE!" 2>&1
+set "STEP_EXIT=!ERRORLEVEL!"
+echo [EXIT] settle_today=!STEP_EXIT!>>"!LOG_FILE!"
+if not "!STEP_EXIT!"=="0" exit /b !STEP_EXIT!
+
+call :run_daily_report_direct
+set "STEP_EXIT=!ERRORLEVEL!"
+if not "!STEP_EXIT!"=="0" exit /b !STEP_EXIT!
+
+call :run_prediction_review_direct
+exit /b !ERRORLEVEL!
+
+:run_daily_report_direct
+echo [CMD] !PYTHON_EXE! -m src.pipeline.daily_report --date !RUN_DATE_ISO! --jcd all>>"!LOG_FILE!"
+!PYTHON_EXE! -m src.pipeline.daily_report --date !RUN_DATE_ISO! --jcd all>>"!LOG_FILE!" 2>&1
+set "STEP_EXIT=!ERRORLEVEL!"
+echo [EXIT] run_daily_report=!STEP_EXIT!>>"!LOG_FILE!"
+
+echo [CMD] !PYTHON_EXE! scripts\generate_ops_goal_board.py --date !RUN_DATE_ISO!>>"!LOG_FILE!"
+!PYTHON_EXE! scripts\generate_ops_goal_board.py --date !RUN_DATE_ISO!>>"!LOG_FILE!" 2>&1
+set "OPS_BOARD_EXIT=!ERRORLEVEL!"
+echo [OPS_BOARD_EXIT] !OPS_BOARD_EXIT!>>"!LOG_FILE!"
+if not "!OPS_BOARD_EXIT!"=="0" echo [WARN] ops_goal_board generation failed, continuing with daily_report exit=!STEP_EXIT!>>"!LOG_FILE!"
+exit /b !STEP_EXIT!
+
+:run_prediction_review_direct
+echo [CMD] !PYTHON_EXE! scripts\build_prediction_review.py --date !RUN_DATE_ISO!>>"!LOG_FILE!"
+!PYTHON_EXE! scripts\build_prediction_review.py --date !RUN_DATE_ISO!>>"!LOG_FILE!" 2>&1
+set "STEP_EXIT=!ERRORLEVEL!"
+echo [EXIT] run_prediction_review=!STEP_EXIT!>>"!LOG_FILE!"
+exit /b !STEP_EXIT!
