@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "artifactType": "OOF_PROTOCOL_FREEZE",
   "protocolPath": "docs/feature_forward_v1/OOF_DECISION_PROTOCOL.md",
-  "protocolSha256": "6b686d6103278726aa128402f536fdc80f026b1e3d582fc2f339d8ae49cedcc7",
+  "protocolSha256": "36e886ff005f97810158befaa918ae0ea55befe55a813656c8ecf97231f49ef0",
   "specPath": "config/feature_forward_v1/oof_evaluation_spec.json",
   "specSha256": "aa50c8a4529472b53cc8bb833cfc87f251b46474bd983a5b4882d9f6e992809b",
   "tree15Sha256": "a2f11bf69c1b4b7ea47cca847dbe0a46f076f7c08d3361ba9e30b43f12d65da0",

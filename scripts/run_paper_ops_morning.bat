@@ -97,8 +97,8 @@ if "!PREDICTION_BUNDLE_EXISTS!"=="1" (
   call :mark_step prediction_sheet skipped_existing
   call :mark_step frozen_bets skipped_existing
 ) else (
-  echo [CMD] run_prediction_sheet>>"!LOG_FILE!"
-  call "%SCRIPT_DIR%run_prediction_sheet.bat" !RUN_DATE_ISO! >>"!LOG_FILE!" 2>&1
+  echo [CMD] !PYTHON_EXE! scripts\build_prediction_sheet.py --date !RUN_DATE_ISO!>>"!LOG_FILE!"
+  !PYTHON_EXE! scripts\build_prediction_sheet.py --date !RUN_DATE_ISO!>>"!LOG_FILE!" 2>&1
   set "STEP_EXIT=!ERRORLEVEL!"
   echo [EXIT] run_prediction_sheet=!STEP_EXIT!>>"!LOG_FILE!"
   if exist "reports\predictions\!RUN_DATE_ISO!\prediction_sheet.json" (

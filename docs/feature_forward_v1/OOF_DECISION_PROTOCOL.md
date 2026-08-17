@@ -55,9 +55,10 @@ artifactへ固定する。結果確定後に変更して再評価してはなら
 各foldは、過去trainから未来validationへ一方向に進む。validationを見て
 係数、欠損処理、fold境界、採用条件を変更してはならない。
 
-## Current Accounting
+## Historical Frozen Snapshot
 
-現在のpreflight証跡では、次の会計を固定する。
+以下はprotocolをfreezeした時点の履歴スナップショットである。現在のreadiness、
+残件数、fold会計として再利用してはならない。
 
 ```text
 totalEligibleRaceCount = 305
@@ -72,8 +73,25 @@ otherExcludedRaceCount = 0
 ```
 
 validation foldは `65, 59, 60, 60, 40` raceである。21件は未説明の欠損ではなく、
-fold評価に入れない初期学習期間である。今後のreadiness reportでも、同じ
-`initial_train` と `validation` の内訳を必ず出す。
+fold評価に入れない初期学習期間である。
+
+## Current Readiness Accounting
+
+現在のOOF readinessは、過去Markdownの数値を転記せず、正規のlocal forward evidence
+から読み取り専用で再計算する。
+
+```text
+py -3 scripts/build_oof_data_readiness_v1.py --data-root <canonical-data-root>
+```
+
+出力は `<canonical-data-root>/reports/feature_forward_v1/` 配下の
+`oof_readiness_latest.json` と `oof_readiness_latest.md` である。reportは
+`forwardCollectionDays`、settled/OOF race、OOF date、fold、mature coverage、
+lifecycle/hash integrity、blocked reasonsを記録する。readiness処理はモデル評価、
+challenger選択、ネットワーク取得、BUY、EV、投票、production/prospective書込みを行わない。
+
+手動取り込みの入力契約は
+[MANUAL_INGEST_FORMAT.md](MANUAL_INGEST_FORMAT.md) を参照する。
 
 ## Metrics And Decision Rules
 

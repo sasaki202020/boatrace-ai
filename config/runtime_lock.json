@@ -2,6 +2,8 @@
   "schemaVersion": 1,
   "canonicalCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
   "sourceRoots": [
+    "scripts/build_oof_data_readiness_v1.py",
+    "scripts/run_feature_forward_collector_v1.py",
     "scripts/run_live_feature_capture_v1.py",
     "src/feature_forward_v1",
     "src/commercialization_v2",
@@ -38,6 +40,22 @@
       "sourceRepository": "sasaki202020/boatrace-ai",
       "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
       "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "scripts/build_oof_data_readiness_v1.py",
+      "sha256": "b135851480aecdf48e5843e83450bae89afb40e66cc4b19f4d797fd2af7eac74",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "84b636a45ee09ec12c221a14dd76c8ff563066af",
+      "adoptedAtUtc": "2026-08-16T12:24:40Z",
+      "mutable": false
+    },
+    {
+      "path": "scripts/run_feature_forward_collector_v1.py",
+      "sha256": "c9bfeac1e64625763a49b457ff9396450d930dce9c5446f59809607f6ae06e0e",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "84b636a45ee09ec12c221a14dd76c8ff563066af",
+      "adoptedAtUtc": "2026-08-16T12:24:40Z",
       "mutable": false
     },
     {
@@ -241,11 +259,27 @@
       "mutable": false
     },
     {
+      "path": "src/feature_forward_v1/manual_ingest_preflight.py",
+      "sha256": "2e582bd3c12ddd145386affe280821bfa5522a3bd7150f5c3b511ed71d6e68bd",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "84b636a45ee09ec12c221a14dd76c8ff563066af",
+      "adoptedAtUtc": "2026-08-16T12:24:40Z",
+      "mutable": false
+    },
+    {
       "path": "src/feature_forward_v1/manifest.py",
       "sha256": "ffe1f65bf176fc68518d08a1bde1353199ee0626daeef70d0b11c813612ad0be",
       "sourceRepository": "sasaki202020/boatrace-ai",
       "sourceCommit": "07479cb8ed4a3b884fcc733ae442c0769b0c9339",
       "adoptedAtUtc": "2026-08-16T00:00:00Z",
+      "mutable": false
+    },
+    {
+      "path": "src/feature_forward_v1/oof_data_readiness.py",
+      "sha256": "8164432462eeeb20ea3c7c62434157011d255f05393466874be52e85ba9bf849",
+      "sourceRepository": "sasaki202020/boatrace-ai",
+      "sourceCommit": "84b636a45ee09ec12c221a14dd76c8ff563066af",
+      "adoptedAtUtc": "2026-08-16T12:24:40Z",
       "mutable": false
     },
     {

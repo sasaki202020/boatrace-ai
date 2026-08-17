@@ -37,3 +37,34 @@ def test_morning_route_defers_odds_work_to_the_refresh_runner() -> None:
     assert "run_daily_pre_race --date !RUN_DATE_ISO! --defer-odds-evaluation" in script
     assert "run_daily_odds_refresh --date !RUN_DATE_ISO! --phase final --refresh --pending-only" in script
     assert 'call "%SCRIPT_DIR%run_odds_refresh.bat"' not in script
+
+
+def test_morning_route_builds_prediction_sheet_without_nested_batch_call() -> None:
+    script = (ROOT / "scripts" / "run_paper_ops_morning.bat").read_text(encoding="utf-8")
+
+    assert "scripts\\build_prediction_sheet.py --date !RUN_DATE_ISO!" in script
+    assert 'call "%SCRIPT_DIR%run_prediction_sheet.bat"' not in script
+
+
+def test_evening_route_uses_direct_python_commands_without_child_batch_calls() -> None:
+    script = (ROOT / "scripts" / "run_paper_ops_evening.bat").read_text(encoding="utf-8")
+
+    for child_runner in (
+        "check_k_inbox.bat",
+        "import_k_results.bat",
+        "run_evening_settle.bat",
+        "run_daily_report.bat",
+        "run_prediction_review.bat",
+    ):
+        assert child_runner not in script
+
+    for command in (
+        "src.pipeline.check_k_inbox --input-dir data/inbox/k_results",
+        "src.pipeline.import_k_results --input-dir data/inbox/k_results",
+        "src.pipeline.run_daily_post_race --date !RUN_DATE_ISO!",
+        "src.pipeline.settle_today --date !RUN_DATE_ISO! --jcd all --stake 100",
+        "src.pipeline.daily_report --date !RUN_DATE_ISO! --jcd all",
+        "scripts\\generate_ops_goal_board.py --date !RUN_DATE_ISO!",
+        "scripts\\build_prediction_review.py --date !RUN_DATE_ISO!",
+    ):
+        assert command in script

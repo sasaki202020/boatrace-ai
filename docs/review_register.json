@@ -361,7 +361,17 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "canonical_doc",
-      "sha256": "6b686d6103278726aa128402f536fdc80f026b1e3d582fc2f339d8ae49cedcc7"
+      "sha256": "36e886ff005f97810158befaa918ae0ea55befe55a813656c8ecf97231f49ef0"
+    },
+    {
+      "path": "docs/feature_forward_v1/MANUAL_INGEST_FORMAT.md",
+      "kind": "file",
+      "required": true,
+      "owner": "product-governance",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "canonical_doc",
+      "sha256": "0ee68e289ef63dabc67cdaa6e0623ba6842b0bf31cc142e7a465198e8bc85816"
     },
     {
       "path": "docs/feature_forward_v1/OOF_PROTOCOL_FREEZE.json",
@@ -371,7 +381,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "canonical_doc",
-      "sha256": "fff0fa814c631a20dfad26f299428109791f580cfc411363f30772dbeb15d689"
+      "sha256": "8dece723a2c574f6ed7545fd461d28fd028f266d6ba3a9ef82415ad07ff149dd"
     },
     {
       "path": "docs/feature_forward_v1/PARALLEL_SHADOW_RUNBOOK.md",
@@ -511,7 +521,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "implementation",
-      "sha256": "714a509c63cce146aa4c7fba98d3bb131ac3f7338a300054e35b7354267d955e"
+      "sha256": "038d599ed36dffebff2d46428dc74702ccc0ec0dec64ea4189d574a43597e5aa"
     },
     {
       "path": "scripts/run_paper_ops_evening.bat",
@@ -521,7 +531,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "implementation",
-      "sha256": "aae10dbe7a9c9160f1a6b22eec82057855239268c815b69fa293788aa5bb8fda"
+      "sha256": "d1b45241f6e71183b9bcba16bf862c1e39fb0380dbdf63e824bf786f44be3a1f"
     },
     {
       "path": "scripts/run_paper_ops_monitor.bat",
@@ -561,7 +571,7 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "canonical_config",
-      "sha256": "693d306a280911a9342707f46657512cbaa3676529757c5e8cdc67318151007e"
+      "sha256": "25ffac289924ec3c21bc82f9dbe6e0568b9ed55bb29416517cef5256725eb558"
     },
     {
       "path": "config/feature_forward_v1/source_approval.json",
@@ -674,6 +684,16 @@
       "sha256": "8834df559e599132b26c6d47bfb518ff38c0682a45951fc2a051e571065a26b1"
     },
     {
+      "path": "scripts/build_oof_data_readiness_v1.py",
+      "kind": "file",
+      "required": true,
+      "owner": "research-evaluation",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "b135851480aecdf48e5843e83450bae89afb40e66cc4b19f4d797fd2af7eac74"
+    },
+    {
       "path": "scripts/run_feature_forward_collector_v1.py",
       "kind": "file",
       "required": true,
@@ -681,7 +701,27 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "implementation",
-      "sha256": "a70fc2820ad34e28e0abccd1da7d512cdfaca3dee4f8ba598260f08b8a33d8e1"
+      "sha256": "c9bfeac1e64625763a49b457ff9396450d930dce9c5446f59809607f6ae06e0e"
+    },
+    {
+      "path": "src/feature_forward_v1/manual_ingest_preflight.py",
+      "kind": "file",
+      "required": true,
+      "owner": "research-evaluation",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "2e582bd3c12ddd145386affe280821bfa5522a3bd7150f5c3b511ed71d6e68bd"
+    },
+    {
+      "path": "src/feature_forward_v1/oof_data_readiness.py",
+      "kind": "file",
+      "required": true,
+      "owner": "research-evaluation",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "implementation",
+      "sha256": "8164432462eeeb20ea3c7c62434157011d255f05393466874be52e85ba9bf849"
     },
     {
       "path": "tests/feature_forward_v1/test_runner.py",
@@ -691,7 +731,17 @@
       "validation": "sha256",
       "hashPolicy": "sha256",
       "sourceType": "test",
-      "sha256": "c52545e6347ddb247447ea1ed9b908ab89920cbdd8c40131fa361cc4af4858d4"
+      "sha256": "e024c8e7f30575b68e54ccba73cda70eb3f07691b37b11a9db1f483287951321"
+    },
+    {
+      "path": "tests/feature_forward_v1/test_oof_data_readiness.py",
+      "kind": "file",
+      "required": true,
+      "owner": "research-evaluation",
+      "validation": "sha256",
+      "hashPolicy": "sha256",
+      "sourceType": "test",
+      "sha256": "6ad6e6e424c8c87095a5967a2eb416002d5be5c61007277756f6705e39abe5fc"
     },
     {
       "path": "config/feature_sets/win_baseline_core.json",
@@ -824,6 +874,24 @@
     },
     {
       "path": "reports/model_eval/architecture_v2_walk_forward_validation.json",
+      "kind": "file",
+      "required": false,
+      "owner": "evidence",
+      "validation": "generated_evidence",
+      "hashPolicy": "none",
+      "sourceType": "generated_evidence",
+      "evidenceFields": [
+        "schemaVersion",
+        "gitSha",
+        "dataSnapshot",
+        "runtimeHash",
+        "generatedAtUtc",
+        "command",
+        "exitCode"
+      ]
+    },
+    {
+      "path": "reports/feature_forward_v1/oof_readiness_latest.json",
       "kind": "file",
       "required": false,
       "owner": "evidence",
