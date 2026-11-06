@@ -1,15 +1,15 @@
-# 競艇AI予想システム 設定ファイル
+﻿# 競艇AI予想システム 設定ファイル
 data:
   dummy:
     n_races: 2000
     n_racers: 200
     seed: 42
-  database_path: data/boat_race.db
-  raw_cache_dir: data/raw
+  database_path: G:/boat_data/official/boat_race.db
+  raw_cache_dir: G:/boat_data/official/raw
 
 fetcher:
   base_url: https://www.boatrace.jp
-  min_interval_seconds: 2.0
+  min_interval_seconds: 1.0
   max_retries: 4
   backoff_base_seconds: 2.0
   user_agent: "kensho-boat-race-ai/1.0 (research; contact: goooo1002@gmail.com)"
@@ -38,5 +38,5 @@ backtest:
   confidence_threshold: 0.40  # 確信度戦略: 予測勝率がこの値を超えたら賭ける
 
 output:
-  model_path: data/models/model.pkl
-  predictions_dir: data/predictions
+  model_path: G:/boat_data/official/models/model.pkl
+  predictions_dir: G:/boat_data/official/predictions
