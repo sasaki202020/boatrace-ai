@@ -1,0 +1,140 @@
+{
+  "plan_name": "trifecta_conditional_model_plan",
+  "goal": "三連単を 1着 -> 2着条件付き -> 3着条件付き -> 再構成 -> calibration / selector の順で段階的に実装する",
+  "naive_baseline": {
+    "two_place": "1着固定後の残り艇一様分布",
+    "three_place": "1着・2着固定後の残り艇一様分布",
+    "reconstruction": "条件付き確率の独立近似"
+  },
+  "metrics": [
+    "log_loss",
+    "brier_score",
+    "calibration",
+    "top1",
+    "top3",
+    "buy_candidate_roi"
+  ],
+  "phases": [
+    {
+      "phase": 1,
+      "name": "1着モデル固定",
+      "objective": "1着モデルを土台として固定する",
+      "inputs": [
+        "data/processed/trainable_win_training_data.csv",
+        "config/feature_sets/win_baseline_core.json",
+        "config/feature_sets/win_baseline_extended.json"
+      ],
+      "outputs": [
+        "1着モデル学習・評価レポート",
+        "採用 feature set 固定メモ",
+        "time split 記録"
+      ],
+      "acceptance": [
+        "time split が再現可能",
+        "core / core_relative 差分が明文化",
+        "calibration が許容範囲"
+      ],
+      "next_gate": "1着出力を他 phase の入力として安定利用できる"
+    },
+    {
+      "phase": 2,
+      "name": "2着条件付きモデル",
+      "objective": "P(2着 | 1着固定) を学習する",
+      "inputs": [
+        "1着モデル出力",
+        "2着教師ラベル",
+        "レース内の残余艇特徴"
+      ],
+      "outputs": [
+        "2着条件付き確率",
+        "2着候補ランキング",
+        "2着モデル評価"
+      ],
+      "acceptance": [
+        "naive baseline を上回る",
+        "top3 / calibration が改善"
+      ],
+      "next_gate": "1着固定後の2着候補を stable に返せる"
+    },
+    {
+      "phase": 3,
+      "name": "1着+2着中間評価",
+      "objective": "1着と2着の連結評価を行う",
+      "inputs": [
+        "1着条件付き確率",
+        "2着条件付き確率"
+      ],
+      "outputs": [
+        "1着+2着 部分経路確率",
+        "top2 / top3 中間評価"
+      ],
+      "acceptance": [
+        "連結後の top2 / top3 が改善"
+      ],
+      "next_gate": "3着条件付きモデルへ接続できる"
+    },
+    {
+      "phase": 4,
+      "name": "3着条件付きモデル",
+      "objective": "P(3着 | 1着, 2着 固定) を学習する",
+      "inputs": [
+        "1着候補",
+        "2着候補",
+        "3着教師ラベル"
+      ],
+      "outputs": [
+        "3着条件付き確率",
+        "3着候補ランキング",
+        "3着モデル評価"
+      ],
+      "acceptance": [
+        "naive baseline を上回る",
+        "top3 / calibration が改善"
+      ],
+      "next_gate": "3段の条件付き確率が整合する"
+    },
+    {
+      "phase": 5,
+      "name": "三連単再構成",
+      "objective": "三連単確率を再構成する",
+      "inputs": [
+        "1着条件付き確率",
+        "2着条件付き確率",
+        "3着条件付き確率"
+      ],
+      "outputs": [
+        "三連単確率",
+        "三連単ランキング",
+        "naive baseline との差分"
+      ],
+      "acceptance": [
+        "top1 / top3 / calibration が安定改善",
+        "候補確率和が破綻しない"
+      ],
+      "next_gate": "selector が使える形で三連単候補を返せる"
+    },
+    {
+      "phase": 6,
+      "name": "calibration と selector 接続",
+      "objective": "三連単確率を校正し selector に接続する",
+      "inputs": [
+        "三連単確率",
+        "実オッズ",
+        "selector gate"
+      ],
+      "outputs": [
+        "校正済み三連単候補",
+        "BUY/WATCH/SKIP 連携レポート"
+      ],
+      "acceptance": [
+        "BUY候補の ROI が悪化しない",
+        "calibration が維持される"
+      ],
+      "next_gate": "日次 replay と selector が一貫した出力を返す"
+    }
+  ],
+  "selector_policy": {
+    "position": "最後に触る",
+    "reason": "条件付き確率の品質と selector の実行可能性を混ぜると、失敗原因が追えなくなるため"
+  }
+}

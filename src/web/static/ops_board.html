@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Ops Goal Board</title>
+    <link rel="icon" href="data:," />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #eef4fb;
+        --panel: rgba(255, 255, 255, 0.96);
+        --border: #d7e0ea;
+        --text: #102033;
+        --muted: #64748b;
+        --done: #dcfce7;
+        --done-text: #166534;
+        --todo: #e2e8f0;
+        --todo-text: #334155;
+        --blocked: #fee2e2;
+        --blocked-text: #991b1b;
+        --skip: #fef3c7;
+        --skip-text: #92400e;
+        --progress: #dbeafe;
+        --progress-text: #1d4ed8;
+        --unknown: #f1f5f9;
+        --unknown-text: #475569;
+      }
+      body { margin: 0; font-family: "Noto Sans JP", sans-serif; background: linear-gradient(180deg, #f5f8fc 0%, var(--bg) 100%); color: var(--text); }
+      .wrap { max-width: 1600px; margin: 0 auto; padding: 20px; }
+      .hero { background: linear-gradient(135deg, #182338 0%, #24354d 100%); color: #fff; border-radius: 18px; padding: 18px 22px; box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12); }
+      .hero h1 { margin: 6px 0 8px; font-size: 28px; }
+      .meta { color: #dbe7ff; font-size: 13px; line-height: 1.7; }
+      .cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+      .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 14px 16px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05); }
+      .card h2, .card h3 { margin: 0 0 10px; }
+      .stat { font-size: 28px; font-weight: 800; }
+      .subtle { color: var(--muted); font-size: 12px; }
+      .board { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+      .blocked-rail { margin-top: 14px; }
+      .blocked-rail .card { border-left: 6px solid #b91c1c; }
+      .column { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 12px; min-height: 200px; }
+      .column h3 { margin: 0 0 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .pill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+      .pill.done { background: var(--done); color: var(--done-text); }
+      .pill.todo { background: var(--todo); color: var(--todo-text); }
+      .pill.blocked { background: var(--blocked); color: var(--blocked-text); }
+      .pill.skipped { background: var(--skip); color: var(--skip-text); }
+      .pill.in_progress { background: var(--progress); color: var(--progress-text); }
+      .pill.unknown { background: var(--unknown); color: var(--unknown-text); }
+      .lane { display: grid; gap: 10px; }
+      .item { border: 1px solid var(--border); border-radius: 12px; background: #fff; padding: 10px 12px; }
+      .item .head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .item .title { font-weight: 800; }
+      .item .reason { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.45; }
+      .item .meta { color: var(--muted); font-size: 12px; }
+      .item ul { margin: 8px 0 0 18px; padding: 0; color: var(--muted); font-size: 12px; }
+      .warning { color: #b45309; font-weight: 700; }
+      @media (max-width: 1400px) { .cards, .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 900px) { .cards, .board { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+      @media (max-width: 640px) { .cards, .board { grid-template-columns: 1fr; } .hero h1 { font-size: 22px; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="hero">
+        <div class="subtle">boatrace-ai-mvp / Ops Goal Board</div>
+        <h1>Ops Goal Board</h1>
+        <div class="meta">日次運用の進捗を Kanban で表示します。欠損は failure ではなく blocked / skipped / todo として扱います。complete ops と tuning readiness を分けて見ます。</div>
+        <div id="meta" class="meta">読み込み中...</div>
+      </div>
+
+      <div class="cards" id="summaryCards"></div>
+      <div class="blocked-rail" id="blockedRail"></div>
+      <div class="board" id="board"></div>
+    </div>
+
+    <script>
+      const params = new URLSearchParams(location.search);
+      const requestedDate = params.get("date") || "";
+      const apiUrl = requestedDate ? `/api/ops-goal-board?date=${encodeURIComponent(requestedDate)}` : "/api/ops-goal-board";
+
+      const badge = (cls, text) => `<span class="pill ${cls}">${text}</span>`;
+
+      const renderBoard = (payload) => {
+        const board = payload.data || payload;
+        const cards = Array.isArray(board.cards) ? board.cards : [];
+        const counts = board.summary || {};
+        document.getElementById("meta").textContent = [
+          `date=${board.date || "-"}`,
+          `status=${board.status || "-"}`,
+          `availability=${payload.status || "-"}`,
+          `completeOpsReady=${board.completeOpsReady ? "true" : "false"}`,
+          `latestCompleteOpsDate=${board.latestCompleteOpsDate || "-"}`,
+          `primaryBlocker=${board.primaryBlocker || "-"}`,
+          `nextAction=${board.nextAction || "-"}`,
+          `warnings=${(board.warnings || []).join(", ") || "-"}`,
+        ].join(" / ");
+
+        const summaryItems = [
+          ["done", counts.doneCount || 0, "done"],
+          ["blocked", counts.blockedCount || 0, "blocked"],
+          ["in_progress", counts.inProgressCount || 0, "in_progress"],
+          ["todo", counts.todoCount || 0, "todo"],
+          ["complete_ops", board.completeOpsReady ? "yes" : "no", board.completeOpsReady ? "done" : "unknown"],
+        ];
+        document.getElementById("summaryCards").innerHTML = summaryItems.map(([label, value, cls]) => `
+          <div class="card">
+            <div class="subtle">${label}</div>
+            <div class="stat">${value}</div>
+            <div>${badge(cls, label)}</div>
+          </div>
+        `).join("");
+
+        const blocked = cards.filter((card) => String(card.status || "unknown") === "blocked");
+        document.getElementById("blockedRail").innerHTML = `
+          <div class="card">
+            <h3>Blocked cards</h3>
+            ${blocked.length ? blocked.map((card) => `
+              <div class="item" style="border-left: 6px solid #b91c1c; margin-top: 8px;">
+                <div class="head">
+                  <div class="title">${card.title || card.id || "-"}</div>
+                  ${badge(card.status || "unknown", card.status || "unknown")}
+                </div>
+                <div class="reason">${card.reason || "-"}</div>
+                <div class="meta">next: ${card.next_action || "-"}</div>
+                <div class="meta">blocker: ${card.blocking_reason || "-"}</div>
+              </div>
+            `).join("") : `<div class="subtle">none</div>`}
+          </div>
+        `;
+
+        const order = ["todo", "in_progress", "blocked", "done"];
+        document.getElementById("board").innerHTML = order.map((status) => {
+          const items = cards.filter((card) => String(card.status || "unknown") === status);
+          return `
+            <section class="column">
+              <h3><span>${status}</span><span class="pill ${status}">${items.length}</span></h3>
+              <div class="lane">
+                ${items.length ? items.map((card) => `
+                  <div class="item">
+                    <div class="head">
+                      <div class="title">${card.title || card.id || "-"}</div>
+                      ${badge(card.status || "unknown", card.status || "unknown")}
+                    </div>
+                    <div class="reason">${card.reason || "-"}</div>
+                    <div class="meta">next: ${card.next_action || "-"}</div>
+                    <div class="meta">updated: ${card.updated_at || "-"}</div>
+                    <ul>
+                      ${(card.evidence_paths || []).slice(0, 3).map((p) => `<li>${p}</li>`).join("") || "<li>-</li>"}
+                    </ul>
+                  </div>
+                `).join("") : `<div class="subtle">none</div>`}
+              </div>
+            </section>
+          `;
+        }).join("");
+      };
+
+      fetch(apiUrl)
+        .then((resp) => resp.json())
+        .then(renderBoard)
+        .catch((err) => {
+          document.getElementById("meta").textContent = `読み込み失敗: ${err}`;
+          document.getElementById("board").innerHTML = `<div class="warning">Ops Goal Board の読み込みに失敗しました。</div>`;
+        });
+    </script>
+  </body>
+</html>

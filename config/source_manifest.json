@@ -1,0 +1,14 @@
+{
+    "sources": [
+        {
+            "file": "data/raw/official/sample_official.csv",
+            "type": "historical",
+            "date": "20260311",
+            "description": "初期トレーニング用サンプルデータ"
+        }
+    ],
+    "ingestion_policy": {
+        "strict_mode": true,
+        "backup_raw": true
+    }
+}

@@ -1,8 +1,43 @@
-# GitHub保存準備（2026-10-14）
-# ローカル資格情報。設定例だけはGit対象。
+# Runtime data and generated artifacts
+/data/
+/reports/
+/models/
+/logs/
+/output/
+/outputs/
+/_archive/
+/archive/
+/btlink/
+/raw/
+
+# Local secrets
 .env
 .env.*
 !.env.example
+
+# Python and test caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp*/
+_pytest_root*/
+.codex_tmp/
+.pytest_tmp_local/
+
+# Generated binaries and run markers
+*.joblib
+*.pkl
+*.db
+*.sqlite
+*.lzh
+*.log
+*.done
+*.status
+*.failed
+
+# Local backup exclusions
+# GitHub保存準備（2026-10-14）
+# ローカル資格情報。設定例だけはGit対象。
 !.env.sample
 !.env.template
 !.env.github.example
@@ -26,16 +61,10 @@ profile.enc
 node_modules/
 .venv*/
 venv/
-__pycache__/
-*.py[cod]
 .pytest*/
 .playwright*/
-.codex_tmp/
-*.log
 *.tmp
-*.sqlite
 *.sqlite3
-*.db
 *.db-wal
 *.db-shm
 *.sqlite-wal
@@ -45,10 +74,7 @@ __pycache__/
 *.pth
 *.pt
 *.onnx
-*.joblib
-*.pkl
 *.cbm
-*.lzh
 *.mp4
 *.mkv
 *.avi
@@ -58,7 +84,6 @@ __pycache__/
 *.flac
 *.m4a
 # 下のruntime除外はルート相対。src/data・src/modelsは除外しない。
-
 # GitHub保存準備の補足: 入れ子の生成物・認証状態
 **/.runtime*/
 **/.vercel/

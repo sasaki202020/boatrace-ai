@@ -1,0 +1,7 @@
+プロジェクト目標: Gate 5-6 Strategy & Reporting
+指示:
+1. generate_trifecta_candidates.py を実行し、1着確率から3連単候補を生成せよ。
+2. evaluate_ev_and_skip.py を実行し、期待値計算と「買い/見送り」の判定を行え。
+3. build_daily_report.py を実行し、最終的な投資レポートを reports/ 配下に出力せよ。
+4. レポートの内容（推奨理由やEV値）が、これまでの Gate の結果と矛盾していないか確認せよ。
+5. 完了したら、プロジェクト全体の「マスターパック」としての統合準備に入れ。

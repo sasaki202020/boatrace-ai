@@ -1,0 +1,34 @@
+{
+  "feature_set_name": "win_baseline_core_relative",
+  "source_feature_set": "win_baseline_core",
+  "source_dataset": "C:\\Users\\goo10\\競艇\\boatrace-ai-mvp\\data\\processed\\trainable_win_training_data.csv",
+  "base_feature_set_name": "win_baseline_core",
+  "relative_feature_set_name": "core_relative",
+  "features": [
+    "boat_no",
+    "exhibition_time",
+    "jcd",
+    "race_number",
+    "national_2ren_rate_rank_in_race",
+    "national_2ren_rate_diff_from_race_mean",
+    "national_2ren_rate_z_in_race",
+    "local_2ren_rate_rank_in_race",
+    "local_2ren_rate_diff_from_race_mean",
+    "local_2ren_rate_z_in_race",
+    "avg_st_rank_in_race",
+    "avg_st_advantage_vs_mean",
+    "avg_st_advantage_z_in_race"
+  ],
+  "relative_features": [
+    "national_2ren_rate_rank_in_race",
+    "national_2ren_rate_diff_from_race_mean",
+    "national_2ren_rate_z_in_race",
+    "local_2ren_rate_rank_in_race",
+    "local_2ren_rate_diff_from_race_mean",
+    "local_2ren_rate_z_in_race",
+    "avg_st_rank_in_race",
+    "avg_st_advantage_vs_mean",
+    "avg_st_advantage_z_in_race"
+  ],
+  "description": "Phase 1 の official predictor 用。core baseline に race-relative features を追加した 1着モデル設定。"
+}

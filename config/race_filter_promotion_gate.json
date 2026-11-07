@@ -1,0 +1,14 @@
+{
+  "min_date_count": 10,
+  "min_total_races": 300,
+  "min_total_bets": 50,
+  "min_positive_day_rate": 0.55,
+  "min_median_roi_delta_vs_no_filter": 0.05,
+  "min_mean_roi_delta_vs_no_filter": 0.05,
+  "max_worst_roi": -0.95,
+  "max_mean_drawdown_ratio_vs_no_filter": 0.85,
+  "allow_production_adoption": false,
+  "reference_only_filters": [
+    "and_filter"
+  ]
+}

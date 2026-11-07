@@ -1,0 +1,10 @@
+{
+  "lookback_days": 3,
+  "default_phase": "final",
+  "phases": ["morning", "late", "final"],
+  "score_weights": {
+    "real_odds_available": 100,
+    "pending_unpublished": -10,
+    "real_odds_missing_fetch": -5
+  }
+}

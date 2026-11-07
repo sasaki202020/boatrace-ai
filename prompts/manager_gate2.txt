@@ -1,0 +1,6 @@
+プロジェクト目標: Gate 2 Ingestion 固定
+指示:
+1. data/raw/official 配下に配置された公式ファイルを、build_processed.py を用いて正規化せよ。
+2. 列名の不一致が発生した場合は、config/column_aliases.json を更新して吸収せよ。
+3. validation_summary.json を確認し、FATAL エラーがゼロになるまでマッピングを調整せよ。
+4. historical_races.csv と today_races.csv が schemas/ 配下の定義を満たしているか確認せよ。

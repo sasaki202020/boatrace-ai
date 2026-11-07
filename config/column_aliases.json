@@ -1,0 +1,19 @@
+{
+    "race_id": ["レースID", "RaceID", "race_index", "R_ID"],
+    "date": ["日付", "Date", "RaceDate", "YMDC"],
+    "venue": ["場名", "Venue", "Stadium", "場"],
+    "race_no": ["レース番号", "RaceNo", "R_NO"],
+    "lane": ["艇番", "枠番", "PitNo", "Lane", "B_NO"],
+    "racer_id": ["登録番号", "選手ID", "RacerID"],
+    "racer_class": ["級別", "ランク", "Class", "RANK"],
+    "avg_st": ["平均ST", "AvgST", "ST_AVG"],
+    "national_win_rate": ["全国勝率", "WinRateNational", "K_Syoritu"],
+    "national_2ren_rate": ["全国2連対率", "全国二連対率", "National2RenRate", "K_RENRITU"],
+    "local_2ren_rate": ["当地2連対率", "当地二連対率", "Local2RenRate", "T_RENRITU"],
+    "motor_2ren_rate": ["モーター2連率", "MotorWinRate", "M_RENRITU"],
+    "boat_2ren_rate": ["ボート2連率", "BoatWinRate", "B_RENRITU"],
+    "finish_position": ["着順", "Result", "Order", "RANKING"],
+    "exhibition_time": ["展示タイム", "展示", "ExTime", "T_TIME"],
+    "wind_speed": ["風速", "WindSpeed", "WIND"],
+    "weather": ["天候", "Weather", "TENK"]
+}

@@ -1,0 +1,241 @@
+{
+  "_meta": {
+    "version": "active_20260414_strong_v3",
+    "base_version": "active_20260414_strong_v2",
+    "strategy_name": "guarded_selective_ev_strong",
+    "changelog": [
+      "day_mode_rules.stop を stop閾値専用キーへ変更し、reducedとの境界を明確化",
+      "pipeline_health.required_columns は維持しつつ、phase別 required_non_null_columns を追加",
+      "pending_unpublished_rate_exceeds_threshold を stop_conditions から alert_conditions へ移動",
+      "daily_roi_drop_exceeds_threshold を alert_conditions に追加",
+      "consecutive_zero_buy_days_exceeds_threshold を alert_conditions に追加",
+      "day_mode_resolution を追加し、stop/normal/reduced の判定順を固定",
+      "buy_phase で real_odds non-null 必須を明示",
+      "post_race で roi 算出に必要な non-null 条件を明示"
+    ]
+  },
+  "candidate_generation_mode": "legacy",
+  "first_prob_relative_threshold": 0.72,
+  "rescue_enabled": true,
+  "use_unified_score": true,
+  "high_ev_watch_threshold": 4.5,
+  "risk_penalty_weights": {
+    "NO_REAL_ODDS": 2,
+    "LOW_CONFIDENCE": 2,
+    "HIGH_ODDS_VOLATILE": 1,
+    "DATA_MISSING": 3,
+    "LOW_SAMPLE_MODEL": 2,
+    "STALE_ODDS": 2
+  },
+  "buy_rules": {
+    "min_win_proba": 0.27,
+    "min_ev": 1.22,
+    "max_ev": 3.6,
+    "hard_guard": {
+      "min_ev": 0.20,
+      "min_data_completeness": 1.0,
+      "min_odds_availability": 1.0,
+      "max_stale_age_days": 14,
+      "min_model_confidence": 0.045
+    },
+    "risk_flag_skip": true,
+    "max_candidates_per_day": 12,
+    "max_candidates_per_race": 1
+  },
+  "day_mode_rules": {
+    "normal": {
+      "min_real_odds_available_rate": 0.48,
+      "max_missing_feature_rate": 0.03,
+      "min_today_races": 72,
+      "min_race_coverage": 0.88
+    },
+    "reduced": {
+      "min_real_odds_available_rate": 0.35,
+      "max_missing_feature_rate": 0.06,
+      "min_today_races": 60,
+      "min_race_coverage": 0.8,
+      "min_win_proba_add": 0.02,
+      "min_ev_add": 0.05,
+      "max_candidates_per_day": 7
+    },
+    "stop": {
+      "below_real_odds_available_rate": 0.35,
+      "above_missing_feature_rate": 0.06,
+      "below_min_today_races": 60,
+      "below_min_race_coverage": 0.8
+    }
+  },
+  "day_mode_resolution": {
+    "evaluation_order": [
+      "stop",
+      "normal",
+      "reduced"
+    ],
+    "fallback_mode": "stop",
+    "_note": "stop条件に1つでも該当したら stop。stopでなければ normal 条件を全て満たすか判定。normalでなければ reduced 条件を全て満たすか判定。どれにも当てはまらなければ stop。"
+  },
+  "refresh_phases": {
+    "morning": {
+      "label": "朝フェーズ",
+      "timing_jst": "08:00",
+      "description": "当日レース一覧出走表取得"
+    },
+    "late": {
+      "label": "直前フェーズ",
+      "timing_jst": "10:30",
+      "description": "実オッズ取得候補確定"
+    },
+    "final": {
+      "label": "最終フェーズ",
+      "timing_jst": "12:00",
+      "description": "買い実行未公開レース再チェック"
+    }
+  },
+  "pipeline_health": {
+    "min_today_races": 60,
+    "min_race_coverage_normal": 0.88,
+    "min_race_coverage_reduced": 0.8,
+    "max_missing_feature_rate_normal": 0.03,
+    "max_missing_feature_rate_reduced": 0.06,
+    "required_columns": [
+      "race_id",
+      "date",
+      "venue",
+      "race_number",
+      "pred_top1",
+      "win_proba",
+      "ev",
+      "real_odds"
+    ],
+    "required_non_null_columns_by_phase": {
+      "pre_race": [
+        "race_id",
+        "date",
+        "venue",
+        "race_number",
+        "pred_top1",
+        "win_proba"
+      ],
+      "odds_refresh": [
+        "race_id",
+        "date",
+        "venue",
+        "race_number",
+        "pred_top1",
+        "win_proba"
+      ],
+      "buy_phase": [
+        "race_id",
+        "pred_top1",
+        "win_proba",
+        "ev",
+        "real_odds"
+      ],
+      "post_race": [
+        "race_id",
+        "pred_top1",
+        "win_proba",
+        "ev",
+        "real_odds"
+      ]
+    },
+    "_note_required_columns": "required_columns は列存在の必須条件。non-null 必須は phase 別で評価する。real_odds 列は朝時点で空でもよいが、buy_phase では non-null 必須。"
+  },
+  "odds_health": {
+    "min_real_odds_available_rate_normal": 0.48,
+    "min_real_odds_available_rate_reduced": 0.35,
+    "stop_below_real_odds_available_rate": 0.35,
+    "max_real_odds_missing_fetch_rate_normal": 0.2,
+    "max_real_odds_missing_fetch_rate_reduced": 0.28,
+    "max_pending_unpublished_rate": 0.1,
+    "_note_pending": "block_if_ev_without_real_odds=true と整合させるため、未公開許容率は低めに維持。pending 多発は警告縮退理由であり、単独では stop 直行にしない。"
+  },
+  "buy_health": {
+    "max_consecutive_zero_buy_days": 4,
+    "zero_buy_action": "alert_and_review",
+    "_note_zero_buy": "4日連続ゼロ買い時は通知 + 手動レビュー必須。自動停止はしないが、candidate 見直し対象にする。",
+    "max_daily_buy_count": 12,
+    "min_daily_buy_count_warning": 1,
+    "max_buy_count_per_race": 1
+  },
+  "performance_health": {
+    "roi_calculation_required": true,
+    "max_daily_roi_drop": 0.4,
+    "_note_roi_drop": "1日で40%ドロップで即アラート。単独では自動 stop にしない。",
+    "max_hit_rate_drop": 0.12,
+    "roi_7d_reference_only": true,
+    "_note_7d_roi": "7日ROIは参考値のみ。自動停止モード切り替えのトリガーには使用しない。",
+    "warn_if_7d_roi_below": -0.1,
+    "warn_if_30d_roi_below": -0.05
+  },
+  "risk_flags": {
+    "high_ev_threshold": 3.6,
+    "suspicious_ev_threshold": 4.5,
+    "min_prob_for_buy": 0.27,
+    "block_if_ev_without_real_odds": true,
+    "_note_block": "実オッズ未取得レースはEV計算が推定値のため buy_phase では無条件ブロック。pending_unpublished_rate と整合させること。"
+  },
+  "candidate_guardrails": {
+    "min_win_proba_min": 0.27,
+    "min_win_proba_max": 0.31,
+    "_note_win_proba": "min_win_proba_min を buy_rules.min_win_proba=0.27 に統一。",
+    "min_ev_min": 1.12,
+    "min_ev_max": 1.35,
+    "max_ev_min": 3.0,
+    "max_ev_max": 4.2,
+    "max_single_change_count": 1
+  },
+  "venue_controls": {
+    "enable_venue_health_check": true,
+    "stop_if_single_venue_abnormal": true,
+    "exclude_venue_if_30d_roi_below": -0.2,
+    "exclude_venue_if_30d_buy_count_below": 8,
+    "min_event_days_in_period": 6,
+    "_note_venue": "30日間に開催日数が6日未満の会場は buy_count 閾値による除外判定対象外。開催頻度の低い場を誤除外しない。"
+  },
+  "monitoring": {
+    "track_kpis": [
+      "race_coverage",
+      "real_odds_available_rate",
+      "buy_count",
+      "hit_count",
+      "hit_rate",
+      "roi",
+      "avg_ev",
+      "median_ev",
+      "pending_unpublished_count",
+      "pending_unpublished_rate",
+      "real_odds_missing_fetch",
+      "missing_feature_rate",
+      "mode",
+      "venue_roi_30d",
+      "ev_band_roi",
+      "win_proba_band_roi",
+      "consecutive_zero_buy_days",
+      "daily_roi_drop"
+    ]
+  },
+  "candidate_evaluation": {
+    "roi_7d_reference_only": true,
+    "roi_30d_improvement_min": 0.04,
+    "roi_all_min_vs_active": 0.0,
+    "buy_count_ratio_min": 0.9,
+    "hit_rate_drop_max": 0.015,
+    "max_single_change_count": 1
+  },
+  "stop_conditions": [
+    "missing_required_columns",
+    "result_import_failed",
+    "roi_not_computable",
+    "real_odds_available_rate_below_stop_threshold",
+    "race_coverage_abnormal",
+    "missing_feature_rate_abnormal"
+  ],
+  "alert_conditions": [
+    "pending_unpublished_rate_exceeds_threshold",
+    "daily_roi_drop_exceeds_threshold",
+    "consecutive_zero_buy_days_exceeds_threshold",
+    "hit_rate_drop_exceeds_threshold",
+    "single_venue_abnormal"
+  ]
+}

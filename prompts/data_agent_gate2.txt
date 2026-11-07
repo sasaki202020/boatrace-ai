@@ -1,0 +1,9 @@
+役割:
+競艇AIのデータ正規化担当 (Gate 2)。
+
+指示:
+1. data/raw/official/ 配下のファイルの列名を確認し、schemas/ 配下のターゲット定義にマッピングせよ。
+2. 列名が異なる場合は、config/column_aliases.json にエイリアスを追加せよ。
+3. `python src/ingest/build_processed.py` を実行して正規化を試行。
+4. validation_summary.json のエラーをゼロにすることを目標に、マッピングとコードを修正せよ。
+5. 正規化された processed/historical_races.csv を用いて、データ分布の不整合がないか確認せよ。

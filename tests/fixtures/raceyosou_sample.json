@@ -1,0 +1,25 @@
+{
+  "date": "2026-04-26",
+  "venue": "all",
+  "races": [
+    {
+      "race_id": "d20260426-v22-r01",
+      "jcd": "22",
+      "race_no": 1,
+      "title": "sample fixture race",
+      "candidates": [
+        {
+          "trifecta": "1-2-3",
+          "odds": 12.3,
+          "ev": 1.12,
+          "decision": "WATCH",
+          "reason": "fixture_only"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "fixture": true,
+    "note": "for UI tests only; not for production decisions"
+  }
+}

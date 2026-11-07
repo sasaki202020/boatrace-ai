@@ -1,0 +1,11 @@
+{
+  "feature_set_name": "win_baseline_core",
+  "source_dataset": "C:\\Users\\goo10\\競艇\\boatrace-ai-mvp\\data\\processed\\trainable_win_training_data.csv",
+  "features": [
+    "boat_no",
+    "exhibition_time",
+    "jcd",
+    "race_number"
+  ],
+  "description": "高信頼列のみで構成した 1着 baseline core feature set。"
+}

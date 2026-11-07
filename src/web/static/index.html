@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BoatRace AI Dashboard</title>
+    <link rel="icon" href="data:," />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Noto+Sans+JP:wght@400;500;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="tag">内部運用</p>
+        <h1>BOATRACE_AI</h1>
+        <p class="muted hero-subtitle">運用サマリー・内部分析</p>
+        <div id="statusBoard" data-testid="status-board" class="status-board" aria-label="運用要約"></div>
+      </div>
+      <div class="hero-actions">
+        <div class="hero-status-group" aria-label="運用状態">
+          <div class="status-item">
+            <div class="status-item-label">日時</div>
+            <div id="opsRunDate" data-testid="ops-run-date" class="status-item-value">-</div>
+          </div>
+          <div class="status-item">
+            <div class="status-item-label">運用モード</div>
+            <div id="modeBanner" data-testid="mode-banner" class="mode-banner">運用状態：通常</div>
+          </div>
+          <div class="status-item">
+            <div class="status-item-label">実行状態</div>
+            <div id="opsRunStatus" data-testid="ops-run-status" class="mode-banner mode-banner-muted">状態：待機中</div>
+          </div>
+        </div>
+        <div class="hero-status-detail" id="opsRunDetail" data-testid="ops-run-detail">最新ログ: -</div>
+        <div class="mode-switch">
+          <div class="mode-toggle">
+            <button id="modeNormalBtn" class="btn ghost mode-btn" type="button">通常</button>
+            <button id="modeWinrateBtn" class="btn ghost mode-btn" type="button">勝率優先</button>
+            <button id="modeRoiFilterBtn" class="btn ghost mode-btn" type="button">ROIフィルタ</button>
+            <button id="modeAutoFilterBtn" class="btn ghost mode-btn" type="button">自動条件</button>
+            <button id="runPredictBtn" data-testid="ops-run-predict" class="btn ghost mode-btn" type="button">予測更新</button>
+            <button id="runPreRaceBtn" data-testid="ops-run-pre-race" class="btn ghost mode-btn" type="button">朝準備</button>
+            <button id="runOddsBtn" data-testid="ops-run-odds-refresh" class="btn ghost mode-btn" type="button">オッズ更新</button>
+            <button id="runPostRaceBtn" data-testid="ops-run-post-race" class="btn ghost mode-btn" type="button">夜検証</button>
+            <button id="runBacktestBtn" data-testid="ops-run-backtest" class="btn ghost mode-btn" type="button">検証</button>
+            <button id="runGuardBtn" data-testid="ops-run-guard" class="btn ghost mode-btn" type="button">ガード</button>
+            <button id="runFullBtn" data-testid="ops-run-full" class="btn ghost mode-btn" type="button">全部実行</button>
+            <a href="/predictions" class="btn ghost mode-btn" style="text-decoration:none; display:inline-flex; align-items:center;">紙上予想</a>
+          </div>
+          <div class="odds-upload-row">
+            <input id="oddsUploadInput" type="file" accept=".csv,text/csv" />
+            <button id="oddsUploadBtn" data-testid="odds-upload-btn" class="btn ghost mode-btn" type="button">実オッズCSV反映</button>
+          </div>
+        </div>
+        <button id="refreshBtn" data-testid="refresh-btn" class="btn">更新</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel hero-metrics">
+        <div class="hero-grid">
+          <article class="hero-card">
+            <p class="hero-label">直近30R 的中率</p>
+            <p id="heroHit" class="hero-value">-</p>
+            <p id="heroHitMeta" class="hero-meta">-</p>
+          </article>
+          <article class="hero-card">
+            <p class="hero-label">直近30R 回収率（参考）</p>
+            <p id="heroRoi" class="hero-value">-</p>
+            <p id="heroRoiMeta" class="hero-meta">-</p>
+          </article>
+          <article class="hero-card sub">
+            <p class="hero-label">購入候補</p>
+            <p id="heroBuyCount" class="hero-subvalue">-</p>
+            <p class="hero-label">様子見</p>
+            <p id="heroWatchCount" class="hero-subvalue">-</p>
+            <p class="hero-label">オッズ取得率</p>
+            <p id="heroOddsRate" class="hero-subvalue">-</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="panel explain">
+        <div class="explain-grid">
+          <div>
+            <p class="eyebrow">この画面の見方</p>
+          <h2>まず見るのは「レース」と「判定」</h2>
+          </div>
+          <div class="chips">
+            <span class="chip">1行 = 1レース</span>
+            <span class="chip">場 = 開催場</span>
+            <span class="chip">R = レース番号</span>
+            <span class="chip buy">BUY = 購入候補</span>
+            <span class="chip watch">WATCH = 様子見</span>
+            <span class="chip skip">SKIP = 見送り</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel spotlight">
+        <div class="row">
+          <div>
+            <p class="eyebrow">注目レース</p>
+            <h2>まず確認したい3件</h2>
+          </div>
+          <p class="muted">購入候補を優先して表示します</p>
+        </div>
+        <div id="spotlightCards" class="spotlight-cards"></div>
+      </section>
+
+      <section id="raceYosouPanel" class="panel race-yosou-panel">
+        <div class="row">
+          <div>
+            <p class="eyebrow">当日予想</p>
+          </div>
+          <p id="raceYosouMeta" class="muted">-</p>
+        </div>
+        <div id="raceYosouBody" class="race-yosou-body"></div>
+      </section>
+
+      <section class="panel kpi">
+        <h2>基本情報</h2>
+        <div class="cards" id="kpiCards"></div>
+      </section>
+
+      <section class="panel" hidden>
+        <div class="row">
+          <div>
+            <p class="eyebrow">診断</p>
+          <h2>今 購入候補が出にくい主因</h2>
+          </div>
+          <p class="muted">直近の判定結果から、詰まり方を自動集計しています</p>
+        </div>
+        <div id="gateHealthPanel" class="gate-health-grid"></div>
+      </section>
+
+      <section class="panel" hidden>
+        <div class="row">
+          <div>
+            <p class="eyebrow">運用監視</p>
+            <h2>自動検証の状態</h2>
+          </div>
+          <p class="muted">バックテストと採用ガードの最新状態です</p>
+        </div>
+        <div id="opsHealthPanel" class="gate-health-grid"></div>
+      </section>
+
+      <section class="panel" hidden>
+        <div class="row">
+          <div>
+            <p class="eyebrow">上流診断</p>
+            <h2>候補生成と確率校正の状態</h2>
+          </div>
+          <p class="muted">upstream 側で出した診断結果をそのまま確認できます</p>
+        </div>
+        <div id="upstreamHealthPanel" class="gate-health-grid"></div>
+      </section>
+
+      <section class="panel prediction-panel">
+        <div class="row">
+          <h2>判定一覧</h2>
+          <div class="prediction-toolbar">
+            <div class="filters prediction-filters-main">
+              <select id="venueFilter" data-testid="venue-filter">
+                <option value="">全場</option>
+              </select>
+              <select id="decisionFilter" data-testid="decision-filter">
+                <option value="">すべて</option>
+                <option value="BUY" title="購入候補だけを表示">購入候補</option>
+                <option value="WATCH" title="様子見だけを表示">様子見</option>
+                <option value="SKIP" title="見送りだけを表示">見送り</option>
+              </select>
+            </div>
+            <div class="filters prediction-filters-secondary">
+              <button id="todayBtn" data-testid="today-btn" class="btn today-btn">今日のみ</button>
+              <input id="dateFrom" data-testid="date-from" type="date" />
+              <input id="limit" data-testid="limit" type="number" min="1" max="5000" value="20" />
+              <button id="applyBtn" data-testid="apply-btn" class="btn">適用</button>
+            </div>
+          </div>
+        </div>
+        <div id="predictionFreshnessBanner" class="freshness-banner" hidden></div>
+        <div id="contextSummary" class="context-summary"></div>
+        <div class="table-wrap">
+          <table id="predTable">
+            <thead>
+              <tr>
+                <th title="購入候補・様子見・見送りの判定結果">判定</th>
+                <th>レース / 買い目</th>
+                <th>実オッズ</th>
+                <th title="この買い目が当たると予測された確率">的中確率</th>
+                <th title="長期的に見た買う価値の目安">期待値</th>
+                <th>直前</th>
+                <th title="推奨される購入金額">推奨購入額</th>
+                <th>リスク</th>
+                <th>理由</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="row">
+          <div>
+            <p class="eyebrow">場別サマリー</p>
+            <h2>場ごとの傾向を静かに確認する</h2>
+          </div>
+          <div class="filters">
+            <select id="venueWindow">
+              <option value="all">すべて</option>
+              <option value="300">直近300</option>
+              <option value="100">直近100</option>
+              <option value="30">直近30</option>
+            </select>
+          </div>
+        </div>
+        <p class="section-note">購入候補の比率、実オッズの付き方、回収率の目安を場ごとに縦比較します。</p>
+        <div class="table-wrap">
+          <table id="venueTable">
+            <thead>
+              <tr>
+                <th>場</th>
+                <th>予想数</th>
+                <th title="購入対象になった件数">購入候補</th>
+                <th title="監視対象になった件数">様子見</th>
+                <th title="購入候補の的中率">的中率(購入候補)</th>
+                <th title="購入候補のROI">ROI(購入候補)</th>
+                <th title="購入候補の平均オッズ">平均オッズ(購入候補)</th>
+                <th title="必要なオッズを取得できた割合">オッズ取得率</th>
+              </tr>
+            </thead>
+            <tbody id="venueSummaryBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="row">
+          <div>
+            <p class="eyebrow">勝率ビュー</p>
+            <h2>判定ごとの推定値を比べる</h2>
+          </div>
+          <p class="muted">実績突合が未完の期間は、approx_prob / gross_return ベースの推定値で表示</p>
+        </div>
+        <p class="section-note">購入候補 / 様子見 / 見送り の差を、的中見込みと期待値でざっくり見ます。</p>
+        <div class="table-wrap">
+          <table id="decisionPerfTable">
+            <thead>
+              <tr>
+                <th title="購入候補・様子見・見送りの判定結果">判定</th>
+                <th>件数</th>
+                <th title="長期的に見た当たりやすさの目安">的中見込み</th>
+                <th title="長期的に見た期待値の目安">期待値</th>
+                <th>平均odds</th>
+              </tr>
+            </thead>
+            <tbody id="decisionPerfBody"></tbody>
+          </table>
+        </div>
+        <div class="table-wrap" style="margin-top:10px;">
+          <table id="oddsBandTable">
+            <thead>
+              <tr>
+                <th title="オッズの区分">オッズ帯</th>
+                <th>件数</th>
+                <th title="長期的に見た当たりやすさの目安">的中見込み</th>
+                <th title="長期的に見た期待値の目安">期待値</th>
+              </tr>
+            </thead>
+            <tbody id="oddsBandBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="row">
+          <div>
+            <p class="eyebrow">実験ログ</p>
+            <h2>最新の評価実験を静かに確認する</h2>
+          </div>
+          <p class="muted">更新日時、実験名、的中見込み、期待値を比較しやすい順で並べています</p>
+        </div>
+        <p class="section-note">直近の実験だけを先に見るための一覧です。結果は日次で積み上がるので、まずは最新の変化を確認します。</p>
+        <div class="table-wrap">
+          <table id="expTable">
+            <thead>
+              <tr>
+                <th>日時</th>
+                <th>実験名</th>
+                <th>的中率</th>
+                <th>ROI</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

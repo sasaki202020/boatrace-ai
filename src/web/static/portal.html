@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>日刊スポーツボートレース予想情報</title>
+  <meta name="description" content="日刊スポーツボートレース予想情報" />
+  <meta name="keywords" content="ボートレース,日刊スポーツ,予想,直前予想,PDF新聞,開催日程,スケジュール,競艇,ボート" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="icon" href="data:," />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --blue: #0074c1;
+      --blue-dark: #005c9a;
+      --bg: #d2d6db;
+      --panel: #fff;
+      --line: #cfd6de;
+      --ink: #222;
+      --muted: #666;
+      --off: #cfcfcf;
+      --shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; }
+    body {
+      font-family: "Noto Sans JP", sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    #header p { margin: 25px 0 0; text-align: center; }
+    #header p img { margin: 0 20px 0 10px; vertical-align: middle; }
+    #header .logo {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 176px;
+      height: 44px;
+      margin-right: 18px;
+      background: #fff;
+      border-radius: 4px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: .06em;
+      box-shadow: 0 1px 0 rgba(0,0,0,.08) inset;
+    }
+    #header .banner {
+      display: inline-block;
+      margin: 0;
+    }
+    #header .banner img { margin: -8px 0; width: 560px; height: auto; }
+    #header h1 {
+      font-weight: 700;
+      font-size: 30px;
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 15px 0;
+      margin: 30px 0;
+      text-shadow: 2px 2px 0 rgba(0,0,0,.2);
+      line-height: 1em;
+    }
+    #header h1 span { font-size: 15px; }
+    .banner_mob { display: none; text-align: center; }
+    .banner_mob img { display: block; max-width: 90%; margin: auto; }
+    #con { max-width: 1000px; margin: 0 auto; }
+    .hgroup {
+      border-top: solid 4px var(--blue);
+      background-color: #fff;
+      position: relative;
+      padding-top: 20px;
+      margin: 30px auto 0;
+      text-align: center;
+    }
+    .hgroup h2 { font-size: 28px; font-weight: 700; line-height: 1em; margin: 0; }
+    .hgroup p { margin: 10px 0 0; font-size: 14px; font-weight: 700; line-height: 1em; }
+    .hgroup_nav {
+      position: absolute;
+      top: 22px;
+      left: 50%;
+      width: 300px;
+      margin-left: -150px;
+      display: flex;
+      padding: 0;
+      list-style: none;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+    .hgroup_nav li { flex: 1; }
+    .hgroup_nav .bt_prev { text-align: left; }
+    .hgroup_nav .bt_next { text-align: right; }
+    .hgroup_nav li button {
+      display: inline-block;
+      width: 27px;
+      height: 27px;
+      border-radius: 27px;
+      border: none;
+      background: var(--blue) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="12" viewBox="0 0 8 12"><path fill="%23fff" d="M1.4 0 0 1.4 4.6 6 0 10.6 1.4 12l6-6z"/></svg>') no-repeat left 12px center;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .hgroup_nav .bt_prev button {
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="12" viewBox="0 0 8 12"><path fill="%23fff" d="M6.6 0 8 1.4 3.4 6 8 10.6 6.6 12l-6-6z"/></svg>');
+      background-position: left 9px center;
+    }
+    .hgroup_nav li button:hover { background-color: #3497d8; }
+    .content {
+      background: #fff;
+      padding: 15px;
+    }
+    .none .tomorrow,
+    .today .tomorrow { display: none; }
+    .tomorrow .today { display: none; }
+    .none #day .hgroup_nav button,
+    .hgroup_nav li button.non,
+    .tomorrow #day .bt_next button,
+    .today #day .bt_prev button {
+      background-color: rgba(50, 50, 50, 0.2);
+      box-shadow: none;
+      cursor: auto;
+    }
+    .race_list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .race_list:after {
+      content: '';
+      display: block;
+      width: calc(315 / 970 * 100%);
+    }
+    .race {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: calc(315 / 970 * 100%);
+      border: solid 1px #ccc;
+      background: #fff;
+      margin-top: 15px;
+      padding: 15px;
+    }
+    .race h3 { display: flex; align-items: center; gap: 8px; margin: 0; }
+    .race .name { flex: 1; font-size: 33px; font-weight: 700; line-height: 1.05em; }
+    .race .name i {
+      display: inline-block;
+      height: 33px;
+      width: 33px;
+      margin-left: 4px;
+      vertical-align: middle;
+      border-radius: 50%;
+      background: #eaf2ff;
+      border: 1px solid #7ca7e4;
+    }
+    .i_grade0 { background: #d40000 !important; border-color: #d40000 !important; }
+    .i_grade1 { background: #eb6a00 !important; border-color: #eb6a00 !important; }
+    .i_grade2 { background: #d4aa00 !important; border-color: #d4aa00 !important; }
+    .i_grade3 { background: #2f7fdb !important; border-color: #2f7fdb !important; }
+    .i_grade4 { background: #5ca9ff !important; border-color: #5ca9ff !important; }
+    .i_grade6 { background: #db4da3 !important; border-color: #db4da3 !important; }
+    .i_grade7 { background: #6b67ff !important; border-color: #6b67ff !important; }
+    .i_grade8 { background: #1fbc8d !important; border-color: #1fbc8d !important; }
+    .i_grade10 { background: #f0bb1c !important; border-color: #f0bb1c !important; }
+    .i_grade11 { background: #35a971 !important; border-color: #35a971 !important; }
+    .i_kaisai1 { background: #f1f6ff !important; border-color: #8db2f0 !important; }
+    .i_kaisai2 { background: #fff6df !important; border-color: #f0c14c !important; }
+    .i_kaisai3 { background: #f8eef8 !important; border-color: #ca93d7 !important; }
+    .i_kaisai4 { background: #eef7f1 !important; border-color: #78c090 !important; }
+    .race .state {
+      width: 75px;
+      height: 33px;
+      box-sizing: border-box;
+      border: solid 1px #eaeaea;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #454545;
+      font-size: 14px;
+      font-weight: 700;
+      flex: 0 0 auto;
+    }
+    .race .state.red {
+      color: #fff;
+      border: solid 1px #c00;
+      background: #c00;
+    }
+    .race .des { margin: 10px 0; line-height: 1.5em; min-height: 1.5em; }
+    .race .btn {
+      display: flex;
+      justify-content: space-between;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      gap: 3%;
+    }
+    .race .btn li { width: 48.5%; }
+    .race .btn li a {
+      display: block;
+      text-align: center;
+      background: var(--blue);
+      border-radius: 5px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: 400;
+      padding: 13px 0;
+      line-height: 1em;
+      box-shadow: var(--shadow);
+    }
+    .race .btn li a:hover { background: #3497d8; }
+    .race .btn li a:before {
+      content: '';
+      display: inline-block;
+      height: 18px;
+      width: 6px;
+      vertical-align: bottom;
+      margin-right: 6px;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="12" viewBox="0 0 8 12"><path fill="%23fff" d="M1.4 0 0 1.4 4.6 6 0 10.6 1.4 12l6-6z"/></svg>');
+    }
+    .race .btn li a.off { background: #ccc; }
+    .race.non .name { color: #999; }
+    #race_des, #cal_des {
+      display: flex;
+      flex-wrap: wrap;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #race_des li, #cal_des li { margin: 15px 15px 0 0; }
+    #race_des li i, #cal_des li i {
+      position: relative;
+      margin: 0 15px 0 0;
+      width: 25px;
+      height: 25px;
+      font-style: normal;
+      display: inline-block;
+      vertical-align: middle;
+    }
+    #race_des li i:after, #cal_des li i:after {
+      content: '：';
+      position: absolute;
+      top: 0;
+      left: 12px;
+      height: 25px;
+    }
+    #cal {
+      margin-top: 15px;
+      position: relative;
+      width: 100%;
+      background-color: #fff;
+    }
+    #cal_place {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 80px;
+      border: solid 1px var(--blue);
+      background: #e8f1fe;
+      box-sizing: border-box;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    #cal_place li {
+      text-align: center;
+      line-height: 1em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-top: solid 1px var(--blue);
+    }
+    #cal_place li:first-child {
+      background: var(--blue);
+      color: #fff;
+      border-top: none;
+      height: 65px;
+      font-weight: 700;
+    }
+    #cal_place li:nth-child(n+2) {
+      font-size: 18px;
+      font-weight: 700;
+      height: 42px;
+    }
+    #cal_scroll {
+      margin-left: 79px;
+      overflow-x: auto;
+      overflow-y: hidden;
+    }
+    #cal_table {
+      border-collapse: collapse;
+      border: solid 1px var(--blue);
+      width: 2380px;
+      box-sizing: border-box;
+      background: #fff;
+    }
+    #cal tr { border-bottom: solid 1px var(--blue); }
+    #cal th, #cal td {
+      text-align: center;
+      vertical-align: middle;
+      line-height: 1.2em;
+      font-weight: 400;
+      border-right: solid 1px var(--blue);
+      border-bottom: solid 1px var(--blue);
+    }
+    #cal th { width: 25px; box-sizing: border-box; }
+    #cal_th_mon { height: 23px; }
+    #cal_th_date { height: 43px; }
+    #cal th.sat { background: #eaf2ff; color: #003f97; }
+    #cal th.holi, #cal th.sun { background: #fff5f5; color: #c00; }
+    #cal td {
+      background-image: linear-gradient(to right, rgba(0,116,193,.12) 0, rgba(0,116,193,.12) 1px, transparent 1px);
+      background-repeat: repeat-y;
+      background-position: left;
+      padding: 5px 3px;
+    }
+    #cal .s_grade0,
+    #cal .s_grade1,
+    #cal .s_grade2,
+    #cal .s_grade3,
+    #cal .s_grade5,
+    #cal .s_grade6,
+    #cal .s_grade7,
+    #cal .s_grade8,
+    #cal .s_grade10,
+    #cal .s_grade11 { color: #fff; background-image: none; }
+    #cal .s_grade4,
+    #cal .s_grade9 { background-image: none; }
+    .memo {
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--muted);
+      margin: 12px 0 0;
+    }
+    .footer-space { height: 24px; }
+    @media (max-width: 1020px) {
+      #header p { margin: 2.94% 0; }
+      #header h1 { padding: 1.96% 0; margin: 0 0 7.843%; }
+      .race .name { font-size: 3vw; }
+      .race .name i { width: 3vw; height: 3vw; }
+      .race .state { height: 3vw; width: 7.5vw; }
+      .race .btn li a { font-size: 1.8vw; }
+      .race .btn li a:before { height: 1.8vw; }
+    }
+    @media (max-width: 680px) {
+      #header p img { margin: 0; }
+      #header .banner { display: none; }
+      .banner_mob { display: block; margin-top: 10px; }
+      .content { padding: 7px; }
+    }
+    @media (max-width: 700px) {
+      .race { width: calc(50% - 3px); padding: 6px; }
+      .race .name { font-size: 4.8vw; }
+      .race .name i { width: 4.8vw; height: 4.8vw; }
+      .race .state { height: 4.8vw; width: 13.8vw; font-size: 11px; }
+      .race .des { font-size: 13px; margin: 5px 0; }
+      .race .btn li a { font-size: 15px; }
+      .race .btn li a:before { height: 15px; }
+    }
+    @media (max-width: 640px) {
+      #header p img { height: 5.5vw; }
+      #header p { margin: 4.5% 0; }
+      #header h1 { font-size: 5vw; }
+      #header h1 span { font-size: 2.7vw; }
+      .memo { font-size: 12px; padding-left: 5px; }
+      #race_des li i:after, #cal_des li i:after { font-size: 12px; left: 12px; height: 12px; }
+    }
+    @media (max-width: 460px) {
+      .race .btn li a { font-size: 3.2vw; }
+      .race .btn li a:before { height: 3.2vw; }
+    }
+  </style>
+</head>
+<body class="today">
+  <header id="header">
+    <p>
+      <span class="logo">日刊スポーツ</span>
+      <a class="banner" href="https://www.nikkansports.com/public_race/boat/nikkan/2025/" target="_blank" rel="noreferrer">
+        <img src="https://nikkansports.raceyosou.jp/boatrace/portal/assets/pc/images/banner_2025.jpg" alt="banner" />
+      </a>
+    </p>
+    <h1>ボートレース予想情報<br><span>戸田・浜名湖・常滑・びわこ・住之江・尼崎・児島・徳山・下関・若松・芦屋・福岡・大村</span></h1>
+  </header>
+
+  <p class="banner_mob">
+    <a class="banner" href="https://www.nikkansports.com/public_race/boat/nikkan/2025/" target="_blank" rel="noreferrer">
+      <img src="https://nikkansports.raceyosou.jp/boatrace/portal/assets/pc/images/banner_2025.jpg" alt="banner" />
+    </a>
+  </p>
+
+  <article id="con" class="none">
+    <div id="day" class="hgroup">
+      <h2 class="today">2026年5月7日</h2><h2 class="tomorrow">2026年5月8日</h2>
+      <p class="today">本日のレース</p><p class="tomorrow">明日のレース</p>
+      <ul class="hgroup_nav">
+        <li class="bt_prev"><button type="button" aria-label="前日"></button></li>
+        <li class="bt_next"><button type="button" aria-label="翌日"></button></li>
+      </ul>
+    </div>
+
+    <div class="content">
+      <ul class="race_list today">
+        <li class="race non">
+          <div>
+            <h3><span class="name">戸田</span><span class="state">非開催</span></h3>
+            <p class="des">&nbsp;</p>
+          </div>
+          <ul class="btn">
+            <li><a class="off" href="#">AI&amp;直前予想</a></li>
+            <li><a class="off" href="#">PDF新聞</a></li>
+          </ul>
+        </li>
+        <li class="race">
+          <div>
+            <h3><span class="name">浜名湖<i class="i_grade4"></i><i class="i_kaisai2"></i></span><span class="state">5日目</span></h3>
+            <p class="des">浜松市長杯争奪戦　やらまいかカップ</p>
+          </div>
+          <ul class="btn">
+            <li><a href="#">直前予想</a></li>
+            <li><a href="#">ＡＩ予想</a></li>
+          </ul>
+        </li>
+        <li class="race">
+          <div>
+            <h3><span class="name">常滑<i class="i_grade4"></i><i class="i_kaisai0"></i></span><span class="state">5日目</span></h3>
+            <p class="des">中日スポーツ杯争奪第４６回チャンピオン大会</p>
+          </div>
+          <ul class="btn">
+            <li><a class="off" href="#">直前予想</a></li>
+            <li><a class="off" href="#">PDF新聞</a></li>
+          </ul>
+        </li>
+        <li class="race non">
+          <div>
+            <h3><span class="name">びわこ</span><span class="state">非開催</span></h3>
+            <p class="des">&nbsp;</p>
+          </div>
+          <ul class="btn">
+            <li><a class="off" href="#">直前予想</a></li>
+            <li><a class="off" href="#">ＡＩ予想</a></li>
+          </ul>
+        </li>
+        <li class="race">
+          <div>
+            <h3><span class="name">住之江<i class="i_grade4"></i><i class="i_kaisai1"></i></span><span class="state">5日目</span></h3>
+            <p class="des">２０２６ラピートカップ</p>
+          </div>
+          <ul class="btn">
+            <li><a href="#">直前予想</a></li>
+            <li><a href="#">ＡＩ予想</a></li>
+          </ul>
+        </li>
+        <li class="race">
+          <div>
+            <h3><span class="name">尼崎<i class="i_grade4"></i><i class="i_kaisai0"></i></span><span class="state">4日目</span></h3>
+            <p class="des">第５８回報知金杯争奪　六甲賞競走</p>
+          </div>
+          <ul class="btn">
+            <li><a href="#">直前予想</a></li>
+            <li><a href="#">ＡＩ予想</a></li>
+          </ul>
+        </li>
+        <li class="race">
+          <div>
+            <h3><span class="name">児島<i class="i_grade4"></i><i class="i_kaisai0"></i></span><span class="state">最終日</span></h3>
+            <p class="des">第４２回鷲羽杯</p>
+          </div>
+          <ul class="btn">
+            <li><a href="#">直前予想</a></li>
+            <li><a href="#">ＡＩ予想</a></li>
+          </ul>
+        </li>
+        <li class="race">
+          <div>
+            <h3><span class="name">徳山<i class="i_grade4"></i><i class="i_kaisai3"></i></span><span class="state">3日目</span></h3>
+            <p class="des">ニッカン・コム杯争奪戦</p>
+          </div>
+          <ul class="btn">
+            <li><a href="#">AI&amp;直前予想</a></li>
+            <li><a href="#">PDF新聞</a></li>
+          </ul>
+        </li>
+        <li class="race non">
+          <div>
+            <h3><span class="name">下関</span><span class="state">非開催</span></h3>
+            <p class="des">&nbsp;</p>
+          </div>
+          <ul class="btn">
+            <li><a class="off" href="#">直前予想</a></li>
+            <li><a class="off" href="#">PDF新聞</a></li>
+          </ul>
+        </li>
+        <li class="race non">
+          <div>
+            <h3><span class="name">若松</span><span class="state">非開催</span></h3>
+            <p class="des">&nbsp;</p>
+          </div>
+          <ul class="btn">
+            <li><a class="off" href="#">AI&amp;直前予想</a></li>
+            <li><a class="off" href="#">PDF新聞</a></li>
+          </ul>
+        </li>
+        <li class="race">
+          <div>
+            <h3><span class="name">芦屋<i class="i_grade4"></i><i class="i_kaisai3"></i></span><span class="state">2日目</span></h3>
+            <p class="des">日本トーター杯</p>
+          </div>
+          <ul class="btn">
+            <li><a href="#">AI&amp;直前予想</a></li>
+            <li><a class="off" href="#">PDF新聞</a></li>
+          </ul>
+        </li>
+        <li class="race non">
+          <div>
+            <h3><span class="name">福岡</span><span class="state">非開催</span></h3>
+            <p class="des">&nbsp;</p>
+          </div>
+          <ul class="btn">
+            <li><a class="off" href="#">ＡＩ予想</a></li>
+          </ul>
+        </li>
+        <li class="race">
+          <div>
+            <h3><span class="name">大村<i class="i_grade4"></i><i class="i_kaisai1"></i></span><span class="state">初日</span></h3>
+            <p class="des">長崎新聞社杯</p>
+          </div>
+          <ul class="btn">
+            <li><a href="#">直前予想</a></li>
+            <li><a class="off" href="#">PDF新聞</a></li>
+          </ul>
+        </li>
+      </ul>
+
+      <ul class="race_list tomorrow"></ul>
+
+      <ul id="race_des">
+        <li><i class="i_grade0"></i>SG</li>
+        <li><i class="i_grade1"></i>G1</li>
+        <li><i class="i_grade2"></i>G2</li>
+        <li><i class="i_grade3"></i>G3</li>
+        <li><i class="i_grade6"></i>オールレディース</li>
+        <li><i class="i_grade11"></i>マスターズリーグ</li>
+        <li><i class="i_grade8"></i>ヴィーナスシリーズ</li>
+        <li><i class="i_grade7"></i>ルーキーシリーズ</li>
+        <li><i class="i_grade4"></i>一般</li>
+        <li><i class="i_kaisai3"></i>モーニング</li>
+        <li><i class="i_kaisai2"></i>サマータイム</li>
+        <li><i class="i_kaisai1"></i>ナイター</li>
+        <li><i class="i_kaisai4"></i>ミッドナイト</li>
+      </ul>
+    </div>
+    <p class="memo">※ナイター場は午前８時までに情報更新されます。</p>
+
+    <div id="mon" class="hgroup">
+      <h2>2026年5～6月</h2>
+      <p>今月と来月のスケジュール</p>
+      <ul class="hgroup_nav">
+        <li class="bt_prev"><button type="button" aria-label="前月"></button></li>
+        <li class="bt_next"><button type="button" aria-label="次月"></button></li>
+      </ul>
+    </div>
+
+    <div class="content">
+      <div id="cal">
+        <ul id="cal_place">
+          <li>ボート<br>レース場</li>
+          <li>戸田</li>
+          <li>浜名湖</li>
+          <li>常滑</li>
+          <li>びわこ</li>
+          <li>住之江</li>
+          <li>尼崎</li>
+          <li>児島</li>
+          <li>徳山</li>
+          <li>下関</li>
+          <li>若松</li>
+          <li>芦屋</li>
+          <li>福岡</li>
+          <li>大村</li>
+        </ul>
+        <div id="cal_scroll">
+          <table id="cal_table">
+            <thead>
+              <tr id="cal_th_mon">
+                <th colspan="4">4月</th>
+                <th colspan="31">5月</th>
+                <th colspan="30">6月</th>
+                <th colspan="4">7月</th>
+              </tr>
+              <tr id="cal_th_date">
+                <th>27<br>月</th><th>28<br>火</th><th class="holi">29<br>水</th><th>30<br>木</th>
+                <th>1<br>金</th><th class="sat">2<br>土</th><th class="holi">3<br>日</th><th class="holi">4<br>月</th><th class="holi">5<br>火</th><th class="holi">6<br>水</th><th>7<br>木</th><th>8<br>金</th>
+                <th class="sat">9<br>土</th><th class="holi">10<br>日</th><th>11<br>月</th><th>12<br>火</th><th>13<br>水</th><th>14<br>木</th><th>15<br>金</th><th class="sat">16<br>土</th><th class="sun">17<br>日</th><th>18<br>月</th><th>19<br>火</th><th>20<br>水</th><th>21<br>木</th><th>22<br>金</th><th class="sat">23<br>土</th><th class="sun">24<br>日</th><th>25<br>月</th><th>26<br>火</th><th>27<br>水</th><th>28<br>木</th><th>29<br>金</th><th class="sat">30<br>土</th><th class="sun">31<br>日</th>
+                <th>1<br>月</th><th>2<br>火</th><th>3<br>水</th><th>4<br>木</th><th>5<br>金</th><th class="sat">6<br>土</th><th class="sun">7<br>日</th><th>8<br>月</th><th>9<br>火</th><th>10<br>水</th><th>11<br>木</th><th>12<br>金</th><th class="sat">13<br>土</th><th class="sun">14<br>日</th><th>15<br>月</th><th>16<br>火</th><th>17<br>水</th><th>18<br>木</th><th>19<br>金</th><th class="sat">20<br>土</th><th class="sun">21<br>日</th><th>22<br>月</th><th>23<br>火</th><th>24<br>水</th><th>25<br>木</th><th>26<br>金</th><th class="sat">27<br>土</th><th class="sun">28<br>日</th><th>29<br>月</th><th>30<br>火</th><th>1<br>水</th><th>2<br>木</th><th>3<br>金</th><th class="sat">4<br>土</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                <td colspan="6" class="s_grade4">第３７回ウインビーカップ</td>
+                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                <td>&nbsp;</td><td colspan="6" class="s_grade4">第４２回日本モーターボート選手会カップ</td>
+                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                <td>&nbsp;</td><td>&nbsp;</td><td colspan="4" class="s_grade4">本命バトル祭</td>
+                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+                <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <ul id="cal_des">
+        <li><i class="i_grade0"></i>SG</li>
+        <li><i class="i_grade1"></i>G1</li>
+        <li><i class="i_grade2"></i>G2</li>
+        <li><i class="i_grade3"></i>G3</li>
+        <li><i class="i_grade4"></i>一般</li>
+        <li><i class="i_grade5"></i>男女混合</li>
+        <li><i class="i_grade6"></i>オールレディース</li>
+        <li><i class="i_grade7"></i>ルーキーシリーズ</li>
+        <li><i class="i_grade8"></i>ヴィーナスシリーズ</li>
+        <li><i class="i_grade9"></i>企画レース</li>
+        <li><i class="i_grade10"></i>G2</li>
+        <li><i class="i_grade11"></i>マスターズリーグ</li>
+      </ul>
+    </div>
+    <div class="footer-space"></div>
+  </article>
+  <script>
+    const LOCAL_VENUES = [
+      ["桐生", "kiryu"],
+      ["戸田", "toda"],
+      ["江戸川", "edogawa"],
+      ["平和島", "heiwajima"],
+      ["多摩川", "tamagawa"],
+      ["浜名湖", "hamanako"],
+      ["蒲郡", "gamagori"],
+      ["常滑", "tokoname"],
+      ["津", "tsu"],
+      ["三国", "mikuni"],
+      ["びわこ", "biwako"],
+      ["住之江", "suminoe"],
+      ["尼崎", "amagasaki"],
+      ["鳴門", "naruto"],
+      ["丸亀", "marugame"],
+      ["児島", "kojima"],
+      ["宮島", "miyajima"],
+      ["徳山", "tokuyama"],
+      ["下関", "shimonoseki"],
+      ["若松", "wakamatsu"],
+      ["芦屋", "ashiya"],
+      ["福岡", "fukuoka"],
+      ["唐津", "karatsu"],
+      ["大村", "omura"],
+    ];
+    const today = new Date();
+    const compactDate = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, "0")}${String(today.getDate()).padStart(2, "0")}`;
+    const list = document.querySelector(".race_list.today");
+    const localByName = new Map(LOCAL_VENUES);
+    const existingNames = new Set();
+    let activeCount = 0;
+
+    document.querySelectorAll(".race_list.today .race").forEach((race) => {
+      const name = race.querySelector(".name")?.childNodes?.[0]?.textContent?.trim() || "";
+      const slug = localByName.get(name);
+      if (!slug) return;
+      existingNames.add(name);
+      const isActive = !race.classList.contains("non");
+      if (isActive) activeCount += 1;
+      race.querySelectorAll(".btn a").forEach((link) => {
+        if (link.textContent.includes("AI") || link.textContent.includes("ＡＩ") || link.textContent.includes("直前")) {
+          if (isActive) {
+            link.classList.remove("off");
+            link.href = `/boatrace/${slug}/${compactDate}`;
+          } else {
+            link.classList.add("off");
+            link.removeAttribute("href");
+            link.setAttribute("aria-disabled", "true");
+          }
+        }
+      });
+    });
+
+    LOCAL_VENUES.forEach(([name, slug]) => {
+      if (existingNames.has(name) || !list) return;
+      list.insertAdjacentHTML("beforeend", `
+        <li class="race non">
+          <div>
+            <h3><span class="name">${name}</span><span class="state">非開催</span></h3>
+            <p class="des">&nbsp;</p>
+          </div>
+          <ul class="btn">
+            <li><a class="off" aria-disabled="true">AI&amp;直前予想</a></li>
+            <li><a class="off" href="#">PDF新聞</a></li>
+          </ul>
+        </li>
+      `);
+    });
+    document.querySelector(".hgroup .today").textContent = `本日のレース（開催中 ${activeCount}場）`;
+  </script>
+</body>
+</html>
